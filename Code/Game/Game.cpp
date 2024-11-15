@@ -27,6 +27,7 @@ Game::Game()
     m_screenCamera = new Camera();
 
     m_currentMap = new Map(m_mapDimension.x, m_mapDimension.y);
+    
     m_playerTank = dynamic_cast<PlayerTank*>(m_currentMap->SpawnNewEntity(ENTITY_TYPE_PLAYER_TANK,
                                                                           ENTITY_FACTION_GOOD,
                                                                           Vec2(PLAYER_TANK_INIT_POSITION_X,
@@ -75,7 +76,7 @@ void Game::InitializeTiles()
 {
     Texture*      tileTexture = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
     IntVec2 const gridLayout  = IntVec2(8, 8);
-    m_tileSpriteSheet         = new SpriteSheet(tileTexture, gridLayout);
+    m_tileSpriteSheet         = new SpriteSheet(*tileTexture, gridLayout);
 
     TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
 }

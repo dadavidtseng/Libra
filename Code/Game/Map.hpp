@@ -25,13 +25,14 @@ public:
     void TestSpriteDefinition();
 
     void Update(float deltaSeconds);
-    void Render();
+
+    void Render() const;
     void DebugRender() const;
 
     AABB2   GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2   GetTileBounds(int tileIndex) const;
     IntVec2 GetTileCoordsForWorldPos(Vec2 const& worldPos) const;
-    bool    HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist);
+    bool    HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
 
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
@@ -40,13 +41,17 @@ public:
 private:
     void    UpdateEntities(float deltaSeconds);
     void    RenderEntities() const;
+    void    DebugRenderEntities() const;
+    
     void    GenerateTiles();
+    void    RenderTiles() const;
+    void    RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
     void    SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
     bool    IsEdgeTile(int x, int y) const;
     bool    IsRandomStoneTile(int x, int y) const;
-    void    AddVertsForTile(const Tile& tile, std::vector<Vertex_PCU>& vertices);
+    
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
-    void    AddEntityToMap(Entity* entity, Vec2 const& position, const float orientationDegrees);
+    void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
     void    RemoveEntityFromMap(Entity* entity);
     void    AddEntityToList(Entity* entity, EntityList& entityList);
     void    RemoveEntityFromList(const Entity* entity, EntityList& entityList);
@@ -67,5 +72,5 @@ private:
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
-    const TileDefinition* m_tileDef = nullptr;
+    mutable const TileDefinition* m_tileDef = nullptr;
 };

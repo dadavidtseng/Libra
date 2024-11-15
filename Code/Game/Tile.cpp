@@ -5,8 +5,8 @@
 //-----------------------------------------------------------------------------------------------
 #include "Game/Tile.hpp"
 
-Tile::Tile(const IntVec2& coords, const TileType type)
-	: m_tileCoords(coords),
-	  m_type(type)
-{
-}
+// Tile::Tile(const IntVec2& coords, const TileType type)
+// 	: m_tileCoords(coords),
+// 	  m_type(type)
+// {
+// }

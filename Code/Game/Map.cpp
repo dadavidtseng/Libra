@@ -45,7 +45,7 @@ Map::~Map()
 void Map::TestSpriteDefinition()
 {
     Texture*                testTexture_8x2 = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
-    SpriteSheet*            testSpriteSheet = new SpriteSheet(testTexture_8x2, IntVec2(8, 2));
+    SpriteSheet*            testSpriteSheet = new SpriteSheet(*testTexture_8x2, IntVec2(8, 2));
     SpriteDefinition const& testSpriteDef   = testSpriteSheet->GetSpriteDef(0);
 
     Vec2 uvAtMins = testSpriteDef.GetUVsMins();
@@ -58,7 +58,7 @@ void Map::TestSpriteDefinition()
     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(2, 0));
 
     // Bind the whole texture (sprite sheet) but only render a specific part using UVs
-    g_theRenderer->BindTexture(testSpriteDef.GetTexture());
+    g_theRenderer->BindTexture(&testSpriteDef.GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
 }
 
@@ -103,7 +103,7 @@ void Map::Update(const float deltaSeconds)
             // 檢查 tile 類型
             const Tile& tile = m_tiles[tileIndex];
 
-            if (tile.m_type == TileType::TILE_TYPE_GRASS)
+            if (tile.m_type == TILE_TYPE_GRASS)
                 continue;
 
             PushDiscOutOfAABB2D(playerTank->GetPosition(), playerTank->GetPhysicsRadius(), neighborBox);
@@ -125,7 +125,7 @@ void Map::Update(const float deltaSeconds)
 
             // 檢查 tile 類型
             const Tile& tile = m_tiles[tileIndex];
-            if (tile.m_type == TileType::TILE_TYPE_GRASS)
+            if (tile.m_type == TILE_TYPE_GRASS)
                 continue;
 
             PushDiscOutOfAABB2D(playerTank->GetPosition(), playerTank->GetPhysicsRadius(), fixedBox);
@@ -133,23 +133,17 @@ void Map::Update(const float deltaSeconds)
     }
 }
 
+
 //----------------------------------------------------------------------------------------------------
-void Map::Render()
+void Map::Render() const
 {
     if (g_theGame->IsAttractMode())
         return;
 
-    std::vector<Vertex_PCU> tileVertices;
-
-    for (const Tile& tile : m_tiles) { AddVertsForTile(tile, tileVertices); }
-
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
-
-    for (const Entity* entity : m_allEntities) { entity->Render(); }
-    TestTileDefinition();
-    TestSpriteDefinition();
+    RenderTiles();
+    RenderEntities();
 }
+
 
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRender() const
@@ -157,7 +151,7 @@ void Map::DebugRender() const
     if (!g_theGame->IsDebugRendering())
         return;
 
-    for (Entity* const entity : m_allEntities) { entity->DebugRender(); }
+    DebugRenderEntities();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -166,7 +160,7 @@ AABB2 Map::GetTileBounds(IntVec2 const& tileCoords) const
     // 檢查座標是否在地圖範圍內
     if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x || tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
     {
-        return {}; // 如果超出地圖範圍，返回一個默認的 AABB2
+        return {};
     }
 
     // 根據 tile 的座標計算其左下角和右上角
@@ -210,12 +204,15 @@ IntVec2 Map::GetTileCoordsForWorldPos(Vec2 const& worldPos) const
     return IntVec2(tileX, tileY);
 }
 
-bool Map::HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist)
+bool Map::HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float const maxDist) const
 {
-    float distSquared = GetDistanceSquared2D(posA, posB);
+    float const distSquared = GetDistanceSquared2D(posA, posB);
 
     // 檢查距離是否超過最大距離
-    if (distSquared >= (maxDist * maxDist)) { return false; }
+    if (distSquared >= (maxDist * maxDist))
+    {
+        return false;
+    }
 
     // 創建一個從 posA 到 posB 的射線
 
@@ -249,9 +246,10 @@ void Map::UpdateEntities(const float deltaSeconds)
 
         for (int entityIndex = 0; entityIndex < static_cast<int>(entitiesOfType.size()); ++entityIndex)
         {
-            Entity* entity = entitiesOfType[entityIndex];
-
-            if (entity != nullptr) { entity->Update(deltaSeconds); }
+            if (Entity* entity = entitiesOfType[entityIndex])
+            {
+                entity->Update(deltaSeconds);
+            }
         }
     }
 }
@@ -259,15 +257,23 @@ void Map::UpdateEntities(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Map::RenderEntities() const
 {
-    for (int entityType = 0; entityType < NUM_ENTITY_TYPES; ++entityType)
+    for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
     {
-        const EntityList& entitiesOfType = m_entitiesByType[entityType];
-
-        for (int entityIndex = 0; entityIndex < static_cast<int>(entitiesOfType.size()); ++entityIndex)
+        if (const Entity* entity = m_allEntities[entityIndex])
         {
-            const Entity* entity = entitiesOfType[entityIndex];
+            entity->Render();
+        }
+    }
+}
 
-            if (entity != nullptr) { entity->Render(); }
+//----------------------------------------------------------------------------------------------------
+void Map::DebugRenderEntities() const
+{
+    for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
+    {
+        if (const Entity* entity = m_allEntities[entityIndex])
+        {
+            entity->DebugRender();
         }
     }
 }
@@ -279,11 +285,17 @@ void Map::GenerateTiles()
     {
         for (int x = 0; x < m_dimensions.x; ++x)
         {
-            TileType type = TileType::TILE_TYPE_GRASS;
+            TileType type = TILE_TYPE_GRASS;
 
-            if (IsEdgeTile(x, y) || IsRandomStoneTile(x, y)) { type = TileType::TILE_TYPE_STONE; }
+            if (IsEdgeTile(x, y) ||
+                IsRandomStoneTile(x, y))
+            {
+                type = TILE_TYPE_STONE;
+            }
 
-            m_tiles.emplace_back(IntVec2(x, y), type);
+            m_tiles.emplace_back();
+            m_tiles.back().m_tileCoords = IntVec2(x, y);
+            m_tiles.back().m_type       = type;
         }
     }
 
@@ -292,16 +304,63 @@ void Map::GenerateTiles()
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::SetLShapedBarrier(const int startX, const int startY, const int size, const bool isBottomLeft)
+void Map::RenderTiles() const
+{
+    std::vector<Vertex_PCU> tileVertices;
+
+    RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
+    RenderTilesByType(TILE_TYPE_STONE, tileVertices);
+
+    g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) const
+{
+    m_tileDef                        = &TileDefinition::GetTileDefinition(tileType);
+    SpriteDefinition const spriteDef = m_tileDef->GetSpriteDefinition();
+
+    Vec2 const uvAtMins = spriteDef.GetUVsMins();
+    Vec2 const uvAtMaxs = spriteDef.GetUVsMaxs();
+
+    for (Tile const& tile : m_tiles)
+    {
+        if (tile.m_type == tileType)
+        {
+            Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
+            Vec2 const maxs = mins + Vec2(1.0f, 1.0f);
+
+            AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), Rgba8::WHITE, uvAtMins, uvAtMaxs);
+            TransformVertexArrayXY3D(static_cast<int>(tileVertices.size()), tileVertices.data(), 1.0f, 0, Vec2::ZERO);
+        }
+    }
+
+    g_theRenderer->BindTexture(&spriteDef.GetTexture());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft)
 {
     for (int y = 0; y < size; ++y)
     {
         for (int x = 0; x < size; ++x)
         {
-            const int tileIndex = (startY + y) * m_dimensions.x + (startX + x);
+            int const tileIndex = (startY + y) * m_dimensions.x + (startX + x);
 
-            if (isBottomLeft) { if (y == 0 || x == 0) { m_tiles[tileIndex].m_type = TileType::TILE_TYPE_STONE; } }
-            else { if (y == size - 1 || x == size - 1) { m_tiles[tileIndex].m_type = TileType::TILE_TYPE_STONE; } }
+            if (isBottomLeft)
+            {
+                if (y == 0 || x == 0)
+                {
+                    m_tiles[tileIndex].m_type = TILE_TYPE_STONE;
+                }
+            }
+            else
+            {
+                if (y == size - 1 || x == size - 1)
+                {
+                    m_tiles[tileIndex].m_type = TILE_TYPE_STONE;
+                }
+            }
         }
     }
 }
@@ -316,17 +375,6 @@ bool Map::IsRandomStoneTile(const int x, const int y) const
     const bool inRightLShapeOpening = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
 
     return inLeftLShapeOpening || inRightLShapeOpening ? false : g_theRNG->RollRandomFloatZeroToOne() < 0.1f;
-}
-
-//----------------------------------------------------------------------------------------------------
-void Map::AddVertsForTile(const Tile& tile, std::vector<Vertex_PCU>& vertices)
-{
-    const Rgba8 color = tile.m_type == TileType::TILE_TYPE_GRASS ? Rgba8(20, 60, 20) : Rgba8(130, 130, 130);
-
-    const Vec2 mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
-    const Vec2 maxs = mins + Vec2(1.0f, 1.0f);
-
-    AddVertsForAABB2D(vertices, AABB2(mins, maxs), color);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -550,11 +598,11 @@ void Map::TestTileDefinition()
     Vec2 const uvAtMaxs = grassSpriteDef.GetUVsMaxs();
 
     std::vector<Vertex_PCU> testVerts;
-    AABB2 const             box = AABB2(Vec2(0, 0), Vec2(1, 1));
+    AABB2 const             box = AABB2(Vec2(2, 2), Vec2(3, 3));
     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
 
     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(0, 0));
 
-    g_theRenderer->BindTexture(grassSpriteDef.GetTexture());
+    g_theRenderer->BindTexture(&grassSpriteDef.GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
 }

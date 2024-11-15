@@ -11,7 +11,7 @@
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 //----------------------------------------------------------------------------------------------------
-enum TileType
+enum TileType: int
 {
     // TODO: remove for future assignment
     TILE_TYPE_INVALID = -1,
@@ -24,6 +24,7 @@ enum TileType
 class TileDefinition
 {
 public:
+    TileDefinition() = default;
     TileDefinition(TileType tileType, SpriteDefinition const& spriteDef, bool isSolid = false, Rgba8 const& tintColor = Rgba8::WHITE);
 
     static void                  InitializeTileDefinitions(SpriteSheet const& spriteSheet);
