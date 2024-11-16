@@ -148,7 +148,8 @@ void Aries::RenderBody() const
 //----------------------------------------------------------------------------------------------------
 void Aries::WanderAround(float deltaSeconds, float speed)
 {
-    Vec2 const fwdNormal;
+    Vec2 const fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    
     if (m_timeSinceLastRoll >= 1.0f)
     {
         m_targetOrientationDegrees = static_cast<float>(g_theRNG->RollRandomIntInRange(0, 360));

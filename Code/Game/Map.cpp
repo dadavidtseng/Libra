@@ -46,67 +46,13 @@ void Map::Update(const float deltaSeconds)
 
 
     UpdateEntities(deltaSeconds);
-    // PushEntitiesOutOfWalls();
-    // PushEntitiesOutOfEachOther();
+    PushEntitiesOutOfWalls();
+
+// PushEntitiesOutOfEachOther();
 
     if (g_theGame->IsNoClip())
         return;
 
-    if (PlayerTank* playerTank = g_theGame->GetPlayerTank())
-    {
-        const Vec2    playerPos        = playerTank->m_position;
-        const IntVec2 playerTileCoords = GetTileCoordsFromWorldPos(playerPos);
-
-        const IntVec2 offsets[] = {
-            IntVec2(0, 1), IntVec2(0, -1), IntVec2(1, 0), IntVec2(-1, 0),  // 上、下、右、左
-            IntVec2(1, 1), IntVec2(1, -1), IntVec2(-1, 1), IntVec2(-1, -1) // 右上、右下、左上、左下
-        };
-
-        for (int i = 0; i < 4; ++i)
-        {
-            IntVec2 offset         = offsets[i];
-            IntVec2 neighborCoords = playerTileCoords + offset;
-
-            AABB2 neighborBox = GetTileBounds(neighborCoords);
-
-            // 找到 tileIndex 後檢查是否在地圖內
-            const int tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
-
-            if (tileIndex < 0 ||
-                tileIndex >= static_cast<int>(m_tiles.size()))
-                continue;
-
-            // 檢查 tile 類型
-            const Tile& tile = m_tiles[tileIndex];
-
-            if (tile.m_type == TILE_TYPE_GRASS)
-                continue;
-
-            PushDiscOutOfAABB2D(playerTank->m_position, playerTank->m_physicsRadius, neighborBox);
-        }
-
-        // 接著處理 diagonal (NE/NW/SE/SW) 方向上的相鄰 tiles
-        for (int i = 4; i < 8; ++i) // Diagonal directions: 4, 5, 6, 7 (右上、右下、左上、左下)
-        {
-            IntVec2 offset         = offsets[i];
-            IntVec2 neighborCoords = playerTileCoords + offset;
-
-            // 使用 GetTileBounds 取得相鄰 tile 的邊界（AABB2）
-            AABB2 fixedBox = GetTileBounds(neighborCoords);
-
-            // 找到 tileIndex 後檢查是否在地圖內
-            int tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
-            if (tileIndex < 0 || tileIndex >= static_cast<int>(m_tiles.size()))
-                continue;
-
-            // 檢查 tile 類型
-            const Tile& tile = m_tiles[tileIndex];
-            if (tile.m_type == TILE_TYPE_GRASS)
-                continue;
-
-            PushDiscOutOfAABB2D(playerTank->m_position, playerTank->m_physicsRadius, fixedBox);
-        }
-    }
 }
 
 
@@ -346,10 +292,10 @@ void Map::SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft)
 bool Map::IsEdgeTile(int x, int y) const
 {
     return
-    x == 0 ||
-    x == m_dimensions.x - 1 ||
-    y == 0 ||
-    y == m_dimensions.y - 1;
+        x == 0 ||
+        x == m_dimensions.x - 1 ||
+        y == 0 ||
+        y == m_dimensions.y - 1;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -439,25 +385,80 @@ void Map::SpawnNewNPCs()
 //----------------------------------------------------------------------------------------------------
 bool Map::IsBullet(Entity const* entity) const
 {
-    if (entity->m_type == ENTITY_BULLET)
-        return true;
-
-    return false;
+    return
+        entity->m_type == ENTITY_BULLET;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool Map::IsAgent(Entity const* entity) const
 {
-    if (entity->m_type != ENTITY_BULLET &&
-        entity->m_type != ENTITY_TYPE_PLAYER_TANK)
-        return true;
-
-    return false;
+    return
+        entity->m_type != ENTITY_BULLET &&
+        entity->m_type != ENTITY_TYPE_PLAYER_TANK;
 }
 
 //----------------------------------------------------------------------------------------------------
 void Map::PushEntitiesOutOfWalls()
 {
+    for (Entity* entity : m_allEntities)
+    {
+        const Vec2    playerPos        = entity->m_position;
+        const IntVec2 playerTileCoords = GetTileCoordsFromWorldPos(playerPos);
+
+        const IntVec2 offsets[] =
+        {
+            IntVec2(0, 1), IntVec2(0, -1), IntVec2(1, 0), IntVec2(-1, 0),
+            IntVec2(1, 1), IntVec2(1, -1), IntVec2(-1, 1), IntVec2(-1, -1)
+        };
+
+        for (int i = 0; i < 4; ++i)
+        {
+            IntVec2 offset         = offsets[i];
+            IntVec2 neighborCoords = playerTileCoords + offset;
+
+            AABB2 neighborBox = GetTileBounds(neighborCoords);
+
+            // 找到 tileIndex 後檢查是否在地圖內
+            int const tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
+
+            if (tileIndex < 0 ||
+                tileIndex >= static_cast<int>(m_tiles.size()))
+                continue;
+
+            // 檢查 tile 類型
+            const Tile& tile = m_tiles[tileIndex];
+
+            if (tile.m_type == TILE_TYPE_GRASS)
+                continue;
+
+            PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, neighborBox);
+        }
+
+        // 接著處理 diagonal (NE/NW/SE/SW) 方向上的相鄰 tiles
+        for (int i = 4; i < 8; ++i) // Diagonal directions: 4, 5, 6, 7 (右上、右下、左上、左下)
+        {
+            IntVec2 offset         = offsets[i];
+            IntVec2 neighborCoords = playerTileCoords + offset;
+
+            // 使用 GetTileBounds 取得相鄰 tile 的邊界（AABB2）
+            AABB2 fixedBox = GetTileBounds(neighborCoords);
+
+            // 找到 tileIndex 後檢查是否在地圖內
+            int const tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
+
+            if (tileIndex < 0 ||
+                tileIndex >= static_cast<int>(m_tiles.size()))
+                continue;
+
+            // 檢查 tile 類型
+            const Tile& tile = m_tiles[tileIndex];
+
+            if (tile.m_type == TILE_TYPE_GRASS)
+                continue;
+
+            PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, fixedBox);
+        }
+    }
 }
 
 //Player vs Enemy

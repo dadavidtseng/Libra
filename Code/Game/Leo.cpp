@@ -24,8 +24,6 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 
-
-
 //----------------------------------------------------------------------------------------------------
 void Leo::Update(const float deltaSeconds)
 {
