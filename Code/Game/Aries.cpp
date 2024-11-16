@@ -5,9 +5,11 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Aries.hpp"
 
+#include "Map.hpp"
+#include "PlayerTank.hpp"
 #include "Engine/Core/VertexUtils.hpp"
-#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -16,16 +18,11 @@
 Aries::Aries(Map* map, const EntityType type, const EntityFaction faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius   = PLAYER_TANK_PHYSICS_RADIUS;
-    // m_targetOrientationDegrees =
+    m_physicsRadius = ARIES_PHYSICS_RADIUS;
 
-    m_bodyBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
-
-    m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ENEMY_TANK_ARIES_BODY_IMG);
+    m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
+    m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
-
-//----------------------------------------------------------------------------------------------------
-Aries::~Aries() = default;
 
 //----------------------------------------------------------------------------------------------------
 void Aries::Update(const float deltaSeconds)
@@ -45,7 +42,6 @@ void Aries::Render() const
     RenderBody();
 }
 
-// #TODO: right now is readable, but should adjust it to match the demo
 //----------------------------------------------------------------------------------------------------
 void Aries::DebugRender() const
 {
@@ -55,40 +51,33 @@ void Aries::DebugRender() const
     if (!g_theGame->IsDebugRendering())
         return;
 
-    const Vec2 fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
-    const Vec2 leftNormal = fwdNormal.GetRotated90Degrees();
+    Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    Vec2 const leftNormal = fwdNormal.GetRotated90Degrees();
 
-    // Outer and inner rings
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.05f,
-                  DEBUG_RENDER_CYAN); // Inner circle (physics radius)
-    
+                  DEBUG_RENDER_CYAN);
 
-    // Local space vectors
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
                   0.05f,
-                  DEBUG_RENDER_RED); // i vector (red)
+                  DEBUG_RENDER_RED);
     DebugDrawLine(m_position,
                   m_position + leftNormal,
                   0.05f,
-                  DEBUG_RENDER_GREEN); // j vector (green)
+                  DEBUG_RENDER_GREEN);
 
-    // Player tank's target and current orientations
-    const Vec2 goalOrientationVec    = Vec2::MakeFromPolarDegrees(m_targetOrientationDegrees);
-    const Vec2 currentOrientationVec = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    if (m_playerTankLastKnownPosition != Vec2::ZERO)
+    {
+        DebugDrawLine(m_position,
+                      m_playerTankLastKnownPosition,
+                      0.05f,
+                      DEBUG_RENDER_GREY);
 
-    // Draw target orientation line (short blue line segment outside the circle)
-    
+        DebugDrawGlowCircle(m_playerTankLastKnownPosition, 0.1f, DEBUG_RENDER_GREY, 1.f);
+    }
 
-    // Draw current orientation line (blue line segment inside the circle)
-    DebugDrawLine(m_position, m_position + currentOrientationVec, 0.25f, DEBUG_RENDER_BLUE);
-
-    
-    
-
-    // Velocity vector
     DebugDrawLine(m_position,
                   m_position + m_velocity,
                   0.025f,
@@ -98,35 +87,79 @@ void Aries::DebugRender() const
 //----------------------------------------------------------------------------------------------------
 void Aries::UpdateBody(const float deltaSeconds)
 {
-    // XboxController const& controller = g_theInput->GetController(0);
-    // m_bodyInput                      = controller.GetLeftStick().GetPosition();
-    //
-    // if (g_theInput->IsKeyDown('W')) m_bodyInput += Vec2(0.f, 1.f);
-    // if (g_theInput->IsKeyDown('S')) m_bodyInput += Vec2(0.f, -1.f);
-    // if (g_theInput->IsKeyDown('A')) m_bodyInput += Vec2(-1.f, 0.f);
-    // if (g_theInput->IsKeyDown('D')) m_bodyInput += Vec2(1.f, 0.f);
-    //
-    // if (m_bodyInput.GetLengthSquared() > 0.0f)
-    // {
-    //     const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
-    //     m_targetOrientationDegrees = Atan2Degrees(m_bodyInput.y, m_bodyInput.x);
-    //
-    //     TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_angularVelocity);
-    //
-    //     m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
-    //     SetPosition(m_velocity);
-    // }
+    m_timeSinceLastRoll += deltaSeconds;
+
+    const PlayerTank* playerTank = g_theGame->GetPlayerTank();
+
+    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius))
+    {
+        m_playerTankLastKnownPosition = Vec2::ZERO;
+        m_hasTarget                   = false;
+    }
+
+    Vec2 const  dispToTarget    = m_playerTankLastKnownPosition - m_position;
+    Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
+
+    if (degreesToTarget < 45.f && m_hasTarget)
+    {
+        m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
+
+        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, ARIES_ANGULAR_VELOCITY);
+
+        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * ARIES_MOVE_SPEED * deltaSeconds;
+        m_position += m_velocity;
+
+    }
+
+    if (m_map->HasLineOfSight(m_position, playerTank->m_position, ARIES_RANGE))
+    {
+        m_hasTarget = true;
+
+        m_playerTankLastKnownPosition = playerTank->m_position;
+
+        float const targetOrientationDegrees = (playerTank->m_position - m_position).GetOrientationDegrees();
+
+        TurnToward(
+            m_orientationDegrees,
+            targetOrientationDegrees,
+            deltaSeconds,
+            ARIES_ANGULAR_VELOCITY);
+    }
+    else
+    {
+        WanderAround(deltaSeconds, ARIES_MOVE_SPEED);
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
 void Aries::RenderBody() const
 {
     std::vector<Vertex_PCU> bodyVerts;
-    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8(255, 255, 255));
+    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_BodyTexture);
+    g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Aries::WanderAround(float deltaSeconds, float speed)
+{
+    Vec2 const fwdNormal;
+    if (m_timeSinceLastRoll >= 1.0f)
+    {
+        m_targetOrientationDegrees = static_cast<float>(g_theRNG->RollRandomIntInRange(0, 360));
+        m_timeSinceLastRoll        = 0.f;
+    }
+
+    TurnToward(m_orientationDegrees,
+               m_targetOrientationDegrees,
+               deltaSeconds,
+               ARIES_ANGULAR_VELOCITY);
+
+    m_velocity = fwdNormal * speed * deltaSeconds;
+    m_position += m_velocity;
 }

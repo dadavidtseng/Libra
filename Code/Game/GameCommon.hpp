@@ -51,13 +51,13 @@ constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
 constexpr float SCORPIO_ANGULAR_VELOCITY        = 90.f;
 constexpr float SCORPIO_PHYSICS_RADIUS          = 0.35f;
 constexpr float SCORPIO_SHOOT_DEGREES_THRESHOLD = 5.f;
-constexpr float SCORPIO_RANGE                   = 2.f;
+constexpr float SCORPIO_RANGE                   = 10.f;
 constexpr float SCORPIO_SHOOT_COOLDOWN          = 0.3f;
 
 //-----------------------------------------------------------------------------------------------
 // Leo-related
 //
-constexpr float LEO_SPEED            = 0.5f;
+constexpr float LEO_MOVE_SPEED            = 0.5f;
 constexpr float LEO_ANGULAR_VELOCITY = 90.f;
 constexpr float LEO_PHYSICS_RADIUS   = 0.35f;
 constexpr float LEO_RANGE            = 10.f;
@@ -66,6 +66,12 @@ constexpr float LEO_SHOOT_COOLDOWN   = 1.f;
 //-----------------------------------------------------------------------------------------------
 // Aries-related
 //
+constexpr float ARIES_MOVE_SPEED            = 0.5f;
+constexpr float ARIES_ANGULAR_VELOCITY = 90.f;
+constexpr float ARIES_PHYSICS_RADIUS   = 0.35f;
+constexpr float ARIES_RANGE            = 10.f;
+
+
 
 //-----------------------------------------------------------------------------------------------
 // Bullet-related
@@ -105,10 +111,10 @@ extern const char* RESUME_SOUND;
 //
 extern const char* PLAYER_TANK_BODY_IMG;
 extern const char* PLAYER_TANK_TURRET_IMG;
-extern const char* ENEMY_TANK_SCORPIO_BODY_IMG;
-extern const char* ENEMY_TANK_SCORPIO_TURRET_IMG;
-extern const char* ENEMY_TANK_LEO_BODY_IMG;
-extern const char* ENEMY_TANK_ARIES_BODY_IMG;
+extern const char* SCORPIO_BODY_IMG;
+extern const char* SCORPIO_TURRET_IMG;
+extern const char* LEO_BODY_IMG;
+extern const char* ARIES_BODY_IMG;
 extern const char* BULLET_GOOD_IMG;
 extern const char* BULLET_EVIL_IMG;
 extern const char* TILE_TEXTURE_IMG;

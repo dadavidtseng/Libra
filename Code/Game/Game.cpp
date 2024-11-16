@@ -23,10 +23,12 @@ class SpriteSheet;
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
+    InitializeTiles();
+    InitializeMaps();
+    InitializeAudio();
+
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
-
-InitializeMaps();
 
     m_playerTank = dynamic_cast<PlayerTank*>(m_currentMap->SpawnNewEntity(ENTITY_TYPE_PLAYER_TANK,
                                                                           ENTITY_FACTION_GOOD,
@@ -39,8 +41,7 @@ InitializeMaps();
     m_worldCamera->SetOrthoView(bottomLeft, Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
     m_screenCamera->SetOrthoView(bottomLeft, Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y));
 
-    InitializeAudio();
-    InitializeTiles();
+
 
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 1, 0, 1, false);
 }
@@ -55,14 +56,13 @@ InitializeMaps();
 //----------------------------------------------------------------------------------------------------
 Game::~Game()
 {
-    delete m_playerTank;
-    m_playerTank = nullptr;
+    delete m_currentMap;
+    m_currentMap = nullptr;
 
     m_maps.clear();
 
-    
-    delete m_currentMap;
-    m_currentMap = nullptr;
+    delete m_playerTank;
+    m_playerTank = nullptr;
 
     delete m_screenCamera;
     m_screenCamera = nullptr;
@@ -73,27 +73,6 @@ Game::~Game()
     g_theAudio->StopSound(m_InGamePlayback);
     g_theAudio->StopSound(m_attractModePlayback);
 };
-
-void Game::InitializeMaps()
-{
-    MapData const data01 = { 0, IntVec2(m_mapDimension.x,m_mapDimension.y) };
-    // MapData const data02 = { 1, IntVec2(0, 0) };
-    // MapData const data03 = { 2, IntVec2(0, 0) };
-    m_maps.reserve(3);
-    m_maps.push_back(new Map(data01));
-    // m_maps.push_back(new Map(data02));
-    // m_maps.push_back(new Map(data03));
-    m_currentMap = m_maps[0];
-}
-//----------------------------------------------------------------------------------------------------
-void Game::InitializeTiles()
-{
-    Texture*      tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
-    IntVec2 const spriteCoords = IntVec2(8, 8);
-    m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
-
-    TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
-}
 
 //-----------------------------------------------------------------------------------------------
 void Game::Update(float deltaSeconds)
@@ -130,7 +109,61 @@ void Game::Render() const
     g_theRenderer->EndCamera(*m_screenCamera);
 }
 
+//----------------------------------------------------------------------------------------------------
+void Game::InitializeMaps()
+{
+    MapData const data01 = { 0, IntVec2(m_mapDimension.x, m_mapDimension.y) };
+    // MapData const data02 = { 1, IntVec2(0, 0) };
+    // MapData const data03 = { 2, IntVec2(0, 0) };
+    m_maps.reserve(3);
+    m_maps.push_back(new Map(data01));
+    // m_maps.push_back(new Map(data02));
+    // m_maps.push_back(new Map(data03));
+    m_currentMap = m_maps[0];
+}
+
+//----------------------------------------------------------------------------------------------------
+void Game::InitializeTiles()
+{
+    Texture*      tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
+    IntVec2 const spriteCoords = IntVec2(8, 8);
+    m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
+
+    TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
+}
+
+//----------------------------------------------------------------------------------------------------
+void Game::InitializeAudio()
+{
+    m_attractModeBgm = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
+    m_InGameBgm      = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
+    m_clickSound     = g_theAudio->CreateOrGetSound(CLICK_SOUND);
+    m_pauseSound     = g_theAudio->CreateOrGetSound(PAUSE_SOUND);
+    m_resumeSound    = g_theAudio->CreateOrGetSound(RESUME_SOUND);
+}
+
 //-----------------------------------------------------------------------------------------------
+void Game::UpdateMarkForDelete()
+{
+    XboxController const& controller = g_theInput->GetController(0);
+
+    if (g_theInput->WasKeyJustPressed(KEYCODE_ESC) ||
+        controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
+    {
+        if (m_isPaused &&
+            !m_isAttractMode &&
+            !m_isMarkedForDelete)
+        {
+            m_isMarkedForDelete = true;
+            m_isAttractMode     = true;
+            g_theAudio->StopSound(m_InGamePlayback);
+            g_theAudio->StartSound(m_attractModeBgm);
+            g_theAudio->StartSound(m_clickSound);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------------------
 void Game::UpdateFromKeyBoard()
 {
     if (!m_isAttractMode &&
@@ -239,7 +272,7 @@ void Game::UpdateFromKeyBoard()
     }
 }
 
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 void Game::UpdateFromController()
 {
     XboxController const& controller = g_theInput->GetController(0);
@@ -349,6 +382,7 @@ void Game::UpdateFromController()
     }
 }
 
+//----------------------------------------------------------------------------------------------------
 void Game::UpdateCamera(const float deltaSeconds) const
 {
     UNUSED(deltaSeconds)
@@ -356,7 +390,7 @@ void Game::UpdateCamera(const float deltaSeconds) const
     if (!m_playerTank)
         return;
 
-    const Vec2      playerTankPosition = m_playerTank->GetPosition();
+    const Vec2      playerTankPosition = m_playerTank->m_position;
     constexpr float mapMinX            = 0.f;
     constexpr float mapMinY            = 0.f;
     const float     mapMaxX            = static_cast<float>(m_mapDimension.x);
@@ -383,7 +417,7 @@ void Game::UpdateCamera(const float deltaSeconds) const
     }
 }
 
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 void Game::UpdateAttractMode(const float deltaSeconds)
 {
     if (!m_isAttractMode)
@@ -411,27 +445,7 @@ void Game::UpdateAttractMode(const float deltaSeconds)
     }
 }
 
-//-----------------------------------------------------------------------------------------------
-void Game::RenderAttractMode() const
-{
-    if (!m_isAttractMode)
-        return;
-
-    DebugDrawGlowCircle(Vec2(800, 400), 400.0f, DEBUG_RENDER_RED, m_glowIntensity);
-}
-
-//-----------------------------------------------------------------------------------------------
-void Game::RenderUI() const
-{
-    if (m_isAttractMode)
-        return;
-
-    if (m_isPaused)
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), TRANSPARENT_BLACK,
-                         1.f);
-}
-
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 void Game::AdjustForPauseAndTimeDistortion(float& deltaSeconds) const
 {
     if (m_isAttractMode)
@@ -447,31 +461,22 @@ void Game::AdjustForPauseAndTimeDistortion(float& deltaSeconds) const
         deltaSeconds *= 4.f;
 }
 
-void Game::InitializeAudio()
+//----------------------------------------------------------------------------------------------------
+void Game::RenderAttractMode() const
 {
-    m_attractModeBgm = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
-    m_InGameBgm      = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
-    m_clickSound     = g_theAudio->CreateOrGetSound(CLICK_SOUND);
-    m_pauseSound     = g_theAudio->CreateOrGetSound(PAUSE_SOUND);
-    m_resumeSound    = g_theAudio->CreateOrGetSound(RESUME_SOUND);
+    if (!m_isAttractMode)
+        return;
+
+    DebugDrawGlowCircle(Vec2(800, 400), 400.0f, DEBUG_RENDER_RED, m_glowIntensity);
 }
 
-void Game::UpdateMarkForDelete()
+//----------------------------------------------------------------------------------------------------
+void Game::RenderUI() const
 {
-    XboxController const& controller = g_theInput->GetController(0);
+    if (m_isAttractMode)
+        return;
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_ESC) ||
-        controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
-    {
-        if (m_isPaused &&
-            !m_isAttractMode &&
-            !m_isMarkedForDelete)
-        {
-            m_isMarkedForDelete = true;
-            m_isAttractMode     = true;
-            g_theAudio->StopSound(m_InGamePlayback);
-            g_theAudio->StartSound(m_attractModeBgm);
-            g_theAudio->StartSound(m_clickSound);
-        }
-    }
+    if (m_isPaused)
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), TRANSPARENT_BLACK,
+                         1.f);
 }

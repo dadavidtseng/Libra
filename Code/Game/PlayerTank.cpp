@@ -27,9 +27,6 @@ PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction fact
 }
 
 //----------------------------------------------------------------------------------------------------
-PlayerTank::~PlayerTank() = default;
-
-//----------------------------------------------------------------------------------------------------
 void PlayerTank::Update(const float deltaSeconds)
 {
     if (g_theGame->IsAttractMode())
@@ -59,7 +56,6 @@ void PlayerTank::DebugRender() const
     if (!g_theGame->IsDebugRendering())
         return;
 
-    // Calculate direction vectors
     const Vec2 fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     const Vec2 leftNormal = fwdNormal.GetRotated90Degrees();
 
@@ -110,7 +106,6 @@ void PlayerTank::DebugRender() const
                   0.05f,
                   DEBUG_RENDER_GREY);
 
-    // Velocity vector
     DebugDrawLine(m_position,
                   m_position + m_bodyInput,
                   0.025f,
@@ -136,7 +131,7 @@ void PlayerTank::UpdateBody(const float deltaSeconds)
         TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
 
         m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
-        SetPosition(m_position + m_velocity);
+        m_position += m_velocity;
     }
 }
 
@@ -165,7 +160,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
 void PlayerTank::RenderBody() const
 {
     std::vector<Vertex_PCU> bodyVerts;
-    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8(255, 255, 255));
+    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
@@ -178,7 +173,7 @@ void PlayerTank::RenderBody() const
 void PlayerTank::RenderTurret() const
 {
     std::vector<Vertex_PCU> turretVerts;
-    AddVertsForAABB2D(turretVerts, m_turretBounds, Rgba8(255, 255, 255));
+    AddVertsForAABB2D(turretVerts, m_turretBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),
                              1.0f, m_orientationDegrees + m_turretOrientation, m_position);

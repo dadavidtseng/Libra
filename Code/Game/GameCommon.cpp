@@ -38,13 +38,13 @@ const char* RESUME_SOUND     = "Data/Audios/ResumeSound.mp3";
 //
 const char* PLAYER_TANK_BODY_IMG          = "Data/Images/PlayerTankBody.png";
 const char* PLAYER_TANK_TURRET_IMG        = "Data/Images/PlayerTankTurret.png";
-const char* ENEMY_TANK_SCORPIO_BODY_IMG   = "Data/Images/EnemyTankScorpioBody.png";
-const char* ENEMY_TANK_SCORPIO_TURRET_IMG = "Data/Images/EnemyTankScorpioTurret.png";
-const char* ENEMY_TANK_LEO_BODY_IMG       = "Data/Images/EnemyTankLeoBody.png";
-const char* ENEMY_TANK_ARIES_BODY_IMG     = "Data/Images/EnemyTankAriesBody.png";
+const char* SCORPIO_BODY_IMG   = "Data/Images/EnemyTankScorpioBody.png";
+const char* SCORPIO_TURRET_IMG = "Data/Images/EnemyTankScorpioTurret.png";
+const char* LEO_BODY_IMG       = "Data/Images/EnemyTankLeoBody.png";
+const char* ARIES_BODY_IMG     = "Data/Images/EnemyTankAriesBody.png";
 const char* BULLET_GOOD_IMG               = "Data/Images/BulletGood.png";
 const char* BULLET_EVIL_IMG               = "Data/Images/BulletEvil.png";
-const char* TILE_TEXTURE_IMG = "Data/Images/Terrain_8x8.png"; 
+const char* TILE_TEXTURE_IMG              = "Data/Images/Terrain_8x8.png";
 
 //-----------------------------------------------------------------------------------------------
 

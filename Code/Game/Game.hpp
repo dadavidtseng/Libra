@@ -32,15 +32,17 @@ public:
 private:
     void InitializeMaps();
     void InitializeTiles();
+    void InitializeAudio();
+
+    void UpdateMarkForDelete();
     void UpdateFromKeyBoard();
     void UpdateFromController();
-    void UpdateAttractMode(float deltaSeconds);
-    void RenderAttractMode() const;
     void UpdateCamera(float deltaSeconds) const;
-    void RenderUI() const;
+    void UpdateAttractMode(float deltaSeconds);
     void AdjustForPauseAndTimeDistortion(float& deltaSeconds) const;
-    void InitializeAudio();
-    void UpdateMarkForDelete();
+
+    void RenderAttractMode() const;
+    void RenderUI() const;
 
     // TODO:
     // void ChangeCurrentMap();
@@ -60,20 +62,19 @@ private:
     bool    m_glowIncreasing    = false;
     Vec2    m_baseCameraPos     = Vec2(0.f, 0.f);
 
-    // TODO: Multiple maps
     std::vector<Map*> m_maps;
-    Map*              m_currentMap = nullptr;
-    PlayerTank*       m_playerTank = nullptr;
+    Map*              m_currentMap      = nullptr;
+    SpriteSheet*      m_tileSpriteSheet = nullptr;
+    PlayerTank*       m_playerTank      = nullptr;
 
     SoundID         m_attractModeBgm      = 0;
     SoundPlaybackID m_attractModePlayback = 0;
     SoundID         m_InGameBgm           = 0;
-    float           m_InGameBgmSpeed      = 1.f;
     SoundPlaybackID m_InGamePlayback      = 0;
     SoundID         m_clickSound          = 0;
     SoundID         m_pauseSound          = 0;
     SoundID         m_resumeSound         = 0;
+    float           m_InGameBgmSpeed      = 1.f;
 
-    SpriteSheet* m_tileSpriteSheet;
     // float numTilesInViewHorizontally
 };

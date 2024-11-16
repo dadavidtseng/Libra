@@ -1,12 +1,11 @@
 //----------------------------------------------------------------------------------------------------
 // Map.cpp
 //----------------------------------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------------------------------
 #include "Game/Map.hpp"
+//----------------------------------------------------------------------------------------------------
+
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
-#include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -14,7 +13,6 @@
 #include "Engine/Math/RaycastUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
-#include "Engine/Renderer/SpriteSheet.hpp"
 #include "Game/Aries.hpp"
 #include "Game/Bullet.hpp"
 #include "Game/Game.hpp"
@@ -56,8 +54,8 @@ void Map::Update(const float deltaSeconds)
 
     if (PlayerTank* playerTank = g_theGame->GetPlayerTank())
     {
-        const Vec2    playerPos        = playerTank->GetPosition();
-        const IntVec2 playerTileCoords = GetTileCoordsForWorldPos(playerPos);
+        const Vec2    playerPos        = playerTank->m_position;
+        const IntVec2 playerTileCoords = GetTileCoordsFromWorldPos(playerPos);
 
         const IntVec2 offsets[] = {
             IntVec2(0, 1), IntVec2(0, -1), IntVec2(1, 0), IntVec2(-1, 0),  // 上、下、右、左
@@ -84,7 +82,7 @@ void Map::Update(const float deltaSeconds)
             if (tile.m_type == TILE_TYPE_GRASS)
                 continue;
 
-            PushDiscOutOfAABB2D(playerTank->GetPosition(), playerTank->GetPhysicsRadius(), neighborBox);
+            PushDiscOutOfAABB2D(playerTank->m_position, playerTank->m_physicsRadius, neighborBox);
         }
 
         // 接著處理 diagonal (NE/NW/SE/SW) 方向上的相鄰 tiles
@@ -106,7 +104,7 @@ void Map::Update(const float deltaSeconds)
             if (tile.m_type == TILE_TYPE_GRASS)
                 continue;
 
-            PushDiscOutOfAABB2D(playerTank->GetPosition(), playerTank->GetPhysicsRadius(), fixedBox);
+            PushDiscOutOfAABB2D(playerTank->m_position, playerTank->m_physicsRadius, fixedBox);
         }
     }
 }
@@ -168,7 +166,7 @@ AABB2 Map::GetTileBounds(const int tileIndex) const
 }
 
 //----------------------------------------------------------------------------------------------------
-IntVec2 Map::GetTileCoordsForWorldPos(Vec2 const& worldPos) const
+IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
 {
     int tileX = static_cast<int>(floorf(worldPos.x));
     int tileY = static_cast<int>(floorf(worldPos.y));
@@ -257,6 +255,7 @@ void Map::DebugRenderEntities() const
 }
 
 //----------------------------------------------------------------------------------------------------
+// Generate
 void Map::GenerateTiles()
 {
     for (int y = 0; y < m_dimensions.y; ++y)
@@ -295,8 +294,8 @@ void Map::RenderTiles() const
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) const
 {
-    m_tileDef                        = &TileDefinition::GetTileDefinition(tileType);
-    SpriteDefinition const spriteDef = m_tileDef->GetSpriteDefinition();
+    TileDefinition const*  tileDef   = &TileDefinition::GetTileDefinition(tileType);
+    SpriteDefinition const spriteDef = tileDef->GetSpriteDefinition();
 
     Vec2 const uvAtMins = spriteDef.GetUVsMins();
     Vec2 const uvAtMaxs = spriteDef.GetUVsMaxs();
@@ -308,7 +307,7 @@ void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) c
             Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
             Vec2 const maxs = mins + Vec2(1.0f, 1.0f);
 
-            AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), Rgba8::WHITE, uvAtMins, uvAtMaxs);
+            AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
             TransformVertexArrayXY3D(static_cast<int>(tileVertices.size()), tileVertices.data(), 1.0f, 0, Vec2::ZERO);
         }
     }
@@ -516,7 +515,7 @@ bool Map::IsTileBlocking(Vec2 const& posA, Vec2 const& posB) const
         // Calculate the current position using the integer loop counter
         const float   t          = static_cast<float>(i) * stepSize;
         Vec2          currentPos = posA + direction.GetNormalized() * t;
-        const IntVec2 tileCoords = GetTileCoordsForWorldPos(currentPos);
+        const IntVec2 tileCoords = GetTileCoordsFromWorldPos(currentPos);
 
         if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
             tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)

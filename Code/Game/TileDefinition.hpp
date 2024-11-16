@@ -27,7 +27,7 @@ public:
     TileDefinition() = default;
     TileDefinition(TileType tileType, SpriteDefinition const& spriteDef, bool isSolid = false, Rgba8 const& tintColor = Rgba8::WHITE);
 
-    static void                  InitializeTileDefinitions(SpriteSheet const& spriteSheet);
+    static void           InitializeTileDefinitions(SpriteSheet const& spriteSheet);
     static TileDefinition const& GetTileDefinition(TileType tileType);
 
     bool                               IsSolid() const { return m_isSolid; }
@@ -36,7 +36,6 @@ public:
     TileType                           GetTileType() const { return m_tileType; }
     SpriteDefinition                   GetSpriteDefinition() const { return m_spriteDef; }
     static std::vector<TileDefinition> s_tileDefinitions;
-
 
 private:
     TileType         m_tileType;

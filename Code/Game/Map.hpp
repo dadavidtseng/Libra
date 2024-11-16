@@ -38,7 +38,7 @@ public:
 
     AABB2   GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2   GetTileBounds(int tileIndex) const;
-    IntVec2 GetTileCoordsForWorldPos(Vec2 const& worldPos) const;
+    IntVec2 GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     bool    HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
 
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
@@ -49,6 +49,7 @@ private:
     void RenderEntities() const;
     void DebugRenderEntities() const;
 
+    // Map-related
     void GenerateTiles();
     void RenderTiles() const;
     void RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
@@ -78,7 +79,4 @@ private:
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
-
-    // TODO: Ask
-    mutable const TileDefinition* m_tileDef = nullptr;
 };

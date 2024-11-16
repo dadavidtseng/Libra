@@ -34,10 +34,9 @@ enum EntityFaction: int
 //-----------------------------------------------------------------------------------------------
 class Entity
 {
-    // friend class Map;
+    friend class Map;
 
 public:
-    // Entity(Map* map, const Vec2& position, float orientationDegrees);
     Entity(Map* map, EntityType  type, EntityFaction faction);
     virtual ~Entity() = default; //add an addition secrete pointer to the class
 
@@ -49,10 +48,6 @@ public:
 
 // TODO: MAKE THIS
 // virtual  void TurnTowardPosition(Vec2 const& targetPos, float maxTurnDegrees); 
-    Vec2& GetPosition();
-
-    void  SetPosition(const Vec2& newPosition);
-    float GetPhysicsRadius() const;
 
     Map*          m_map = nullptr;
     EntityType    m_type;

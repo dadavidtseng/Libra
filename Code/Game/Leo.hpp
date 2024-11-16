@@ -24,6 +24,8 @@ public:
 private:
     void UpdateBody(float deltaSeconds);
     void RenderBody() const;
+    void UpdateShootCoolDown(float deltaSeconds);
+    void WanderAround(float deltaSeconds, float speed);
 
     AABB2    m_BodyBounds;
     Texture* m_BodyTexture                 = nullptr;

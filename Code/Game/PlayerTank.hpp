@@ -14,13 +14,8 @@ class Texture;
 //----------------------------------------------------------------------------------------------------
 class PlayerTank : public Entity
 {
-// protected:
-// 	PlayerTank(EntityFaction faction);
-// 	virtual ~PlayerTank();
-
 public:
     PlayerTank(Map* map, EntityType type, EntityFaction faction);
-    ~PlayerTank() override;
 
     void Update(float deltaSeconds) override;
     void Render() const override;

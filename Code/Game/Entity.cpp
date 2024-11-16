@@ -16,24 +16,6 @@ Entity::Entity(Map* map, EntityType const type, EntityFaction const faction)
 }
 
 //----------------------------------------------------------------------------------------------------
-Vec2& Entity::GetPosition()
-{
-    return m_position;
-}
-
-//----------------------------------------------------------------------------------------------------
-void Entity::SetPosition(const Vec2& newPosition)
-{
-    m_position = newPosition;
-}
-
-//----------------------------------------------------------------------------------------------------
-float Entity::GetPhysicsRadius() const
-{
-    return m_physicsRadius;
-}
-
-//----------------------------------------------------------------------------------------------------
 void Entity::TurnToward(float&      orientationDegrees,
                         const float targetOrientationDegrees,
                         const float deltaSeconds,

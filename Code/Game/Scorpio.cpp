@@ -22,8 +22,8 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
 
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
-    m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(ENEMY_TANK_SCORPIO_BODY_IMG);
-    m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(ENEMY_TANK_SCORPIO_TURRET_IMG);
+    m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
+    m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_TURRET_IMG);
 }
 
 //----------------------------------------------------------------------------------------------------
