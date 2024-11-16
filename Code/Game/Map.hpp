@@ -16,16 +16,23 @@ struct Vertex_PCU;
 
 typedef std::vector<Entity*> EntityList;
 
+struct MapData
+{
+    int     m_index;
+    IntVec2 m_dimensions;
+};
+
 //-----------------------------------------------------------------------------------------------
 class Map
 {
 public:
-    Map(int width, int height);
+    explicit Map(MapData const& data);
     ~Map();
-    void TestSpriteDefinition();
 
+// TODO:
+    // SetTileType(int tileX, int tileY, TileType tileType);
+    // SetTileTypeInTriangle();
     void Update(float deltaSeconds);
-
     void Render() const;
     void DebugRender() const;
 
@@ -36,20 +43,19 @@ public:
 
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
-    void            TestTileDefinition();
 
 private:
-    void    UpdateEntities(float deltaSeconds);
-    void    RenderEntities() const;
-    void    DebugRenderEntities() const;
-    
-    void    GenerateTiles();
-    void    RenderTiles() const;
-    void    RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
-    void    SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
-    bool    IsEdgeTile(int x, int y) const;
-    bool    IsRandomStoneTile(int x, int y) const;
-    
+    void UpdateEntities(float deltaSeconds);
+    void RenderEntities() const;
+    void DebugRenderEntities() const;
+
+    void GenerateTiles();
+    void RenderTiles() const;
+    void RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
+    void SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
+    bool IsEdgeTile(int x, int y) const;
+    bool IsRandomStoneTile(int x, int y) const;
+
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
     void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
     void    RemoveEntityFromMap(Entity* entity);
@@ -72,5 +78,7 @@ private:
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
+
+    // TODO: Ask
     mutable const TileDefinition* m_tileDef = nullptr;
 };

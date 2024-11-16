@@ -18,8 +18,6 @@ class PlayerTank;
 class Game
 {
 public:
-    void InitializeTiles();
-    // void TestTileDefinition();
     Game();
     ~Game();
 
@@ -32,6 +30,8 @@ public:
     PlayerTank* GetPlayerTank() const { return m_playerTank; }
 
 private:
+    void InitializeMaps();
+    void InitializeTiles();
     void UpdateFromKeyBoard();
     void UpdateFromController();
     void UpdateAttractMode(float deltaSeconds);
@@ -59,9 +59,11 @@ private:
     float   m_glowIntensity     = 0.f;
     bool    m_glowIncreasing    = false;
     Vec2    m_baseCameraPos     = Vec2(0.f, 0.f);
-    // TODO: Multiple maps 
-    Map*        m_currentMap = nullptr;
-    PlayerTank* m_playerTank = nullptr;
+
+    // TODO: Multiple maps
+    std::vector<Map*> m_maps;
+    Map*              m_currentMap = nullptr;
+    PlayerTank*       m_playerTank = nullptr;
 
     SoundID         m_attractModeBgm      = 0;
     SoundPlaybackID m_attractModePlayback = 0;
@@ -72,6 +74,6 @@ private:
     SoundID         m_pauseSound          = 0;
     SoundID         m_resumeSound         = 0;
 
-    SpriteSheet*          m_tileSpriteSheet;
+    SpriteSheet* m_tileSpriteSheet;
     // float numTilesInViewHorizontally
 };

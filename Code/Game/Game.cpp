@@ -26,8 +26,8 @@ Game::Game()
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
 
-    m_currentMap = new Map(m_mapDimension.x, m_mapDimension.y);
-    
+InitializeMaps();
+
     m_playerTank = dynamic_cast<PlayerTank*>(m_currentMap->SpawnNewEntity(ENTITY_TYPE_PLAYER_TANK,
                                                                           ENTITY_FACTION_GOOD,
                                                                           Vec2(PLAYER_TANK_INIT_POSITION_X,
@@ -58,6 +58,9 @@ Game::~Game()
     delete m_playerTank;
     m_playerTank = nullptr;
 
+    m_maps.clear();
+
+    
     delete m_currentMap;
     m_currentMap = nullptr;
 
@@ -71,36 +74,26 @@ Game::~Game()
     g_theAudio->StopSound(m_attractModePlayback);
 };
 
+void Game::InitializeMaps()
+{
+    MapData const data01 = { 0, IntVec2(m_mapDimension.x,m_mapDimension.y) };
+    // MapData const data02 = { 1, IntVec2(0, 0) };
+    // MapData const data03 = { 2, IntVec2(0, 0) };
+    m_maps.reserve(3);
+    m_maps.push_back(new Map(data01));
+    // m_maps.push_back(new Map(data02));
+    // m_maps.push_back(new Map(data03));
+    m_currentMap = m_maps[0];
+}
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeTiles()
 {
-    Texture*      tileTexture = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
-    IntVec2 const gridLayout  = IntVec2(8, 8);
-    m_tileSpriteSheet         = new SpriteSheet(*tileTexture, gridLayout);
+    Texture*      tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
+    IntVec2 const spriteCoords = IntVec2(8, 8);
+    m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
 
     TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
 }
-
-//----------------------------------------------------------------------------------------------------
-// void Game::TestTileDefinition()
-// {
-//
-//     m_tileDef = &TileDefinition::GetTileDefinition(TILE_TYPE_GRASS);
-//
-//     const SpriteDefinition grassSpriteDef = m_tileDef->GetSpriteDefinition();
-//
-//     Vec2 const uvAtMins = grassSpriteDef.GetUVsMins();
-//     Vec2 const uvAtMaxs = grassSpriteDef.GetUVsMaxs();
-//
-//     std::vector<Vertex_PCU> testVerts;
-//     AABB2 const             box = AABB2(Vec2(0, 0), Vec2(1, 1));
-//     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
-//
-//     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(0, 0));
-//
-//     g_theRenderer->BindTexture(grassSpriteDef.GetTexture());
-//     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
-// }
 
 //-----------------------------------------------------------------------------------------------
 void Game::Update(float deltaSeconds)

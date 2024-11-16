@@ -24,11 +24,10 @@
 #include "Game/Scorpio.hpp"
 
 //----------------------------------------------------------------------------------------------------
-Map::Map(const int width, const int height)
-    : m_dimensions(width, height)
+Map::Map(MapData const& data)
+    : m_dimensions(data.m_dimensions.x, data.m_dimensions.y)
 {
-    m_tiles.reserve(static_cast<size_t>(width) * static_cast<size_t>(height));
-
+    m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
 
     GenerateTiles();
     SpawnNewNPCs();
@@ -39,27 +38,6 @@ Map::~Map()
 {
     m_allEntities.clear();
     m_tiles.clear();
-}
-
-
-void Map::TestSpriteDefinition()
-{
-    Texture*                testTexture_8x2 = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
-    SpriteSheet*            testSpriteSheet = new SpriteSheet(*testTexture_8x2, IntVec2(8, 2));
-    SpriteDefinition const& testSpriteDef   = testSpriteSheet->GetSpriteDef(0);
-
-    Vec2 uvAtMins = testSpriteDef.GetUVsMins();
-    Vec2 uvAtMaxs = testSpriteDef.GetUVsMaxs();
-
-    std::vector<Vertex_PCU> testVerts;
-    AABB2                   box = AABB2(Vec2(0, 0), Vec2(1, 1));
-    AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
-
-    TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(2, 0));
-
-    // Bind the whole texture (sprite sheet) but only render a specific part using UVs
-    g_theRenderer->BindTexture(&testSpriteDef.GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -366,10 +344,17 @@ void Map::SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool Map::IsEdgeTile(const int x, const int y) const { return x == 0 || x == m_dimensions.x - 1 || y == 0 || y == m_dimensions.y - 1; }
+bool Map::IsEdgeTile(int x, int y) const
+{
+    return
+    x == 0 ||
+    x == m_dimensions.x - 1 ||
+    y == 0 ||
+    y == m_dimensions.y - 1;
+}
 
 //----------------------------------------------------------------------------------------------------
-bool Map::IsRandomStoneTile(const int x, const int y) const
+bool Map::IsRandomStoneTile(int x, int y) const
 {
     const bool inLeftLShapeOpening  = x <= 7 && y <= 7;
     const bool inRightLShapeOpening = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
@@ -379,7 +364,7 @@ bool Map::IsRandomStoneTile(const int x, const int y) const
 
 //----------------------------------------------------------------------------------------------------
 // choose what are we going to spawn and what faction it is
-Entity* Map::CreateNewEntity(const EntityType type, const EntityFaction faction)
+Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)
 {
     switch (type)
     {
@@ -413,7 +398,10 @@ void Map::AddEntityToMap(Entity* entity, Vec2 const& position, const float orien
     if (IsAgent(entity)) { AddEntityToList(entity, m_agentsByFaction[entity->m_faction]); }
 }
 
-void Map::AddEntityToList(Entity* entity, EntityList& entityList) { entityList.push_back(entity); }
+void Map::AddEntityToList(Entity* entity, EntityList& entityList)
+{
+    entityList.push_back(entity);
+}
 
 //----------------------------------------------------------------------------------------------------
 void Map::RemoveEntityFromMap(Entity* entity)
@@ -429,7 +417,7 @@ void Map::RemoveEntityFromMap(Entity* entity)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::RemoveEntityFromList(const Entity* entity, EntityList& entityList)
+void Map::RemoveEntityFromList(Entity const* entity, EntityList& entityList)
 {
     for (std::vector<Entity*>::iterator it = entityList.begin(); it != entityList.end(); ++it)
     {
@@ -450,7 +438,7 @@ void Map::SpawnNewNPCs()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool Map::IsBullet(const Entity* entity) const
+bool Map::IsBullet(Entity const* entity) const
 {
     if (entity->m_type == ENTITY_BULLET)
         return true;
@@ -459,7 +447,7 @@ bool Map::IsBullet(const Entity* entity) const
 }
 
 //----------------------------------------------------------------------------------------------------
-bool Map::IsAgent(const Entity* entity) const
+bool Map::IsAgent(Entity const* entity) const
 {
     if (entity->m_type != ENTITY_BULLET &&
         entity->m_type != ENTITY_TYPE_PLAYER_TANK)
@@ -588,21 +576,41 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
     return raycastResult;
 }
 
-void Map::TestTileDefinition()
-{
-    m_tileDef = &TileDefinition::GetTileDefinition(TILE_TYPE_GRASS);
+// void Map::TestTileDefinition()
+// {
+//     m_tileDef = &TileDefinition::GetTileDefinition(TILE_TYPE_GRASS);
+//
+//     const SpriteDefinition grassSpriteDef = m_tileDef->GetSpriteDefinition();
+//
+//     Vec2 const uvAtMins = grassSpriteDef.GetUVsMins();
+//     Vec2 const uvAtMaxs = grassSpriteDef.GetUVsMaxs();
+//
+//     std::vector<Vertex_PCU> testVerts;
+//     AABB2 const             box = AABB2(Vec2(2, 2), Vec2(3, 3));
+//     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
+//
+//     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(0, 0));
+//
+//     g_theRenderer->BindTexture(&grassSpriteDef.GetTexture());
+//     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
+// }
 
-    const SpriteDefinition grassSpriteDef = m_tileDef->GetSpriteDefinition();
-
-    Vec2 const uvAtMins = grassSpriteDef.GetUVsMins();
-    Vec2 const uvAtMaxs = grassSpriteDef.GetUVsMaxs();
-
-    std::vector<Vertex_PCU> testVerts;
-    AABB2 const             box = AABB2(Vec2(2, 2), Vec2(3, 3));
-    AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
-
-    TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(0, 0));
-
-    g_theRenderer->BindTexture(&grassSpriteDef.GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
-}
+// void Map::TestSpriteDefinition()
+// {
+//     Texture*                testTexture_8x2 = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
+//     SpriteSheet*            testSpriteSheet = new SpriteSheet(*testTexture_8x2, IntVec2(8, 2));
+//     SpriteDefinition const& testSpriteDef   = testSpriteSheet->GetSpriteDef(0);
+//
+//     Vec2 uvAtMins = testSpriteDef.GetUVsMins();
+//     Vec2 uvAtMaxs = testSpriteDef.GetUVsMaxs();
+//
+//     std::vector<Vertex_PCU> testVerts;
+//     AABB2                   box = AABB2(Vec2(0, 0), Vec2(1, 1));
+//     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
+//
+//     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(2, 0));
+//
+//     // Bind the whole texture (sprite sheet) but only render a specific part using UVs
+//     g_theRenderer->BindTexture(&testSpriteDef.GetTexture());
+//     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
+// }
