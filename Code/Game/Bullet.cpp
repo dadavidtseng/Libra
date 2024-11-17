@@ -5,8 +5,10 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Bullet.hpp"
 
+#include "Map.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RaycastUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -15,7 +17,7 @@
 Bullet::Bullet(Map* map, const EntityType type, const EntityFaction faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius = 0.001f;
+    m_physicsRadius = 0.01f;
 
     if (faction == ENTITY_FACTION_GOOD)
     {
@@ -83,10 +85,40 @@ void Bullet::DebugRender() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Bullet::UpdateBody(const float deltaSeconds)
+void Bullet::UpdateBody(float deltaSeconds)
 {
     m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees, BULLET_EVIL_SPEED);
-    m_position += m_velocity * deltaSeconds;
+
+    // m_position += m_velocity * deltaSeconds;
+
+    Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
+
+    if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition)))
+    {
+        printf("(%f, %f), (%f, %f)\n", m_position.x, m_position.y, nextPosition.x, nextPosition.y);
+        IntVec2 normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
+        Vec2    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
+        Vec2    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());
+        m_orientationDegrees      = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
+    }
+    else
+    {
+        m_position = nextPosition;
+    }
+    // if (raycastResult2D.m_didImpact)
+    // {
+    //     m_position = raycastResult2D.m_impactPos;
+    //
+    //     printf("%f, %f\n", raycastResult2D.m_impactNormal.x, raycastResult2D.m_impactNormal.y);
+    //
+    //     Vec2 reflectedVelocity = m_velocity.GetReflected(raycastResult2D.m_impactNormal);
+    //
+    //     m_orientationDegrees = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
+    //
+    //     m_velocity = reflectedVelocity.GetNormalized() * BULLET_EVIL_SPEED;
+    //
+    //     return;
+    // }
 
 }
 

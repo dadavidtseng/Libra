@@ -44,6 +44,8 @@ public:
 
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
+    bool IsTileSolid(IntVec2 const& tileCoords) const;
+
 
 private:
     void UpdateEntities(float deltaSeconds);
@@ -57,7 +59,6 @@ private:
     void SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
     bool IsEdgeTile(int x, int y) const;
     bool IsRandomStoneTile(int x, int y) const;
-    bool IsTileSolid(IntVec2 const& tileCoords) const;
     bool IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
 
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);

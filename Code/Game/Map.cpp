@@ -53,6 +53,7 @@ void Map::Update(const float deltaSeconds)
     PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_ARIES]);
     PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_LEO], m_entitiesByType[ENTITY_TYPE_LEO]);
     PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_ARIES]);
+    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_LEO]);
 
     if (g_theGame->IsNoClip())
         return;
@@ -102,13 +103,11 @@ AABB2 Map::GetTileBounds(IntVec2 const& tileCoords) const
 //----------------------------------------------------------------------------------------------------
 AABB2 Map::GetTileBounds(const int tileIndex) const
 {
-    // 確保索引在範圍內
     if (tileIndex < 0 || tileIndex >= static_cast<int>(m_tiles.size()))
     {
         return {}; // 返回默認的 AABB2
     }
 
-    // 將一維索引轉換為二維網格座標
     int     tileX = tileIndex % m_dimensions.x;
     int     tileY = tileIndex / m_dimensions.x;
     IntVec2 tileCoords(tileX, tileY);
@@ -122,10 +121,9 @@ IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     int tileX = static_cast<int>(floorf(worldPos.x));
     int tileY = static_cast<int>(floorf(worldPos.y));
 
-    // 檢查是否在地圖範圍內
     if (tileX < 0 || tileX >= m_dimensions.x || tileY < 0 || tileY >= m_dimensions.y)
     {
-        return IntVec2(-1, -1); // 如果不在範圍內，返回無效座標
+        return IntVec2(-1, -1);
     }
 
     return IntVec2(tileX, tileY);
@@ -246,6 +244,7 @@ void Map::GenerateTiles()
 void Map::RenderTiles() const
 {
     std::vector<Vertex_PCU> tileVertices;
+    tileVertices.reserve(3 * 2 * m_dimensions.x * m_dimensions.y);
 
     RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
     RenderTilesByType(TILE_TYPE_STONE, tileVertices);
@@ -270,7 +269,6 @@ void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) c
             Vec2 const maxs = mins + Vec2(1.0f, 1.0f);
 
             AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
-            TransformVertexArrayXY3D(static_cast<int>(tileVertices.size()), tileVertices.data(), 1.0f, 0, Vec2::ZERO);
         }
     }
 
@@ -457,6 +455,9 @@ void Map::PushEntitiesOutOfWalls()
 {
     for (Entity* entity : m_allEntities)
     {
+        if (IsBullet(entity))
+            continue;
+
         PushEntityOutOfSolidTiles(entity);
     }
 }
@@ -482,37 +483,10 @@ void Map::PushEntityOutOfSolidTiles(Entity* entity)
 //----------------------------------------------------------------------------------------------------
 void Map::PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords)
 {
-    AABB2 const aabb2Box  = GetTileBounds(tileCoords);
-    int const   tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
-    Tile const& tile      = m_tiles[tileIndex];
-
-    if (tile.m_type == TILE_TYPE_GRASS)
+    if (!IsTileSolid(tileCoords))
         return;
 
-    if (IsBullet(entity))
-    {
-        // Vec2 nearestPoint                  = aabb2Box.GetNearestPoint(entity->m_position);
-        // Vec2 normalOfSurfaceToReflectOffOf = (entity->m_position - nearestPoint).GetNormalized();
-        //
-        // entity->m_velocity.Reflect(normalOfSurfaceToReflectOffOf);
-
-        Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(entity->m_orientationDegrees);
-        Ray2 const            ray             = Ray2(entity->m_position, fwdNormal.GetNormalized(), 0.5f);
-        RaycastResult2D const raycastResult2D = RaycastVsTiles(ray);
-
-        if (raycastResult2D.m_didImpact)
-        {
-            IntVec2 const myTileCoords = GetTileCoordsFromWorldPos(entity->m_position);
-
-            Vec2 normalOfSurfaceToReflectOffOf = Vec2(static_cast<float>(tileCoords.x - myTileCoords.x), static_cast<float>(tileCoords.y - myTileCoords.y));
-
-            entity->m_orientationDegrees = Atan2Degrees(entity->m_velocity.GetReflected(normalOfSurfaceToReflectOffOf).y,
-                                                        entity->m_velocity.GetReflected(normalOfSurfaceToReflectOffOf).x);
-
-            // RemoveEntityFromMap(entity);
-            return;
-        }
-    }
+    AABB2 const aabb2Box = GetTileBounds(tileCoords);
 
     PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, aabb2Box);
 }
@@ -590,6 +564,9 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
             raycastResult.m_didImpact  = true;
             raycastResult.m_impactDist = t;
             raycastResult.m_impactPos  = currentPos;
+            // raycastResult.m_impactNormal =
+
+
             return raycastResult; // Out of bounds is considered blocking
         }
 
@@ -600,9 +577,12 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
             Tile const& tile = m_tiles[tileIndex];
             if (tile.m_type == TILE_TYPE_STONE)
             {
-                raycastResult.m_didImpact  = true;
-                raycastResult.m_impactDist = t;
-                raycastResult.m_impactPos  = currentPos;
+                raycastResult.m_didImpact    = true;
+                raycastResult.m_impactDist   = t;
+                raycastResult.m_impactPos    = currentPos;
+                AABB2 tileBounds             = GetTileBounds(tileIndex);
+                Vec2  nearestPoint           = tileBounds.GetNearestPoint(currentPos);
+                raycastResult.m_impactNormal = (ray.m_origin - nearestPoint).GetNormalized();
 
                 return raycastResult;
             }
