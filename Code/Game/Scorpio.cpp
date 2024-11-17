@@ -27,15 +27,22 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
 }
 
 //----------------------------------------------------------------------------------------------------
-Scorpio::~Scorpio() = default;
-
-//----------------------------------------------------------------------------------------------------
-void Scorpio::Update(const float deltaSeconds)
+void Scorpio::Update(float deltaSeconds)
 {
     if (g_theGame->IsAttractMode())
         return;
 
     UpdateTurret(deltaSeconds);
+}
+
+//----------------------------------------------------------------------------------------------------
+void Scorpio::RenderLaser() const
+{
+    Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
+    Ray2 const            ray             = Ray2(m_position, fwdNormal.GetNormalized(), 10000);
+    RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
+
+    DebugDrawLine(m_position + fwdNormal * 0.45f, raycastResult2D.m_impactPos, 0.05f, DEBUG_RENDER_RED);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -46,12 +53,7 @@ void Scorpio::Render() const
 
     RenderBody();
     RenderTurret();
-
-    Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
-    Ray2 const            ray             = Ray2(m_position, fwdNormal.GetNormalized(), 10000);
-    RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
-
-    DebugDrawLine(m_position, raycastResult2D.m_impactPos, 0.1f, DEBUG_RENDER_RED);
+    RenderLaser();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -68,36 +70,17 @@ void Scorpio::DebugRender() const
 
     DebugDrawRing(m_position,
                   m_physicsRadius,
-                  0.05f,
+                  0.03f,
                   DEBUG_RENDER_CYAN);
 
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
-                  0.05f,
+                  0.03f,
                   DEBUG_RENDER_RED);
     DebugDrawLine(m_position,
                   m_position + leftNormal,
-                  0.05f,
+                  0.03f,
                   DEBUG_RENDER_GREEN);
-
-    Vec2 const            direction       = (m_playerTankLastKnownPosition - m_position);
-    Ray2 const            ray             = Ray2(m_position, direction.GetNormalized(), direction.GetLength());
-    RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
-
-    if (raycastResult2D.m_didImpact)
-    {
-        DebugDrawLine(m_position,
-                      raycastResult2D.m_impactPos,
-                      0.05f,
-                      DEBUG_RENDER_RED);
-    }
-    else
-    {
-        DebugDrawLine(m_position,
-                      m_playerTankLastKnownPosition,
-                      0.05f,
-                      DEBUG_RENDER_GREY);
-    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -113,19 +96,19 @@ void Scorpio::UpdateTurret(const float deltaSeconds)
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, SCORPIO_RANGE))
     {
         // Turn toward player
-        const float targetOrientationDegrees = (m_playerTankLastKnownPosition - m_position).GetOrientationDegrees();
+        float const targetOrientationDegrees = (m_playerTankLastKnownPosition - m_position).GetOrientationDegrees();
 
         TurnToward(m_turretOrientationDegrees, targetOrientationDegrees, deltaSeconds, SCORPIO_ANGULAR_VELOCITY);
 
         // Shot at player if facing close enough to orientation
-        const Vec2  dispToTarget    = playerTank->m_position - m_position;
-        const Vec2  myFwdNormal     = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
-        const float degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, myFwdNormal);
+        Vec2 const  dispToTarget    = playerTank->m_position - m_position;
+        Vec2 const  myFwdNormal     = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
+        float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, myFwdNormal);
 
         if (degreesToTarget < SCORPIO_SHOOT_DEGREES_THRESHOLD &&
             m_shootCoolDown <= 0.0f)
         {
-            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_turretOrientationDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position + myFwdNormal * 0.45f, m_turretOrientationDegrees);
             m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
         }
 

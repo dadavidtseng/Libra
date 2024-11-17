@@ -19,7 +19,6 @@ public:
     void Update(float deltaSeconds) override;
     void Render() const override;
     void DebugRender() const override;
-    void WanderAround(float deltaSeconds, float speed);
 
 private:
     void UpdateBody(float deltaSeconds);
@@ -27,7 +26,6 @@ private:
 
     AABB2    m_bodyBounds;
     Texture* m_bodyTexture                 = nullptr;
-    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;  // (0,0) means no target
-    float    m_timeSinceLastRoll           = 0.f; // Timer to track time since last orientation update
+    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
     bool     m_hasTarget                   = false;
 };

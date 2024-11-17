@@ -7,7 +7,6 @@
 
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -144,7 +143,7 @@ void Leo::UpdateBody(const float deltaSeconds)
     else
     {
         // if not, wander around
-        WanderAround(deltaSeconds, LEO_MOVE_SPEED);
+        WanderAround(deltaSeconds, LEO_MOVE_SPEED, LEO_ANGULAR_VELOCITY);
     }
 }
 
@@ -168,24 +167,4 @@ void Leo::UpdateShootCoolDown(float deltaSeconds)
     {
         m_shootCoolDown -= deltaSeconds;
     }
-}
-
-//----------------------------------------------------------------------------------------------------
-void Leo::WanderAround(float deltaSeconds, float speed)
-{
-    Vec2 const fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
-
-    if (m_timeSinceLastRoll >= 1.0f)
-    {
-        m_targetOrientationDegrees = static_cast<float>(g_theRNG->RollRandomIntInRange(0, 360));
-        m_timeSinceLastRoll        = 0.f;
-    }
-
-    TurnToward(m_orientationDegrees,
-               m_targetOrientationDegrees,
-               deltaSeconds,
-               LEO_ANGULAR_VELOCITY);
-
-    m_velocity = fwdNormal * speed * deltaSeconds;
-    m_position += m_velocity;
 }

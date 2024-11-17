@@ -27,14 +27,13 @@ private:
     void RenderBody() const;
     void RenderTurret() const;
 
-    float m_turretOrientation            = 0.0f;   // Current orientation of the turret
-    float m_turretGoalOrientationDegrees = 0.0f;   // Target orientation for the turret
-    float m_turretAngularVelocity        = 360.0f; // Rotation speed for the turret
-    float m_shootCoolDown                = 0.f;
-    Vec2  m_bodyInput                    = Vec2();
-
     AABB2    m_bodyBounds;
     AABB2    m_turretBounds;
-    Texture* m_bodyTexture   = nullptr;
-    Texture* m_turretTexture = nullptr;
+    Texture* m_bodyTexture                  = nullptr;
+    Texture* m_turretTexture                = nullptr;
+    float    m_turretOrientation            = 0.0f;
+    float    m_turretGoalOrientationDegrees = 0.0f;
+    float    m_turretAngularVelocity        = 360.0f;
+    float    m_shootCoolDown                = 0.f;
+    Vec2     m_bodyInput                    = Vec2();
 };

@@ -9,7 +9,6 @@
 #include "PlayerTank.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -128,7 +127,7 @@ void Aries::UpdateBody(const float deltaSeconds)
     }
     else
     {
-        WanderAround(deltaSeconds, ARIES_MOVE_SPEED);
+        WanderAround(deltaSeconds, ARIES_MOVE_SPEED, ARIES_ANGULAR_VELOCITY);
     }
 }
 
@@ -145,22 +144,4 @@ void Aries::RenderBody() const
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
 
-//----------------------------------------------------------------------------------------------------
-void Aries::WanderAround(float deltaSeconds, float speed)
-{
-    Vec2 const fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
-    
-    if (m_timeSinceLastRoll >= 1.0f)
-    {
-        m_targetOrientationDegrees = static_cast<float>(g_theRNG->RollRandomIntInRange(0, 360));
-        m_timeSinceLastRoll        = 0.f;
-    }
 
-    TurnToward(m_orientationDegrees,
-               m_targetOrientationDegrees,
-               deltaSeconds,
-               ARIES_ANGULAR_VELOCITY);
-
-    m_velocity = fwdNormal * speed * deltaSeconds;
-    m_position += m_velocity;
-}

@@ -36,16 +36,14 @@ public:
     void Render() const;
     void DebugRender() const;
 
-    AABB2   GetTileBounds(IntVec2 const& tileCoords) const;
-    AABB2   GetTileBounds(int tileIndex) const;
-    IntVec2 GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
-    Vec2    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
-    bool    HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
-
+    AABB2           GetTileBounds(IntVec2 const& tileCoords) const;
+    AABB2           GetTileBounds(int tileIndex) const;
+    IntVec2         GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
+    Vec2            GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
+    bool            HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
-    bool IsTileSolid(IntVec2 const& tileCoords) const;
-
+    bool            IsTileSolid(IntVec2 const& tileCoords) const;
 
 private:
     void UpdateEntities(float deltaSeconds);
@@ -61,16 +59,17 @@ private:
     bool IsRandomStoneTile(int x, int y) const;
     bool IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
 
+    // Entity-lifetime-related
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
     void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
     void    RemoveEntityFromMap(Entity* entity);
     void    AddEntityToList(Entity* entity, EntityList& entityList);
     void    RemoveEntityFromList(const Entity* entity, EntityList& entityList);
     void    SpawnNewNPCs();
+    bool    IsBullet(const Entity* entity) const;
+    bool    IsAgent(const Entity* entity) const;
 
-    bool IsBullet(const Entity* entity) const;
-    bool IsAgent(const Entity* entity) const;
-
+    // Entity-physic-related
     void PushEntitiesOutOfWalls();
     void PushEntityOutOfSolidTiles(Entity* entity);
     void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);

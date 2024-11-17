@@ -85,17 +85,15 @@ void Map::DebugRender() const
 //----------------------------------------------------------------------------------------------------
 AABB2 Map::GetTileBounds(IntVec2 const& tileCoords) const
 {
-    // 檢查座標是否在地圖範圍內
-    if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x || tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
+    if (IsTileCoordsOutOfBounds(tileCoords))
     {
         return {};
     }
 
-    // 根據 tile 的座標計算其左下角和右上角
-    const float minsX = static_cast<float>(tileCoords.x);
-    const float minsY = static_cast<float>(tileCoords.y);
-    const Vec2  mins(minsX, minsY);
-    const Vec2  maxs(minsX + 1.0f, minsY + 1.0f);
+    float minsX = static_cast<float>(tileCoords.x);
+    float minsY = static_cast<float>(tileCoords.y);
+    Vec2  mins(minsX, minsY);
+    Vec2  maxs(mins + Vec2::ONE);
 
     return AABB2(mins, maxs);
 }
@@ -121,7 +119,7 @@ IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     int tileX = static_cast<int>(floorf(worldPos.x));
     int tileY = static_cast<int>(floorf(worldPos.y));
 
-    if (tileX < 0 || tileX >= m_dimensions.x || tileY < 0 || tileY >= m_dimensions.y)
+    if (IsTileCoordsOutOfBounds(IntVec2(tileX, tileY)))
     {
         return IntVec2(-1, -1);
     }
@@ -129,44 +127,36 @@ IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     return IntVec2(tileX, tileY);
 }
 
+//----------------------------------------------------------------------------------------------------
 Vec2 Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
 {
-    // 檢查是否在地圖範圍內
-    if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
-        tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
+    if (IsTileCoordsOutOfBounds(tileCoords))
     {
-        return Vec2(-1.f, -1.f); // 如果不在範圍內，返回無效座標
+        return Vec2(-1.f, -1.f);
     }
 
-    // 假設瓦片大小為 1x1，計算中心點位置
     float worldX = static_cast<float>(tileCoords.x) + 0.5f;
     float worldY = static_cast<float>(tileCoords.y) + 0.5f;
 
     return Vec2(worldX, worldY);
 }
 
+//----------------------------------------------------------------------------------------------------
 bool Map::HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float const maxDist) const
 {
     float const distSquared = GetDistanceSquared2D(posA, posB);
 
-    // 檢查距離是否超過最大距離
     if (distSquared >= (maxDist * maxDist))
     {
         return false;
     }
 
-    // 創建一個從 posA 到 posB 的射線
-
     const Vec2  fwdNormal   = (posB - posA).GetNormalized();
     const float maxDistance = GetDistance2D(posA, posB);
     const Ray2  ray         = Ray2(posA, fwdNormal, maxDistance);
-    // 有障礙物阻擋
 
     return !RaycastVsTiles(ray).m_didImpact;
 }
-
-// // step-and-sample (slow, dumb, inaccurate, but really easy to write)
-// // RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const;
 
 //----------------------------------------------------------------------------------------------------
 Entity* Map::SpawnNewEntity(const EntityType type, const EntityFaction faction, const Vec2& position,
@@ -514,6 +504,7 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
         }
     }
 }
+
 void Map::PushEntitiesOutOfEntities(EntityList const& entityListA, EntityList const& entityListB) const
 {
     for (Entity* entityA : entityListA)

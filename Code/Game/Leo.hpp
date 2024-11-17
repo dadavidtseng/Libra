@@ -4,6 +4,7 @@
 
 //----------------------------------------------------------------------------------------------------
 #pragma once
+#include "GameCommon.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Game/Entity.hpp"
@@ -25,12 +26,10 @@ private:
     void UpdateBody(float deltaSeconds);
     void RenderBody() const;
     void UpdateShootCoolDown(float deltaSeconds);
-    void WanderAround(float deltaSeconds, float speed);
 
     AABB2    m_BodyBounds;
     Texture* m_BodyTexture                 = nullptr;
-    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;  // (0,0) means no target
-    float    m_timeSinceLastRoll           = 0.f; // Timer to track time since last orientation update
-    float    m_shootCoolDown               = 0.f;
+    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
+    float    m_shootCoolDown               = LEO_SHOOT_COOLDOWN;
     bool     m_hasTarget                   = false;
 };

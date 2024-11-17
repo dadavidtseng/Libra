@@ -37,7 +37,7 @@ class Entity
     friend class Map;
 
 public:
-    Entity(Map* map, EntityType  type, EntityFaction faction);
+    Entity(Map* map, EntityType type, EntityFaction faction);
     virtual ~Entity() = default; //add an addition secrete pointer to the class
 
     virtual void Update(float deltaSeconds) = 0; // Pure virtual function for updating the entity
@@ -45,6 +45,7 @@ public:
     virtual void DebugRender() const = 0;        // Pure virtual function for debug rendering the entity
     virtual void TurnToward(float& orientationDegrees, float targetOrientationDegrees, float deltaSeconds, float rotationSpeed);
     void         MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float speed, float deltaSeconds);
+    void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
 
 // TODO: MAKE THIS
 // virtual  void TurnTowardPosition(Vec2 const& targetPos, float maxTurnDegrees); 
@@ -56,6 +57,7 @@ public:
     float         m_orientationDegrees       = 0.f; // Forward angle, counter-clockwise from +x/east
     Vec2          m_velocity                 = Vec2(0.f, 0.f);           // Linear velocity in world units per second
     float         m_targetOrientationDegrees = 0;
-    float         m_physicsRadius            = 0;   // Conservative collision radius
+    float         m_physicsRadius            = 0;
+    float         m_timeSinceLastRoll        = 0.f;
     int           m_health                   = 0;
 };

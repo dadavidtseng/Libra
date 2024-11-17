@@ -16,9 +16,7 @@ class Scorpio : public Entity
 {
 public:
     Scorpio(Map* map, EntityType type, EntityFaction faction);
-    ~Scorpio() override;
 
-    // void TurnTowardPlayer(const Vec2& targetPosition, float maxTurnDegrees, float deltaSeconds);
     void Update(float deltaSeconds) override;
     void Render() const override;
     void DebugRender() const override;
@@ -27,12 +25,13 @@ private:
     void UpdateTurret(float deltaSeconds);
     void RenderBody() const;
     void RenderTurret() const;
+    void RenderLaser() const;
 
-    float    m_turretOrientationDegrees = 0.0f;   // Current orientation of the turret
     AABB2    m_bodyBounds;
     AABB2    m_turretBounds;
-    Texture* m_bodyTexture   = nullptr;
-    Texture* m_turretTexture = nullptr;
-    float    m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
-    Vec2     m_playerTankLastKnownPosition;
+    Texture* m_bodyTexture                 = nullptr;
+    Texture* m_turretTexture               = nullptr;
+    float    m_turretOrientationDegrees    = 0.0f;
+    float    m_shootCoolDown               = SCORPIO_SHOOT_COOLDOWN;
+    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
 };
