@@ -30,6 +30,7 @@ private:
     float m_turretOrientation            = 0.0f;   // Current orientation of the turret
     float m_turretGoalOrientationDegrees = 0.0f;   // Target orientation for the turret
     float m_turretAngularVelocity        = 360.0f; // Rotation speed for the turret
+    float m_shootCoolDown                = 0.f;
     Vec2  m_bodyInput                    = Vec2();
 
     AABB2    m_bodyBounds;

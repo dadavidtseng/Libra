@@ -43,7 +43,7 @@ constexpr float PLAYER_TANK_INIT_POSITION_Y          = 2.f;
 constexpr float PLAYER_TANK_INIT_ORIENTATION_DEGREES = 30.f;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS           = 0.3f;
 constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
-
+constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.3f;
 
 //-----------------------------------------------------------------------------------------------
 // Scorpio-related
@@ -57,7 +57,7 @@ constexpr float SCORPIO_SHOOT_COOLDOWN          = 0.3f;
 //-----------------------------------------------------------------------------------------------
 // Leo-related
 //
-constexpr float LEO_MOVE_SPEED            = 0.5f;
+constexpr float LEO_MOVE_SPEED       = 0.5f;
 constexpr float LEO_ANGULAR_VELOCITY = 90.f;
 constexpr float LEO_PHYSICS_RADIUS   = 0.35f;
 constexpr float LEO_RANGE            = 10.f;
@@ -66,7 +66,7 @@ constexpr float LEO_SHOOT_COOLDOWN   = 1.f;
 //-----------------------------------------------------------------------------------------------
 // Aries-related
 //
-constexpr float ARIES_MOVE_SPEED            = 0.5f;
+constexpr float ARIES_MOVE_SPEED       = 0.5f;
 constexpr float ARIES_ANGULAR_VELOCITY = 90.f;
 constexpr float ARIES_PHYSICS_RADIUS   = 0.35f;
 constexpr float ARIES_RANGE            = 10.f;

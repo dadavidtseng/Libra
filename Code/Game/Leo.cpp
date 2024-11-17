@@ -121,7 +121,7 @@ void Leo::UpdateBody(const float deltaSeconds)
         if (degreesToTarget < 5.f &&
             m_shootCoolDown <= 0.0f)
         {
-            m_map->SpawnNewEntity(ENTITY_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
             m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
         }
     }

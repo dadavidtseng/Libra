@@ -44,15 +44,20 @@ void Map::Update(const float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
-
     UpdateEntities(deltaSeconds);
-    PushEntitiesOutOfWalls();
 
-// PushEntitiesOutOfEachOther();
+    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
+    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_LEO], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
+    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
+    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_LEO]);
+    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_ARIES]);
+    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_LEO], m_entitiesByType[ENTITY_TYPE_LEO]);
+    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_ARIES]);
 
     if (g_theGame->IsNoClip())
         return;
 
+    PushEntitiesOutOfWalls();
 }
 
 
@@ -100,7 +105,7 @@ AABB2 Map::GetTileBounds(const int tileIndex) const
     // 確保索引在範圍內
     if (tileIndex < 0 || tileIndex >= static_cast<int>(m_tiles.size()))
     {
-        return AABB2(); // 返回默認的 AABB2
+        return {}; // 返回默認的 AABB2
     }
 
     // 將一維索引轉換為二維網格座標
@@ -124,6 +129,22 @@ IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     }
 
     return IntVec2(tileX, tileY);
+}
+
+Vec2 Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
+{
+    // 檢查是否在地圖範圍內
+    if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
+        tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
+    {
+        return Vec2(-1.f, -1.f); // 如果不在範圍內，返回無效座標
+    }
+
+    // 假設瓦片大小為 1x1，計算中心點位置
+    float worldX = static_cast<float>(tileCoords.x) + 0.5f;
+    float worldY = static_cast<float>(tileCoords.y) + 0.5f;
+
+    return Vec2(worldX, worldY);
 }
 
 bool Map::HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float const maxDist) const
@@ -162,16 +183,11 @@ Entity* Map::SpawnNewEntity(const EntityType type, const EntityFaction faction, 
 //----------------------------------------------------------------------------------------------------
 void Map::UpdateEntities(const float deltaSeconds)
 {
-    for (int entityType = 0; entityType < NUM_ENTITY_TYPES; ++entityType)
+    for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
     {
-        const EntityList& entitiesOfType = m_entitiesByType[entityType];
-
-        for (int entityIndex = 0; entityIndex < static_cast<int>(entitiesOfType.size()); ++entityIndex)
+        if (Entity* entity = m_allEntities[entityIndex])
         {
-            if (Entity* entity = entitiesOfType[entityIndex])
-            {
-                entity->Update(deltaSeconds);
-            }
+            entity->Update(deltaSeconds);
         }
     }
 }
@@ -307,6 +323,32 @@ bool Map::IsRandomStoneTile(int x, int y) const
     return inLeftLShapeOpening || inRightLShapeOpening ? false : g_theRNG->RollRandomFloatZeroToOne() < 0.1f;
 }
 
+bool Map::IsTileSolid(IntVec2 const& tileCoords) const
+{
+    if (IsTileCoordsOutOfBounds(tileCoords))
+    {
+        return true; // Consider out-of-bounds as solid
+    }
+
+    int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+    if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
+    {
+        Tile const& tile = m_tiles[tileIndex];
+        return tile.m_type == TILE_TYPE_STONE;
+    }
+
+    return false;
+}
+
+bool Map::IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const
+{
+    return
+        tileCoords.x < 0 ||
+        tileCoords.x >= m_dimensions.x ||
+        tileCoords.y < 0 ||
+        tileCoords.y >= m_dimensions.y;
+}
+
 //----------------------------------------------------------------------------------------------------
 // choose what are we going to spawn and what faction it is
 Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)
@@ -315,13 +357,13 @@ Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)
     {
         case ENTITY_TYPE_PLAYER_TANK:
             return new PlayerTank(this, type, faction);
-        case ENTITY_SCORPIO:
+        case ENTITY_TYPE_SCORPIO:
             return new Scorpio(this, type, faction);
-        case ENTITY_LEO:
+        case ENTITY_TYPE_LEO:
             return new Leo(this, type, faction);
-        case ENTITY_ARIES:
+        case ENTITY_TYPE_ARIES:
             return new Aries(this, type, faction);
-        case ENTITY_BULLET:
+        case ENTITY_TYPE_BULLET:
             return new Bullet(this, type, faction);
         case ENTITY_TYPE_UNKNOWN:
             ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
@@ -339,8 +381,15 @@ void Map::AddEntityToMap(Entity* entity, Vec2 const& position, const float orien
     AddEntityToList(entity, m_allEntities);
     AddEntityToList(entity, m_entitiesByType[entity->m_type]);
 
-    if (IsBullet(entity)) { AddEntityToList(entity, m_bulletsByFaction[entity->m_faction]); }
-    if (IsAgent(entity)) { AddEntityToList(entity, m_agentsByFaction[entity->m_faction]); }
+    if (IsBullet(entity))
+    {
+        AddEntityToList(entity, m_bulletsByFaction[entity->m_faction]);
+    }
+
+    if (IsAgent(entity))
+    {
+        AddEntityToList(entity, m_agentsByFaction[entity->m_faction]);
+    }
 }
 
 void Map::AddEntityToList(Entity* entity, EntityList& entityList)
@@ -354,9 +403,15 @@ void Map::RemoveEntityFromMap(Entity* entity)
     RemoveEntityFromList(entity, m_allEntities);
     RemoveEntityFromList(entity, m_entitiesByType[entity->m_type]);
 
-    if (IsAgent(entity)) { RemoveEntityFromList(entity, m_agentsByFaction[entity->m_faction]); }
+    if (IsAgent(entity))
+    {
+        RemoveEntityFromList(entity, m_agentsByFaction[entity->m_faction]);
+    }
 
-    if (IsBullet(entity)) { RemoveEntityFromList(entity, m_bulletsByFaction[entity->m_faction]); }
+    if (IsBullet(entity))
+    {
+        RemoveEntityFromList(entity, m_bulletsByFaction[entity->m_faction]);
+    }
 
     entity->m_map = nullptr;
 }
@@ -377,23 +432,23 @@ void Map::RemoveEntityFromList(Entity const* entity, EntityList& entityList)
 //----------------------------------------------------------------------------------------------------
 void Map::SpawnNewNPCs()
 {
-    SpawnNewEntity(ENTITY_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
-    SpawnNewEntity(ENTITY_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
-    SpawnNewEntity(ENTITY_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);
+    SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
+    SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
+    SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);
 }
 
 //----------------------------------------------------------------------------------------------------
 bool Map::IsBullet(Entity const* entity) const
 {
     return
-        entity->m_type == ENTITY_BULLET;
+        entity->m_type == ENTITY_TYPE_BULLET;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool Map::IsAgent(Entity const* entity) const
 {
     return
-        entity->m_type != ENTITY_BULLET &&
+        entity->m_type != ENTITY_TYPE_BULLET &&
         entity->m_type != ENTITY_TYPE_PLAYER_TANK;
 }
 
@@ -402,87 +457,80 @@ void Map::PushEntitiesOutOfWalls()
 {
     for (Entity* entity : m_allEntities)
     {
-        const Vec2    playerPos        = entity->m_position;
-        const IntVec2 playerTileCoords = GetTileCoordsFromWorldPos(playerPos);
-
-        const IntVec2 offsets[] =
-        {
-            IntVec2(0, 1), IntVec2(0, -1), IntVec2(1, 0), IntVec2(-1, 0),
-            IntVec2(1, 1), IntVec2(1, -1), IntVec2(-1, 1), IntVec2(-1, -1)
-        };
-
-        for (int i = 0; i < 4; ++i)
-        {
-            IntVec2 offset         = offsets[i];
-            IntVec2 neighborCoords = playerTileCoords + offset;
-
-            AABB2 neighborBox = GetTileBounds(neighborCoords);
-
-            // 找到 tileIndex 後檢查是否在地圖內
-            int const tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
-
-            if (tileIndex < 0 ||
-                tileIndex >= static_cast<int>(m_tiles.size()))
-                continue;
-
-            // 檢查 tile 類型
-            const Tile& tile = m_tiles[tileIndex];
-
-            if (tile.m_type == TILE_TYPE_GRASS)
-                continue;
-
-            PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, neighborBox);
-        }
-
-        // 接著處理 diagonal (NE/NW/SE/SW) 方向上的相鄰 tiles
-        for (int i = 4; i < 8; ++i) // Diagonal directions: 4, 5, 6, 7 (右上、右下、左上、左下)
-        {
-            IntVec2 offset         = offsets[i];
-            IntVec2 neighborCoords = playerTileCoords + offset;
-
-            // 使用 GetTileBounds 取得相鄰 tile 的邊界（AABB2）
-            AABB2 fixedBox = GetTileBounds(neighborCoords);
-
-            // 找到 tileIndex 後檢查是否在地圖內
-            int const tileIndex = neighborCoords.y * m_dimensions.x + neighborCoords.x;
-
-            if (tileIndex < 0 ||
-                tileIndex >= static_cast<int>(m_tiles.size()))
-                continue;
-
-            // 檢查 tile 類型
-            const Tile& tile = m_tiles[tileIndex];
-
-            if (tile.m_type == TILE_TYPE_GRASS)
-                continue;
-
-            PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, fixedBox);
-        }
+        PushEntityOutOfSolidTiles(entity);
     }
 }
 
-//Player vs Enemy
-//Player vs Bullet  //DO NOT PUSH
-//Enemy vs Bullet   //DO NOT PUSH
-//Enemy vs Enemy
+//----------------------------------------------------------------------------------------------------
+void Map::PushEntityOutOfSolidTiles(Entity* entity)
+{
+    IntVec2 const myTileCoords = GetTileCoordsFromWorldPos(entity->m_position);
 
-//Entity vs Wall
+    // Push out of cardinal neighbors (NSEW) first 
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(1, 0));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(0, 1));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(-1, 0));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(0, -1));
+
+    // Push out of diagonal neighbors second
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(1, 1));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(-1, 1));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(-1, -1));
+    PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(1, -1));
+}
 
 //----------------------------------------------------------------------------------------------------
-void Map::PushEntitiesOutOfEachOther(EntityList& entityListA, EntityList& entityListB) const
+void Map::PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords)
 {
-    for (size_t i = 0; i < m_allEntities.size(); ++i)
-    {
-        Entity* entityA = m_allEntities[i];
+    AABB2 const aabb2Box  = GetTileBounds(tileCoords);
+    int const   tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+    Tile const& tile      = m_tiles[tileIndex];
 
-        if (entityA == nullptr)
+    if (tile.m_type == TILE_TYPE_GRASS)
+        return;
+
+    if (IsBullet(entity))
+    {
+        // Vec2 nearestPoint                  = aabb2Box.GetNearestPoint(entity->m_position);
+        // Vec2 normalOfSurfaceToReflectOffOf = (entity->m_position - nearestPoint).GetNormalized();
+        //
+        // entity->m_velocity.Reflect(normalOfSurfaceToReflectOffOf);
+
+        Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(entity->m_orientationDegrees);
+        Ray2 const            ray             = Ray2(entity->m_position, fwdNormal.GetNormalized(), 0.5f);
+        RaycastResult2D const raycastResult2D = RaycastVsTiles(ray);
+
+        if (raycastResult2D.m_didImpact)
+        {
+            IntVec2 const myTileCoords = GetTileCoordsFromWorldPos(entity->m_position);
+
+            Vec2 normalOfSurfaceToReflectOffOf = Vec2(static_cast<float>(tileCoords.x - myTileCoords.x), static_cast<float>(tileCoords.y - myTileCoords.y));
+
+            entity->m_orientationDegrees = Atan2Degrees(entity->m_velocity.GetReflected(normalOfSurfaceToReflectOffOf).y,
+                                                        entity->m_velocity.GetReflected(normalOfSurfaceToReflectOffOf).x);
+
+            // RemoveEntityFromMap(entity);
+            return;
+        }
+    }
+
+    PushDiscOutOfAABB2D(entity->m_position, entity->m_physicsRadius, aabb2Box);
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const
+{
+    for (Entity* entityA : entityListA)
+    {
+        if (!entityA)
             continue;
 
-        for (size_t j = i + 1; j < m_allEntities.size(); ++j)
+        for (Entity* entityB : entityListB)
         {
-            Entity* entityB = m_allEntities[j];
+            if (!entityB)
+                continue;
 
-            if (entityB == nullptr)
+            if (entityA == entityB)
                 continue;
 
             PushDiscsOutOfEachOther2D(entityA->m_position,
@@ -492,48 +540,24 @@ void Map::PushEntitiesOutOfEachOther(EntityList& entityListA, EntityList& entity
         }
     }
 }
-
-// void Map::PushEntitiesOutOfSolidTiles(Entity& entity)
-// {
-// }
-// void Map::PushEntitiesOutOfTileIfSolid(Entity& entity, IntVec2 const& tileCoords)
-// {
-// }
-
-//----------------------------------------------------------------------------------------------------
-bool Map::IsTileBlocking(Vec2 const& posA, Vec2 const& posB) const
+void Map::PushEntitiesOutOfEntities(EntityList const& entityListA, EntityList const& entityListB) const
 {
-    constexpr float stepSize = 10.f;
-
-    const Vec2  direction = posB - posA;
-    const float distance  = direction.GetLength();
-
-    // Calculate the number of steps needed
-    const int numSteps = static_cast<int>(distance / stepSize);
-
-    for (int i = 0; i <= numSteps; ++i)
+    for (Entity* entityA : entityListA)
     {
-        // Calculate the current position using the integer loop counter
-        const float   t          = static_cast<float>(i) * stepSize;
-        Vec2          currentPos = posA + direction.GetNormalized() * t;
-        const IntVec2 tileCoords = GetTileCoordsFromWorldPos(currentPos);
+        if (!entityA)
+            continue;
 
-        if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
-            tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
+        for (const Entity* entityB : entityListB)
         {
-            return true; // Out of bounds is considered blocking
-        }
+            if (!entityB)
+                continue;
 
-        int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
-        if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
-        {
-            const Tile& tile = m_tiles[tileIndex];
-
-            if (tile.m_type == TileType::TILE_TYPE_STONE) { return true; }
+            PushDiscOutOfDisc2D(entityA->m_position,
+                                entityA->m_physicsRadius,
+                                entityB->m_position,
+                                entityB->m_physicsRadius);
         }
     }
-
-    return false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -551,66 +575,39 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
 
     // Calculate the number of steps needed
     const int numSteps = static_cast<int>(ray.m_maxDist / stepSize);
-    // printf("numSteps: %d\n", numSteps);
 
     for (int i = 0; i < numSteps; ++i)
     {
         const float t = static_cast<float>(i) * stepSize;
         currentPos    = ray.m_origin + ray.m_direction * t;
 
-        if (IsTileBlocking(currentPos, currentPos + ray.m_direction))
+        IntVec2 tileCoords = GetTileCoordsFromWorldPos(currentPos);
+
+        // Check bounds
+        if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
+            tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
         {
-            raycastResult.m_didImpact    = true;
-            raycastResult.m_impactDist   = t;
-            raycastResult.m_impactPos    = currentPos;
-            raycastResult.m_impactNormal = -ray.m_direction; // Assuming opposite direction as normal
-            // printf("%f, %f\n", ray.m_origin.x, ray.m_origin.y);
-            // printf("%f, %f\n", ray.m_direction.x, ray.m_direction.y);
-            // printf("current Pos: %f, %f\n", currentPos.x, currentPos.y);
-            // printf("target Pos: %f, %f\n", (currentPos+ray.m_direction).x, (currentPos+ray.m_direction).y);
-            // printf("%f\n", t);
-            return raycastResult;
+            raycastResult.m_didImpact  = true;
+            raycastResult.m_impactDist = t;
+            raycastResult.m_impactPos  = currentPos;
+            return raycastResult; // Out of bounds is considered blocking
+        }
+
+        // Check tile blocking
+        int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+        if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
+        {
+            Tile const& tile = m_tiles[tileIndex];
+            if (tile.m_type == TILE_TYPE_STONE)
+            {
+                raycastResult.m_didImpact  = true;
+                raycastResult.m_impactDist = t;
+                raycastResult.m_impactPos  = currentPos;
+
+                return raycastResult;
+            }
         }
     }
 
     return raycastResult;
 }
-
-// void Map::TestTileDefinition()
-// {
-//     m_tileDef = &TileDefinition::GetTileDefinition(TILE_TYPE_GRASS);
-//
-//     const SpriteDefinition grassSpriteDef = m_tileDef->GetSpriteDefinition();
-//
-//     Vec2 const uvAtMins = grassSpriteDef.GetUVsMins();
-//     Vec2 const uvAtMaxs = grassSpriteDef.GetUVsMaxs();
-//
-//     std::vector<Vertex_PCU> testVerts;
-//     AABB2 const             box = AABB2(Vec2(2, 2), Vec2(3, 3));
-//     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
-//
-//     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(0, 0));
-//
-//     g_theRenderer->BindTexture(&grassSpriteDef.GetTexture());
-//     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
-// }
-
-// void Map::TestSpriteDefinition()
-// {
-//     Texture*                testTexture_8x2 = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
-//     SpriteSheet*            testSpriteSheet = new SpriteSheet(*testTexture_8x2, IntVec2(8, 2));
-//     SpriteDefinition const& testSpriteDef   = testSpriteSheet->GetSpriteDef(0);
-//
-//     Vec2 uvAtMins = testSpriteDef.GetUVsMins();
-//     Vec2 uvAtMaxs = testSpriteDef.GetUVsMaxs();
-//
-//     std::vector<Vertex_PCU> testVerts;
-//     AABB2                   box = AABB2(Vec2(0, 0), Vec2(1, 1));
-//     AddVertsForAABB2D(testVerts, box, Rgba8(255, 255, 255), uvAtMins, uvAtMaxs);
-//
-//     TransformVertexArrayXY3D(static_cast<int>(testVerts.size()), testVerts.data(), 1.0f, 0, Vec2(2, 0));
-//
-//     // Bind the whole texture (sprite sheet) but only render a specific part using UVs
-//     g_theRenderer->BindTexture(&testSpriteDef.GetTexture());
-//     g_theRenderer->DrawVertexArray(static_cast<int>(testVerts.size()), testVerts.data());
-// }

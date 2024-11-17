@@ -39,6 +39,7 @@ public:
     AABB2   GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2   GetTileBounds(int tileIndex) const;
     IntVec2 GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
+    Vec2    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
     bool    HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
 
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
@@ -56,6 +57,8 @@ private:
     void SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
     bool IsEdgeTile(int x, int y) const;
     bool IsRandomStoneTile(int x, int y) const;
+    bool IsTileSolid(IntVec2 const& tileCoords) const;
+    bool IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
 
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
     void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
@@ -68,10 +71,11 @@ private:
     bool IsAgent(const Entity* entity) const;
 
     void PushEntitiesOutOfWalls();
-// void PushEntitiesOutOfSolidTiles( Entity& entity );
-// void PushEntitiesOutOfTileIfSolid( Entity& entity, IntVec2 const& tileCoords );
-    void PushEntitiesOutOfEachOther(EntityList& entityListA, EntityList& entityListB) const;
-    bool IsTileBlocking(Vec2 const& posA, Vec2 const& posB) const;
+    void PushEntityOutOfSolidTiles(Entity* entity);
+    void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
+
+    void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
+    void PushEntitiesOutOfEntities(EntityList const& entityListA, EntityList const& entityListB) const;
 
     std::vector<Tile> m_tiles;       // created and be there forever
     EntityList        m_allEntities; // created and destroyed

@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/PlayerTank.hpp"
 
+#include "Map.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
@@ -34,6 +35,20 @@ void PlayerTank::Update(const float deltaSeconds)
 
     UpdateBody(deltaSeconds);
     UpdateTurret(deltaSeconds);
+
+    if (m_shootCoolDown > 0.0f)
+    {
+        m_shootCoolDown -= deltaSeconds;
+    }
+
+    if (g_theInput->IsKeyDown(KEYCODE_SPACE))
+    {
+        if (m_shootCoolDown <= 0.0f)
+        {
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position, m_orientationDegrees);
+            m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------

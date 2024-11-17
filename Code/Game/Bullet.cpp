@@ -15,6 +15,8 @@
 Bullet::Bullet(Map* map, const EntityType type, const EntityFaction faction)
     : Entity(map, type, faction)
 {
+    m_physicsRadius = 0.001f;
+
     if (faction == ENTITY_FACTION_GOOD)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);

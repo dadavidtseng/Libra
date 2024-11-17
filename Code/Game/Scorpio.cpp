@@ -125,7 +125,7 @@ void Scorpio::UpdateTurret(const float deltaSeconds)
         if (degreesToTarget < SCORPIO_SHOOT_DEGREES_THRESHOLD &&
             m_shootCoolDown <= 0.0f)
         {
-            m_map->SpawnNewEntity(ENTITY_BULLET, ENTITY_FACTION_EVIL, m_position, m_turretOrientationDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_turretOrientationDegrees);
             m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
         }
 
