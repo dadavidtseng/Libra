@@ -45,15 +45,7 @@ void Map::Update(const float deltaSeconds)
         return;
 
     UpdateEntities(deltaSeconds);
-
-    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
-    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_LEO], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
-    PushEntitiesOutOfEntities(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_SCORPIO]);
-    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_LEO]);
-    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_PLAYER_TANK], m_entitiesByType[ENTITY_TYPE_ARIES]);
-    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_LEO], m_entitiesByType[ENTITY_TYPE_LEO]);
-    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_ARIES]);
-    PushEntitiesOutOfEachOther(m_entitiesByType[ENTITY_TYPE_ARIES], m_entitiesByType[ENTITY_TYPE_LEO]);
+    PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
 
     if (g_theGame->IsNoClip())
         return;
@@ -497,30 +489,23 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
             if (entityA == entityB)
                 continue;
 
-            PushDiscsOutOfEachOther2D(entityA->m_position,
-                                      entityA->m_physicsRadius,
-                                      entityB->m_position,
-                                      entityB->m_physicsRadius);
-        }
-    }
-}
+            if (entityA->m_isPushedByEntities &&
+                entityB->m_doesPushEntities)
+            {
+                PushDiscsOutOfEachOther2D(entityA->m_position,
+                                          entityA->m_physicsRadius,
+                                          entityB->m_position,
+                                          entityB->m_physicsRadius);
+            }
 
-void Map::PushEntitiesOutOfEntities(EntityList const& entityListA, EntityList const& entityListB) const
-{
-    for (Entity* entityA : entityListA)
-    {
-        if (!entityA)
-            continue;
-
-        for (const Entity* entityB : entityListB)
-        {
-            if (!entityB)
-                continue;
-
-            PushDiscOutOfDisc2D(entityA->m_position,
+            if (!entityA->m_isPushedByEntities&&
+                entityB->m_doesPushEntities)
+            {
+                PushDiscOutOfDisc2D(entityA->m_position,
                                 entityA->m_physicsRadius,
                                 entityB->m_position,
                                 entityB->m_physicsRadius);
+            }
         }
     }
 }

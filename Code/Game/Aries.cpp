@@ -5,19 +5,24 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Aries.hpp"
 
-#include "Map.hpp"
-#include "PlayerTank.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
+#include "Game/PlayerTank.hpp"
 
 //----------------------------------------------------------------------------------------------------
 Aries::Aries(Map* map, const EntityType type, const EntityFaction faction)
     : Entity(map, type, faction)
 {
     m_physicsRadius = ARIES_PHYSICS_RADIUS;
+    m_playerTankLastKnownPosition = m_position;
+
+    m_isPushedByWalls    = true;
+    m_isPushedByEntities = true;
+    m_doesPushEntities   = true;
 
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);

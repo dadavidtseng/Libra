@@ -5,13 +5,13 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/PlayerTank.hpp"
 
-#include "Map.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
 
 //----------------------------------------------------------------------------------------------------
 PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction faction)
@@ -19,6 +19,10 @@ PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction fact
 {
     m_physicsRadius      = PLAYER_TANK_PHYSICS_RADIUS;
     m_orientationDegrees = PLAYER_TANK_INIT_ORIENTATION_DEGREES;
+
+    m_isPushedByWalls    = true;
+    m_isPushedByEntities = true;
+    m_doesPushEntities   = true;
 
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));

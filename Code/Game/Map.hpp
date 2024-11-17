@@ -73,9 +73,7 @@ private:
     void PushEntitiesOutOfWalls();
     void PushEntityOutOfSolidTiles(Entity* entity);
     void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
-
     void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
-    void PushEntitiesOutOfEntities(EntityList const& entityListA, EntityList const& entityListB) const;
 
     std::vector<Tile> m_tiles;       // created and be there forever
     EntityList        m_allEntities; // created and destroyed

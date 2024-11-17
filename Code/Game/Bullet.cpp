@@ -5,17 +5,21 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Bullet.hpp"
 
-#include "Map.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
 
 //----------------------------------------------------------------------------------------------------
 Bullet::Bullet(Map* map, const EntityType type, const EntityFaction faction)
     : Entity(map, type, faction)
 {
+    m_isPushedByWalls    = false;
+    m_isPushedByEntities = false;
+    m_doesPushEntities   = false;
+    
     if (faction == ENTITY_FACTION_GOOD)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);

@@ -20,6 +20,10 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     m_physicsRadius               = SCORPIO_PHYSICS_RADIUS;
     m_playerTankLastKnownPosition = m_position;
 
+    m_isPushedByWalls    = true;
+    m_isPushedByEntities = false;
+    m_doesPushEntities   = true;
+
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);

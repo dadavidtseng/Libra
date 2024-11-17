@@ -5,9 +5,9 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Entity.hpp"
 
-#include "GameCommon.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Game/GameCommon.hpp"
 
 //----------------------------------------------------------------------------------------------------
 Entity::Entity(Map* map, EntityType const type, EntityFaction const faction)
@@ -24,7 +24,8 @@ void Entity::TurnToward(float&      orientationDegrees,
                         const float rotationSpeed)
 {
     // Calculate the new target orientation and get the shortest angular displacement
-    const float newTargetOrientation = GetTurnedTowardDegrees(orientationDegrees, targetOrientationDegrees,
+    float const newTargetOrientation = GetTurnedTowardDegrees(orientationDegrees,
+                                                              targetOrientationDegrees,
                                                               rotationSpeed * deltaSeconds);
 
     // Update the orientation
@@ -37,7 +38,7 @@ void Entity::TurnToward(float&      orientationDegrees,
         orientationDegrees += 360.0f;
 }
 
-void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float const speed, float const deltaSeconds)
+void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float const moveSpeed, float const deltaSeconds)
 {
     Vec2 const  direction        = targetPosition - currentPosition;
     float const distanceToTarget = direction.GetLength();
@@ -45,7 +46,7 @@ void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float
     if (distanceToTarget > 0.0f)
     {
         Vec2 const  normalizedDirection = direction.GetNormalized();
-        float const distanceToMove      = speed * deltaSeconds;
+        float const distanceToMove      = moveSpeed * deltaSeconds;
 
         if (distanceToMove >= distanceToTarget)
         {
