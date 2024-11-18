@@ -39,11 +39,14 @@ public:
     AABB2           GetTileBounds(int tileIndex) const;
     IntVec2         GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     Vec2            GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
-    bool            HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
+    bool            HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
-    bool    IsBulletCollidingWithScorpio() const { return m_isBulletCollidingWithScorpio; }
+    bool            IsPointInSolid(Vec2 const& point) const;
+    void            AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
+    void            RemoveEntityFromMap(Entity* entity);
+    IntVec2         GetMapDimension() { return m_dimensions; }
 
 private:
     void UpdateEntities(float deltaSeconds);
@@ -61,27 +64,26 @@ private:
 
     // Entity-lifetime-related
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
-    void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
-    void    RemoveEntityFromMap(Entity* entity);
-    void    AddEntityToList(Entity* entity, EntityList& entityList);
-    void    RemoveEntityFromList(const Entity* entity, EntityList& entityList);
-    void    DeleteGarbageEntities();
-    void    SpawnNewNPCs();
-    bool    IsBullet(const Entity* entity) const;
-    bool    IsAgent(const Entity* entity) const;
+
+    void AddEntityToList(Entity* entity, EntityList& entityList);
+    void RemoveEntityFromList(const Entity* entity, EntityList& entityList);
+    void DeleteGarbageEntities();
+    void SpawnNewNPCs();
+    bool IsBullet(const Entity* entity) const;
+    bool IsAgent(const Entity* entity) const;
 
     // Entity-physic-related
     void PushEntitiesOutOfWalls();
     void PushEntityOutOfSolidTiles(Entity* entity);
     void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
     void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
-    void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) ;
+    void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB);
 
-    std::vector<Tile> m_tiles;       // created and be there forever
-    EntityList        m_allEntities; // created and destroyed
+    std::vector<Tile> m_tiles;
+    EntityList        m_allEntities;
     EntityList        m_entitiesByType[NUM_ENTITY_TYPES];
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
-    bool              m_isBulletCollidingWithScorpio = false;
+    Vec2              m_exitPosition = Vec2::ZERO;
 };

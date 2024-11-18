@@ -26,7 +26,7 @@ Map::Map(MapData const& data)
     : m_dimensions(data.m_dimensions.x, data.m_dimensions.y)
 {
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
-
+// m_exitPosition = 
     GenerateTiles();
     SpawnNewNPCs();
 }
@@ -200,7 +200,6 @@ void Map::DebugRenderEntities() const
 }
 
 //----------------------------------------------------------------------------------------------------
-// Generate
 void Map::GenerateTiles()
 {
     for (int y = 0; y < m_dimensions.y; ++y)
@@ -234,6 +233,7 @@ void Map::RenderTiles() const
     RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
     RenderTilesByType(TILE_TYPE_STONE, tileVertices);
 
+    g_theRenderer->BindTexture(&g_theGame->GetTileSpriteSheet()->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
 }
 
@@ -251,13 +251,11 @@ void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) c
         if (tile.m_type == tileType)
         {
             Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
-            Vec2 const maxs = mins + Vec2(1.0f, 1.0f);
+            Vec2 const maxs = mins + Vec2::ONE;
 
             AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
         }
     }
-
-    g_theRenderer->BindTexture(&spriteDef.GetTexture());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -300,8 +298,8 @@ bool Map::IsEdgeTile(int x, int y) const
 //----------------------------------------------------------------------------------------------------
 bool Map::IsRandomStoneTile(int x, int y) const
 {
-    const bool inLeftLShapeOpening  = x <= 7 && y <= 7;
-    const bool inRightLShapeOpening = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
+    bool const inLeftLShapeOpening  = x <= 7 && y <= 7;
+    bool const inRightLShapeOpening = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
 
     return inLeftLShapeOpening || inRightLShapeOpening ? false : g_theRNG->RollRandomFloatZeroToOne() < 0.1f;
 }
@@ -314,15 +312,26 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
     }
 
     int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+    
     if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
     {
         Tile const& tile = m_tiles[tileIndex];
+        
         return tile.m_type == TILE_TYPE_STONE;
     }
 
     return false;
 }
 
+//----------------------------------------------------------------------------------------------------
+bool Map::IsPointInSolid(Vec2 const& point) const
+{
+    IntVec2 tileCoords = GetTileCoordsFromWorldPos(point);
+
+    return IsTileSolid(tileCoords);
+}
+
+//----------------------------------------------------------------------------------------------------
 bool Map::IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const
 {
     return
@@ -411,6 +420,8 @@ void Map::RemoveEntityFromList(Entity const* entity, EntityList& entityList)
         }
     }
 }
+
+//----------------------------------------------------------------------------------------------------
 void Map::DeleteGarbageEntities()
 {
     for (Entity* entity : m_allEntities)
@@ -425,8 +436,26 @@ void Map::DeleteGarbageEntities()
 //----------------------------------------------------------------------------------------------------
 void Map::SpawnNewNPCs()
 {
+    // for (int y = 0; y < m_dimensions.y; ++y)
+    // {
+    //     for (int x = 0; x < m_dimensions.x; ++x)
+    //     {
+    //         TileType type = TILE_TYPE_GRASS;
+    //
+    //         if (IsEdgeTile(x, y) ||
+    //             IsRandomStoneTile(x, y))
+    //         {
+    //             type = TILE_TYPE_STONE;
+    //         }
+    //
+    //         m_tiles.emplace_back();
+    //         m_tiles.back().m_tileCoords = IntVec2(x, y);
+    //         m_tiles.back().m_type       = type;
+    //     }
+    // }
+    
     SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
-    // SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
+    SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
     SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);
 }
 

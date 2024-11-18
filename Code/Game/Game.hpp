@@ -21,13 +21,14 @@ public:
     Game();
     ~Game();
 
-    void        Update(float deltaSeconds);
-    void        Render() const;
-    bool        IsAttractMode() const { return m_isAttractMode; }
-    bool        IsNoClip() const { return m_isNoClip; }
-    bool        IsDebugRendering() const { return m_isDebugRendering; }
-    bool        IsMarkedForDelete() const { return m_isMarkedForDelete; }
-    PlayerTank* GetPlayerTank() const { return m_playerTank; }
+    void         Update(float deltaSeconds);
+    void         Render() const;
+    bool         IsAttractMode() const { return m_isAttractMode; }
+    bool         IsNoClip() const { return m_isNoClip; }
+    bool         IsDebugRendering() const { return m_isDebugRendering; }
+    bool         IsMarkedForDelete() const { return m_isMarkedForDelete; }
+    PlayerTank*  GetPlayerTank() const { return m_playerTank; }
+    SpriteSheet* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
 
 private:
     void InitializeMaps();
@@ -37,6 +38,7 @@ private:
     void UpdateMarkForDelete();
     void UpdateFromKeyBoard();
     void UpdateFromController();
+    void UpdateCurrentMap(int newMapIndex);
     void UpdateCamera(float deltaSeconds) const;
     void UpdateAttractMode(float deltaSeconds);
     void AdjustForPauseAndTimeDistortion(float& deltaSeconds) const;
@@ -44,12 +46,10 @@ private:
     void RenderAttractMode() const;
     void RenderUI() const;
 
-    // TODO:
-    // void ChangeCurrentMap();
 
     Camera* m_worldCamera       = nullptr;
     Camera* m_screenCamera      = nullptr;
-    IntVec2 m_mapDimension      = IntVec2(24, 30);
+    // IntVec2 m_mapDimension      = IntVec2(24, 30);
     bool    m_isAttractMode     = true;
     bool    m_isDebugRendering  = false;
     bool    m_isDebugCamera     = false;

@@ -46,12 +46,7 @@ Game::Game()
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 1, 0, 1, false);
 }
 
-// void Game::ChangeCurrentMap( int newMapIndex)
-// {
-// 	m_currentMap->RemoveEntityFromMap(m_playerTank);
-// 	m_currentMap = m_maps[newMapIndex];
-// 	m_currentMap->AddEntityToMap(m_playerTank, Vec2(1.5f, 1.5f), 45.f);
-// }
+
 
 //----------------------------------------------------------------------------------------------------
 Game::~Game()
@@ -94,8 +89,6 @@ void Game::Render() const
     g_theRenderer->BeginCamera(*m_worldCamera);
 
     m_currentMap->Render();
-
-    // TestTileDefinition();
     m_currentMap->DebugRender();
 
     g_theRenderer->EndCamera(*m_worldCamera);
@@ -103,7 +96,6 @@ void Game::Render() const
     g_theRenderer->BeginCamera(*m_screenCamera);
 
     RenderAttractMode();
-
     RenderUI();
 
     g_theRenderer->EndCamera(*m_screenCamera);
@@ -112,7 +104,7 @@ void Game::Render() const
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, IntVec2(m_mapDimension.x, m_mapDimension.y) };
+    MapData const data01 = { 0, IntVec2(50, 20) };
     // MapData const data02 = { 1, IntVec2(0, 0) };
     // MapData const data03 = { 2, IntVec2(0, 0) };
     m_maps.reserve(3);
@@ -383,6 +375,14 @@ void Game::UpdateFromController()
 }
 
 //----------------------------------------------------------------------------------------------------
+void Game::UpdateCurrentMap(int newMapIndex)
+{
+    m_currentMap->RemoveEntityFromMap(m_playerTank);
+    m_currentMap = m_maps[newMapIndex];
+    m_currentMap->AddEntityToMap(m_playerTank, Vec2(1.5f, 1.5f), 45.f);\
+}
+
+//----------------------------------------------------------------------------------------------------
 void Game::UpdateCamera(const float deltaSeconds) const
 {
     UNUSED(deltaSeconds)
@@ -393,8 +393,8 @@ void Game::UpdateCamera(const float deltaSeconds) const
     const Vec2      playerTankPosition = m_playerTank->m_position;
     constexpr float mapMinX            = 0.f;
     constexpr float mapMinY            = 0.f;
-    const float     mapMaxX            = static_cast<float>(m_mapDimension.x);
-    const float     mapMaxY            = static_cast<float>(m_mapDimension.y);
+    const float     mapMaxX            = static_cast<float>(m_currentMap->GetMapDimension().x);
+    const float     mapMaxY            = static_cast<float>(m_currentMap->GetMapDimension().y);
 
     Vec2 cameraMin = Vec2(playerTankPosition.x - WORLD_CENTER_X, playerTankPosition.y - WORLD_CENTER_Y);
     Vec2 cameraMax = Vec2(playerTankPosition.x + WORLD_CENTER_X, playerTankPosition.y + WORLD_CENTER_Y);
@@ -409,9 +409,24 @@ void Game::UpdateCamera(const float deltaSeconds) const
 
     if (m_isDebugCamera)
     {
-        const Vec2  bottomLeft = Vec2(0.f, 0.f);
-        const float newScreenX = WORLD_SIZE_X * (static_cast<float>(m_mapDimension.y) / WORLD_SIZE_Y);
-        const float newScreenY = static_cast<float>(m_mapDimension.y);
+        Vec2 const bottomLeft = Vec2(0.f, 0.f);
+
+        float const mapWidth = static_cast<float>(m_currentMap->GetMapDimension().x);
+        float const mapHeight = static_cast<float>(m_currentMap->GetMapDimension().y);
+
+        constexpr float aspectRatio = WORLD_SIZE_X / WORLD_SIZE_Y;
+        float newScreenX, newScreenY;
+
+        if (mapWidth / mapHeight > aspectRatio)
+        {
+            newScreenX = mapWidth;
+            newScreenY = mapWidth / aspectRatio;
+        }
+        else
+        {
+            newScreenX = mapHeight * aspectRatio;
+            newScreenY = mapHeight;
+        }
 
         m_worldCamera->SetOrthoView(bottomLeft, Vec2(newScreenX, newScreenY));
     }
@@ -479,4 +494,10 @@ void Game::RenderUI() const
     if (m_isPaused)
         DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), TRANSPARENT_BLACK,
                          1.f);
+
+    if (m_playerTank->m_isDead)
+    {
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), DEBUG_RENDER_RED,
+                         1.f);
+    }
 }
