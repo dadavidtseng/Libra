@@ -24,6 +24,8 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     m_isPushedByEntities = true;
     m_doesPushEntities   = true;
 
+    m_health = LEO_INIT_HEALTH;
+
     m_BodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
@@ -34,6 +36,15 @@ void Leo::Update(const float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+
+    if (m_health <= 0)
+    {
+        m_isGarbage = true;
+        m_isDead    = true;
+    }
+    
     UpdateBody(deltaSeconds);
 }
 
@@ -43,6 +54,9 @@ void Leo::Render() const
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+    
     RenderBody();
 }
 
@@ -55,6 +69,9 @@ void Leo::DebugRender() const
     if (!g_theGame->IsDebugRendering())
         return;
 
+    if (m_isDead)
+        return;
+    
     Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     Vec2 const leftNormal = fwdNormal.GetRotated90Degrees();
 

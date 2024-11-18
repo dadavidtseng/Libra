@@ -43,7 +43,8 @@ constexpr float PLAYER_TANK_INIT_POSITION_Y          = 2.f;
 constexpr float PLAYER_TANK_INIT_ORIENTATION_DEGREES = 30.f;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS           = 0.3f;
 constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
-constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.3f;
+constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.1f;
+constexpr int   PLAYER_TANK_INIT_HEALTH              = 10000;
 
 //-----------------------------------------------------------------------------------------------
 // Scorpio-related
@@ -53,30 +54,35 @@ constexpr float SCORPIO_PHYSICS_RADIUS          = 0.35f;
 constexpr float SCORPIO_SHOOT_DEGREES_THRESHOLD = 5.f;
 constexpr float SCORPIO_RANGE                   = 10.f;
 constexpr float SCORPIO_SHOOT_COOLDOWN          = 0.3f;
+constexpr int   SCORPIO_INIT_HEALTH             = 5;
 
 //-----------------------------------------------------------------------------------------------
 // Leo-related
 //
 constexpr float LEO_MOVE_SPEED       = 0.5f;
 constexpr float LEO_ANGULAR_VELOCITY = 90.f;
-constexpr float LEO_PHYSICS_RADIUS   = 0.35f;
+constexpr float LEO_PHYSICS_RADIUS   = 0.25f;
 constexpr float LEO_RANGE            = 10.f;
 constexpr float LEO_SHOOT_COOLDOWN   = 1.f;
+constexpr int   LEO_INIT_HEALTH      = 3;
 
 //-----------------------------------------------------------------------------------------------
 // Aries-related
 //
 constexpr float ARIES_MOVE_SPEED       = 0.5f;
 constexpr float ARIES_ANGULAR_VELOCITY = 90.f;
-constexpr float ARIES_PHYSICS_RADIUS   = 0.35f;
+constexpr float ARIES_PHYSICS_RADIUS   = 0.25f;
 constexpr float ARIES_RANGE            = 10.f;
-
-
+constexpr int   ARIES_INIT_HEALTH      = 8;
 
 //-----------------------------------------------------------------------------------------------
 // Bullet-related
 //
-constexpr float BULLET_EVIL_SPEED = 3.f;
+constexpr float BULLET_GOOD_SPEED       = 5.f;
+constexpr float BULLET_EVIL_SPEED       = 3.f;
+constexpr int   BULLET_GOOD_INIT_HEALTH = 3;
+constexpr int   BULLET_EVIL_INIT_HEALTH = 1;
+
 
 //-----------------------------------------------------------------------------------------------
 // DebugRender-related

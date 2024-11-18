@@ -43,6 +43,7 @@ public:
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
+    bool    IsBulletCollidingWithScorpio() const { return m_isBulletCollidingWithScorpio; }
 
 private:
     void UpdateEntities(float deltaSeconds);
@@ -74,7 +75,7 @@ private:
     void PushEntityOutOfSolidTiles(Entity* entity);
     void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
     void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
-    void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) const;
+    void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) ;
 
     std::vector<Tile> m_tiles;       // created and be there forever
     EntityList        m_allEntities; // created and destroyed
@@ -82,4 +83,5 @@ private:
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
+    bool              m_isBulletCollidingWithScorpio = false;
 };

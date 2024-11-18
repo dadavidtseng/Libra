@@ -20,11 +20,11 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     m_physicsRadius               = SCORPIO_PHYSICS_RADIUS;
     m_playerTankLastKnownPosition = m_position;
 
-    m_health = 10;
-
     m_isPushedByWalls    = true;
     m_isPushedByEntities = false;
     m_doesPushEntities   = true;
+
+    m_health = SCORPIO_INIT_HEALTH;
 
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
@@ -40,30 +40,23 @@ void Scorpio::Update(float deltaSeconds)
 
     if (m_isDead)
         return;
-    
+
     if (m_health <= 0)
     {
-        m_isGarbage = true;        
-        m_isDead = true;        
+        m_isGarbage = true;
+        m_isDead    = true;
     }
-    
+
     UpdateTurret(deltaSeconds);
-}
-
-//----------------------------------------------------------------------------------------------------
-void Scorpio::RenderLaser() const
-{
-    Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
-    Ray2 const            ray             = Ray2(m_position, fwdNormal.GetNormalized(), 10000);
-    RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
-
-    DebugDrawLine(m_position + fwdNormal * 0.45f, raycastResult2D.m_impactPos, 0.05f, DEBUG_RENDER_RED);
 }
 
 //----------------------------------------------------------------------------------------------------
 void Scorpio::Render() const
 {
     if (g_theGame->IsAttractMode())
+        return;
+
+    if (m_isDead)
         return;
 
     RenderBody();
@@ -78,6 +71,9 @@ void Scorpio::DebugRender() const
         return;
 
     if (!g_theGame->IsDebugRendering())
+        return;
+
+    if (m_isDead)
         return;
 
     Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
@@ -160,4 +156,14 @@ void Scorpio::RenderTurret() const
 
     g_theRenderer->BindTexture(m_turretTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Scorpio::RenderLaser() const
+{
+    Vec2 const            fwdNormal       = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
+    Ray2 const            ray             = Ray2(m_position, fwdNormal.GetNormalized(), 10000);
+    RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
+
+    DebugDrawLine(m_position + fwdNormal * 0.45f, raycastResult2D.m_impactPos, 0.05f, DEBUG_RENDER_RED);
 }

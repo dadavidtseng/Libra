@@ -14,7 +14,7 @@
 #include "Game/Map.hpp"
 
 //----------------------------------------------------------------------------------------------------
-PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction faction)
+PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
     m_physicsRadius      = PLAYER_TANK_PHYSICS_RADIUS;
@@ -24,8 +24,8 @@ PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction fact
     m_isPushedByEntities = true;
     m_doesPushEntities   = true;
 
-    
-    
+    m_health = PLAYER_TANK_INIT_HEALTH;
+
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
 
@@ -39,6 +39,14 @@ void PlayerTank::Update(const float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+
+    if (m_health <= 0)
+    {
+        m_isDead = true;
+    }
+
     UpdateBody(deltaSeconds);
     UpdateTurret(deltaSeconds);
 
@@ -51,7 +59,8 @@ void PlayerTank::Update(const float deltaSeconds)
     {
         if (m_shootCoolDown <= 0.0f)
         {
-            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position, m_orientationDegrees);
+            Vec2 fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position+fwdNormal*0.5f, m_orientationDegrees);
             m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
         }
     }
@@ -61,6 +70,9 @@ void PlayerTank::Update(const float deltaSeconds)
 void PlayerTank::Render() const
 {
     if (g_theGame->IsAttractMode())
+        return;
+
+    if (m_isDead)
         return;
 
     RenderBody();
@@ -75,6 +87,9 @@ void PlayerTank::DebugRender() const
         return;
 
     if (!g_theGame->IsDebugRendering())
+        return;
+
+    if (m_isDead)
         return;
 
     const Vec2 fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);

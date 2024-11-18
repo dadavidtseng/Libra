@@ -517,9 +517,6 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
             if (!canAPushB &&
                 canBPushA)
             {
-                // if (entityB->m_type == ENTITY_TYPE_BULLET)
-                //     continue;
-
                 PushDiscOutOfDisc2D(entityA->m_position,
                                     entityA->m_physicsRadius,
                                     entityB->m_position,
@@ -528,7 +525,7 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
         }
     }
 }
-void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) const
+void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB)
 {
     for (Entity* entityA : entityListA)
     {
@@ -557,9 +554,20 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
                 if (entityA->m_faction == entityB->m_faction)
                     continue;
 
+                if (entityB->m_type == ENTITY_TYPE_ARIES)
+                {
+                    if (IsPointInsideDirectedSector2D(entityA->m_position, entityB->m_position, entityB->m_velocity.GetNormalized(), 90.f, entityB->m_physicsRadius * 1.5f))
+                    {
+                        RaycastResult2D raycastResult2D   = RaycastVsDisc2D(entityA->m_position, entityA->m_velocity.GetNormalized(), entityA->m_velocity.GetLength(), entityB->m_position, entityB->m_physicsRadius);
+                        Vec2            reflectedVelocity = entityA->m_velocity.GetReflected(raycastResult2D.m_impactNormal);
+                        entityA->m_orientationDegrees     = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
+                    }
+                }
+
                 entityA->m_health--;
                 entityB->m_health--;
             }
+
         }
     }
 }

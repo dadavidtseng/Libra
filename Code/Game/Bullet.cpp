@@ -13,22 +13,24 @@
 #include "Game/Map.hpp"
 
 //----------------------------------------------------------------------------------------------------
-Bullet::Bullet(Map* map, const EntityType type, const EntityFaction faction)
+Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
     m_isPushedByWalls    = false;
     m_isPushedByEntities = false;
     m_doesPushEntities   = false;
 
-    m_health = 1;
-
     if (faction == ENTITY_FACTION_GOOD)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);
+        m_health      = BULLET_GOOD_INIT_HEALTH;
+        m_moveSpeed   = BULLET_GOOD_SPEED;
     }
     if (faction == ENTITY_FACTION_EVIL)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_EVIL_IMG);
+        m_health      = BULLET_EVIL_INIT_HEALTH;
+        m_moveSpeed   = BULLET_EVIL_SPEED;
     }
 
     m_BodyBounds    = AABB2(Vec2(-0.1f, -0.05f), Vec2(0.1f, 0.05f));
@@ -54,13 +56,15 @@ void Bullet::Update(const float deltaSeconds)
         m_isGarbage = true;
         m_isDead    = true;
     }
-
 }
 
 //----------------------------------------------------------------------------------------------------
 void Bullet::Render() const
 {
     if (g_theGame->IsAttractMode())
+        return;
+
+    if (m_isDead)
         return;
 
     RenderBody();
@@ -75,6 +79,9 @@ void Bullet::DebugRender() const
     if (!g_theGame->IsDebugRendering())
         return;
 
+    if (m_isDead)
+        return;
+
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.03f,
@@ -84,12 +91,14 @@ void Bullet::DebugRender() const
 //----------------------------------------------------------------------------------------------------
 void Bullet::UpdateBody(float deltaSeconds)
 {
-    m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees, BULLET_EVIL_SPEED);
+    m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees, m_moveSpeed);
 
     Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
 
     if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition)))
     {
+        m_health--;
+
         IntVec2 normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
         Vec2    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
         Vec2    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());

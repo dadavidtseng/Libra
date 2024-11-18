@@ -8,12 +8,10 @@
 
 #include "Engine/Math/Vec2.hpp"
 
-class Entity;
-typedef std::vector<Entity*> EntityList;
-
-
 //----------------------------------------------------------------------------------------------------
 class Map;
+class Entity;
+typedef std::vector<Entity*> EntityList;
 
 //----------------------------------------------------------------------------------------------------
 enum EntityType: int
@@ -49,8 +47,8 @@ public:
     virtual ~Entity() = default; //add an addition secrete pointer to the class
 
     virtual void Update(float deltaSeconds) = 0;
-    virtual void Render() const = 0;             
-    virtual void DebugRender() const = 0;        
+    virtual void Render() const = 0;
+    virtual void DebugRender() const = 0;
     virtual void TurnToward(float& orientationDegrees, float targetOrientationDegrees, float deltaSeconds, float rotationSpeed);
     void         MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float moveSpeed, float deltaSeconds);
     void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
@@ -63,6 +61,7 @@ public:
     EntityFaction m_faction                  = ENTITY_FACTION_UNKNOWN;
     Vec2          m_position                 = Vec2::ZERO;
     Vec2          m_velocity                 = Vec2::ZERO;
+    float         m_moveSpeed                = 0.f;
     float         m_orientationDegrees       = 0.f;
     float         m_targetOrientationDegrees = 0.f;
     float         m_physicsRadius            = 0.f;
@@ -72,5 +71,5 @@ public:
     bool          m_isGarbage                = false;
     bool          m_isPushedByEntities       = false;
     bool          m_doesPushEntities         = false;
-    bool          m_isPushedByWalls            = false;
+    bool          m_isPushedByWalls          = false;
 };

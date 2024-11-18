@@ -14,10 +14,10 @@
 #include "Game/PlayerTank.hpp"
 
 //----------------------------------------------------------------------------------------------------
-Aries::Aries(Map* map, const EntityType type, const EntityFaction faction)
+Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius = ARIES_PHYSICS_RADIUS;
+    m_physicsRadius               = ARIES_PHYSICS_RADIUS;
     m_playerTankLastKnownPosition = m_position;
 
     m_isPushedByWalls    = true;
@@ -38,22 +38,23 @@ void Aries::Update(const float deltaSeconds)
 
     if (m_isDead)
         return;
-    
-    UpdateBody(deltaSeconds);
-
-    printf("%d\n", m_health);
 
     if (m_health <= 0)
     {
         m_isGarbage = true;
-        m_isDead = true;
+        m_isDead    = true;
     }
+
+    UpdateBody(deltaSeconds);
 }
 
 //----------------------------------------------------------------------------------------------------
 void Aries::Render() const
 {
     if (g_theGame->IsAttractMode())
+        return;
+
+    if (m_isDead)
         return;
 
     RenderBody();
@@ -66,6 +67,9 @@ void Aries::DebugRender() const
         return;
 
     if (!g_theGame->IsDebugRendering())
+        return;
+
+    if (m_isDead)
         return;
 
     Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
@@ -161,5 +165,3 @@ void Aries::RenderBody() const
     g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
-
-
