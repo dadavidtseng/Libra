@@ -24,6 +24,8 @@ PlayerTank::PlayerTank(Map* map, const EntityType type, const EntityFaction fact
     m_isPushedByEntities = true;
     m_doesPushEntities   = true;
 
+    
+    
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
 

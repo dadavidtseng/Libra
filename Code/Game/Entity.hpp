@@ -4,7 +4,13 @@
 
 //----------------------------------------------------------------------------------------------------
 #pragma once
+#include <vector>
+
 #include "Engine/Math/Vec2.hpp"
+
+class Entity;
+typedef std::vector<Entity*> EntityList;
+
 
 //----------------------------------------------------------------------------------------------------
 class Map;
@@ -30,6 +36,8 @@ enum EntityFaction: int
     ENTITY_FACTION_EVIL,
     NUM_ENTITY_FACTIONS
 };
+
+
 
 //-----------------------------------------------------------------------------------------------
 class Entity

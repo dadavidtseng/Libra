@@ -20,6 +20,8 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     m_physicsRadius               = SCORPIO_PHYSICS_RADIUS;
     m_playerTankLastKnownPosition = m_position;
 
+    m_health = 10;
+
     m_isPushedByWalls    = true;
     m_isPushedByEntities = false;
     m_doesPushEntities   = true;
@@ -36,6 +38,15 @@ void Scorpio::Update(float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+    
+    if (m_health <= 0)
+    {
+        m_isGarbage = true;        
+        m_isDead = true;        
+    }
+    
     UpdateTurret(deltaSeconds);
 }
 

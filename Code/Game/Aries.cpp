@@ -24,6 +24,8 @@ Aries::Aries(Map* map, const EntityType type, const EntityFaction faction)
     m_isPushedByEntities = true;
     m_doesPushEntities   = true;
 
+    m_health = 3;
+
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
@@ -34,7 +36,18 @@ void Aries::Update(const float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+    
     UpdateBody(deltaSeconds);
+
+    printf("%d\n", m_health);
+
+    if (m_health <= 0)
+    {
+        m_isGarbage = true;
+        m_isDead = true;
+    }
 }
 
 //----------------------------------------------------------------------------------------------------

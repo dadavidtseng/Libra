@@ -14,7 +14,6 @@
 //-----------------------------------------------------------------------------------------------
 struct Vertex_PCU;
 
-typedef std::vector<Entity*> EntityList;
 
 struct MapData
 {
@@ -65,6 +64,7 @@ private:
     void    RemoveEntityFromMap(Entity* entity);
     void    AddEntityToList(Entity* entity, EntityList& entityList);
     void    RemoveEntityFromList(const Entity* entity, EntityList& entityList);
+    void    DeleteGarbageEntities();
     void    SpawnNewNPCs();
     bool    IsBullet(const Entity* entity) const;
     bool    IsAgent(const Entity* entity) const;
@@ -74,6 +74,7 @@ private:
     void PushEntityOutOfSolidTiles(Entity* entity);
     void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
     void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
+    void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) const;
 
     std::vector<Tile> m_tiles;       // created and be there forever
     EntityList        m_allEntities; // created and destroyed

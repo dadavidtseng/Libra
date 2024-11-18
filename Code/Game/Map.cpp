@@ -46,11 +46,14 @@ void Map::Update(const float deltaSeconds)
 
     UpdateEntities(deltaSeconds);
     PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
+    CheckEntityVsEntityCollision(m_entitiesByType[ENTITY_TYPE_BULLET], m_allEntities);
 
     if (g_theGame->IsNoClip())
         return;
 
     PushEntitiesOutOfWalls();
+
+    DeleteGarbageEntities();
 }
 
 
@@ -399,7 +402,7 @@ void Map::RemoveEntityFromMap(Entity* entity)
 //----------------------------------------------------------------------------------------------------
 void Map::RemoveEntityFromList(Entity const* entity, EntityList& entityList)
 {
-    for (std::vector<Entity*>::iterator it = entityList.begin(); it != entityList.end(); ++it)
+    for (EntityList::iterator it = entityList.begin(); it != entityList.end(); ++it)
     {
         if (*it == entity)
         {
@@ -408,12 +411,22 @@ void Map::RemoveEntityFromList(Entity const* entity, EntityList& entityList)
         }
     }
 }
+void Map::DeleteGarbageEntities()
+{
+    for (Entity* entity : m_allEntities)
+    {
+        if (entity->m_isGarbage)
+        {
+            RemoveEntityFromMap(entity);
+        }
+    }
+}
 
 //----------------------------------------------------------------------------------------------------
 void Map::SpawnNewNPCs()
 {
     SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
-    SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
+    // SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
     SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);
 }
 
@@ -489,8 +502,11 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
             if (entityA == entityB)
                 continue;
 
-            if (entityA->m_isPushedByEntities &&
-                entityB->m_doesPushEntities)
+            bool canAPushB = entityA->m_doesPushEntities && entityB->m_isPushedByEntities;
+            bool canBPushA = entityB->m_doesPushEntities && entityA->m_isPushedByEntities;
+
+            if (canAPushB &&
+                canBPushA)
             {
                 PushDiscsOutOfEachOther2D(entityA->m_position,
                                           entityA->m_physicsRadius,
@@ -498,13 +514,51 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
                                           entityB->m_physicsRadius);
             }
 
-            if (!entityA->m_isPushedByEntities&&
-                entityB->m_doesPushEntities)
+            if (!canAPushB &&
+                canBPushA)
             {
+                // if (entityB->m_type == ENTITY_TYPE_BULLET)
+                //     continue;
+
                 PushDiscOutOfDisc2D(entityA->m_position,
-                                entityA->m_physicsRadius,
-                                entityB->m_position,
-                                entityB->m_physicsRadius);
+                                    entityA->m_physicsRadius,
+                                    entityB->m_position,
+                                    entityB->m_physicsRadius);
+            }
+        }
+    }
+}
+void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB) const
+{
+    for (Entity* entityA : entityListA)
+    {
+        if (!entityA)
+            continue;
+
+        if (entityA->m_isDead)
+            continue;
+
+        for (Entity* entityB : entityListB)
+        {
+            if (entityB->m_isDead)
+                continue;
+
+            if (!entityB)
+                continue;
+
+            if (IsBullet(entityB))
+                continue;
+
+            if (entityA == entityB)
+                continue;
+
+            if (DoDiscsOverlap(entityA->m_position, entityA->m_physicsRadius, entityB->m_position, entityB->m_physicsRadius))
+            {
+                if (entityA->m_faction == entityB->m_faction)
+                    continue;
+
+                entityA->m_health--;
+                entityB->m_health--;
             }
         }
     }

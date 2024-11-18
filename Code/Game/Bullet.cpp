@@ -19,7 +19,9 @@ Bullet::Bullet(Map* map, const EntityType type, const EntityFaction faction)
     m_isPushedByWalls    = false;
     m_isPushedByEntities = false;
     m_doesPushEntities   = false;
-    
+
+    m_health = 1;
+
     if (faction == ENTITY_FACTION_GOOD)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);
@@ -42,7 +44,17 @@ void Bullet::Update(const float deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (m_isDead)
+        return;
+
     UpdateBody(deltaSeconds);
+
+    if (m_health <= 0)
+    {
+        m_isGarbage = true;
+        m_isDead    = true;
+    }
+
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -62,7 +74,7 @@ void Bullet::DebugRender() const
 
     if (!g_theGame->IsDebugRendering())
         return;
-    
+
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.03f,
