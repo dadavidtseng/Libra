@@ -80,12 +80,12 @@ void Game::Update(float deltaSeconds)
     UpdateAttractMode(deltaSeconds);
     AdjustForPauseAndTimeDistortion(deltaSeconds);
 
-    if (m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).x==m_currentMap->GetMapExitPosition().x&&
-            m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).y==m_currentMap->GetMapExitPosition().y)
+    if (m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).x == m_currentMap->GetMapExitPosition().x &&
+        m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).y == m_currentMap->GetMapExitPosition().y)
     {
         UpdateCurrentMap();
     }
-    
+
     m_currentMap->Update(deltaSeconds);
 }
 
@@ -110,9 +110,9 @@ void Game::Render() const
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, IntVec2(24, 30) };
-    MapData const data02 = { 1, IntVec2(50, 20) };
-    MapData const data03 = { 2, IntVec2(16, 16) };
+    MapData const data01 = { 0, 50, 50, 50, IntVec2(24, 30) };
+    MapData const data02 = { 1, 10, 10, 10, IntVec2(50, 20) };
+    MapData const data03 = { 2, 3, 3, 3, IntVec2(16, 16) };
     m_maps.reserve(3);
     m_maps.push_back(new Map(data01));
     m_maps.push_back(new Map(data02));
@@ -391,7 +391,7 @@ void Game::UpdateCurrentMap()
     int currentMapIndex = m_currentMap->GetMapIndex();
 
     m_currentMap->RemoveEntityFromMap(m_playerTank);
-    m_currentMap = m_maps[currentMapIndex];
+    m_currentMap = m_maps[currentMapIndex + 1];
     m_currentMap->AddEntityToMap(m_playerTank,
                                  Vec2(PLAYER_TANK_INIT_POSITION_X, PLAYER_TANK_INIT_POSITION_Y),
                                  PLAYER_TANK_INIT_ORIENTATION_DEGREES);

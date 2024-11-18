@@ -27,7 +27,7 @@ Map::Map(MapData const& data)
       m_mapData(data)
 {
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
-    m_exitPosition = IntVec2(m_dimensions.x-2, m_dimensions.y - 2);
+    m_exitPosition = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
     GenerateTiles();
     SpawnNewNPCs();
 }
@@ -210,7 +210,7 @@ void Map::GenerateTiles()
             TileType type = TILE_TYPE_GRASS;
 
             if (IsEdgeTile(x, y) ||
-                IsRandomStoneTile(x, y))
+                IsRandomTile(x, y))
             {
                 type = TILE_TYPE_STONE;
             }
@@ -302,12 +302,20 @@ bool Map::IsEdgeTile(int x, int y) const
 }
 
 //----------------------------------------------------------------------------------------------------
-bool Map::IsRandomStoneTile(int x, int y) const
+bool Map::IsRandomTile(int x, int y) const
 {
-    bool const inLeftLShapeOpening  = x <= 7 && y <= 7;
-    bool const inRightLShapeOpening = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
+    bool const inLeftLShape  = x <= 7 && y <= 7;
+    bool const inRightLShape = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
 
-    return inLeftLShapeOpening || inRightLShapeOpening ? false : g_theRNG->RollRandomFloatZeroToOne() < 0.1f;
+    return inLeftLShape || inRightLShape ? false : g_theRNG->RollRandomFloatZeroToOne() < 0.1f;
+}
+
+bool Map::IsInLShape(int x, int y) const
+{
+    bool const inLeftLShape  = x <= 7 && y <= 7;
+    bool const inRightLShape = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
+
+    return inLeftLShape || inRightLShape;
 }
 
 bool Map::IsTileSolid(IntVec2 const& tileCoords) const
@@ -442,27 +450,59 @@ void Map::DeleteGarbageEntities()
 //----------------------------------------------------------------------------------------------------
 void Map::SpawnNewNPCs()
 {
-    // for (int y = 0; y < m_dimensions.y; ++y)
-    // {
-    //     for (int x = 0; x < m_dimensions.x; ++x)
-    //     {
-    //         TileType type = TILE_TYPE_GRASS;
-    //
-    //         if (IsEdgeTile(x, y) ||
-    //             IsRandomStoneTile(x, y))
-    //         {
-    //             type = TILE_TYPE_STONE;
-    //         }
-    //
-    //         m_tiles.emplace_back();
-    //         m_tiles.back().m_tileCoords = IntVec2(x, y);
-    //         m_tiles.back().m_type       = type;
-    //     }
-    // }
+    while (m_mapData.m_scorpioSpawnNum > 0 || m_mapData.m_leoSpawnNum > 0 || m_mapData.m_ariesSpawnNum > 0)
+    {
+        for (int y = 0; y < m_dimensions.y; ++y)
+        {
+            for (int x = 0; x < m_dimensions.x; ++x)
+            {
+                if (IsEdgeTile(x, y) || IsTileSolid(IntVec2(x, y)) || IsInLShape(x, y)) continue;
 
-    SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
-    SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
-    SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);
+                Vec2 position(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
+                
+                if (IsPositionOccupied(position))
+                    continue;
+
+                switch (g_theRNG->RollRandomIntInRange(0, 50))
+                {
+                    case 0:
+                        {
+                            if (m_mapData.m_scorpioSpawnNum == 0) break;
+                            SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, position, 0.f);
+                            m_mapData.m_scorpioSpawnNum--;
+                            break;
+                        }
+                    case 1:
+                        {
+                            if (m_mapData.m_leoSpawnNum == 0) break;
+                            SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, position, 0.f);
+                            m_mapData.m_leoSpawnNum--;
+                            break;
+                        }
+                    case 2:
+                        {
+                            if (m_mapData.m_ariesSpawnNum == 0) break;
+                            SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, position, 0.f);
+                            m_mapData.m_ariesSpawnNum--;
+                            break;
+                        }
+                }
+            }
+        }
+    }
+}
+
+
+bool Map::IsPositionOccupied(Vec2 const& position) const
+{
+    for (const Entity* entity : m_allEntities)
+    {
+        if (entity->m_position == position)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -18,6 +18,9 @@ struct Vertex_PCU;
 struct MapData
 {
     int     m_index;
+    int     m_scorpioSpawnNum;
+    int     m_leoSpawnNum;
+    int     m_ariesSpawnNum;
     IntVec2 m_dimensions;
 };
 
@@ -61,7 +64,8 @@ private:
     void RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
     void SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
     bool IsEdgeTile(int x, int y) const;
-    bool IsRandomStoneTile(int x, int y) const;
+    bool IsRandomTile(int x, int y) const;
+    bool IsInLShape(int x, int y) const;
     bool IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
 
     // Entity-lifetime-related
@@ -71,6 +75,7 @@ private:
     void RemoveEntityFromList(const Entity* entity, EntityList& entityList);
     void DeleteGarbageEntities();
     void SpawnNewNPCs();
+    bool IsPositionOccupied(Vec2 const& position) const;
     bool IsBullet(const Entity* entity) const;
     bool IsAgent(const Entity* entity) const;
 
