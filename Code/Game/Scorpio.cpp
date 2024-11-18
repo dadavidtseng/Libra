@@ -41,6 +41,9 @@ void Scorpio::Update(float deltaSeconds)
     if (m_isDead)
         return;
 
+    if (g_theGame->GetPlayerTank()->m_isDead)
+        return;
+
     if (m_health <= 0)
     {
         m_isGarbage = true;

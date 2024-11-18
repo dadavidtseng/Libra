@@ -21,6 +21,8 @@ Rgba8 const DEBUG_RENDER_YELLOW  = Rgba8(255, 255, 0);
 Rgba8 const DEBUG_RENDER_BLUE    = Rgba8(0, 0, 255);
 
 Rgba8 const TRANSPARENT_BLACK = Rgba8(0, 0, 0, 150);
+Rgba8 const TRANSPARENT_RED   = Rgba8(255, 0, 0, 50);
+Rgba8 const TRANSPARENT_GREEN = Rgba8(0, 255, 0, 50);
 Rgba8 const BLACK             = Rgba8(0, 0, 0);
 
 
@@ -36,15 +38,15 @@ const char* RESUME_SOUND     = "Data/Audios/ResumeSound.mp3";
 //-----------------------------------------------------------------------------------------------
 // Texture-related
 //
-const char* PLAYER_TANK_BODY_IMG          = "Data/Images/PlayerTankBody.png";
-const char* PLAYER_TANK_TURRET_IMG        = "Data/Images/PlayerTankTurret.png";
-const char* SCORPIO_BODY_IMG   = "Data/Images/EnemyTankScorpioBody.png";
-const char* SCORPIO_TURRET_IMG = "Data/Images/EnemyTankScorpioTurret.png";
-const char* LEO_BODY_IMG       = "Data/Images/EnemyTankLeoBody.png";
-const char* ARIES_BODY_IMG     = "Data/Images/EnemyTankAriesBody.png";
-const char* BULLET_GOOD_IMG               = "Data/Images/BulletGood.png";
-const char* BULLET_EVIL_IMG               = "Data/Images/BulletEvil.png";
-const char* TILE_TEXTURE_IMG              = "Data/Images/Terrain_8x8.png";
+const char* PLAYER_TANK_BODY_IMG   = "Data/Images/PlayerTankBody.png";
+const char* PLAYER_TANK_TURRET_IMG = "Data/Images/PlayerTankTurret.png";
+const char* SCORPIO_BODY_IMG       = "Data/Images/EnemyTankScorpioBody.png";
+const char* SCORPIO_TURRET_IMG     = "Data/Images/EnemyTankScorpioTurret.png";
+const char* LEO_BODY_IMG           = "Data/Images/EnemyTankLeoBody.png";
+const char* ARIES_BODY_IMG         = "Data/Images/EnemyTankAriesBody.png";
+const char* BULLET_GOOD_IMG        = "Data/Images/BulletGood.png";
+const char* BULLET_EVIL_IMG        = "Data/Images/BulletEvil.png";
+const char* TILE_TEXTURE_IMG       = "Data/Images/Terrain_8x8.png";
 
 //-----------------------------------------------------------------------------------------------
 
@@ -226,7 +228,10 @@ void DebugDrawGlowBox(Vec2 const& center, Vec2 const& dimensions, Rgba8 const& c
         {
             verts[i].m_color = color; // Top left is shared by both triangles
         }
-        else { verts[i].m_color = glowColor; }
+        else
+        {
+            verts[i].m_color = glowColor;
+        }
     }
 
     g_theRenderer->BindTexture(nullptr);

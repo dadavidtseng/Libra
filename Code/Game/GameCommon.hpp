@@ -44,7 +44,7 @@ constexpr float PLAYER_TANK_INIT_ORIENTATION_DEGREES = 30.f;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS           = 0.3f;
 constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
 constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.1f;
-constexpr int   PLAYER_TANK_INIT_HEALTH              = 100000;
+constexpr int   PLAYER_TANK_INIT_HEALTH              = 1;
 
 //-----------------------------------------------------------------------------------------------
 // Scorpio-related
@@ -95,6 +95,8 @@ extern Rgba8 const DEBUG_RENDER_CYAN;
 extern Rgba8 const DEBUG_RENDER_YELLOW;
 extern Rgba8 const DEBUG_RENDER_BLUE;
 extern Rgba8 const TRANSPARENT_BLACK;
+extern Rgba8 const TRANSPARENT_RED;
+extern Rgba8 const TRANSPARENT_GREEN;
 extern Rgba8 const BLACK;
 
 void DebugDrawRing(Vec2 const& center, float radius, float thickness, Rgba8 const& color);

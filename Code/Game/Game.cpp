@@ -8,6 +8,7 @@
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -80,9 +81,20 @@ void Game::Update(float deltaSeconds)
     UpdateAttractMode(deltaSeconds);
     AdjustForPauseAndTimeDistortion(deltaSeconds);
 
+    if (m_playerTank->m_isDead)
+    {
+        m_gameOverCountDown -= deltaSeconds;
+    }
+
     if (m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).x == m_currentMap->GetMapExitPosition().x &&
         m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).y == m_currentMap->GetMapExitPosition().y)
     {
+        if (m_currentMap->GetMapIndex() == 2)
+        {
+            m_isGameOverMode = true;
+            return;
+        }
+
         UpdateCurrentMap();
     }
 
@@ -166,6 +178,12 @@ void Game::UpdateFromKeyBoard()
 {
     if (g_theInput->WasKeyJustPressed(KEYCODE_F9))
     {
+        if (m_currentMap->GetMapIndex() == 2)
+        {
+            m_isGameOverMode = true;
+            return;
+        }
+
         UpdateCurrentMap();
     }
 
@@ -180,8 +198,7 @@ void Game::UpdateFromKeyBoard()
     if (!m_isAttractMode &&
         g_theInput->WasKeyJustPressed(KEYCODE_F3))
         m_isNoClip = !m_isNoClip;
-
-
+    
     if (g_theInput->WasKeyJustPressed(KEYCODE_P))
     {
         if (!m_isAttractMode)
@@ -217,6 +234,12 @@ void Game::UpdateFromKeyBoard()
             m_isPaused = true;
             g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
             g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
+        }
+
+        if (m_isGameOverMode)
+        {
+            m_isPaused = true;
+            m_isGameOverMode = false;
         }
     }
 
@@ -507,12 +530,76 @@ void Game::RenderUI() const
         return;
 
     if (m_isPaused)
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), TRANSPARENT_BLACK,
-                         1.f);
+    {
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), BLACK,
+                         0.5f);
+    }
 
-    if (m_playerTank->m_isDead)
+    if (m_playerTank->m_isDead &&
+        m_gameOverCountDown <= 0.f)
     {
         DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), DEBUG_RENDER_RED,
-                         1.f);
+                         0.5f);
+
+        std::vector<Vertex_PCU> titleVerts;
+
+        AddVertsForTextTriangles2D(titleVerts,
+                                   "You are dead...",
+                                   Vec2(30.f, SCREEN_CENTER_Y + 100.f),
+                                   48.f,
+                                   BLACK,
+                                   1.f,
+                                   true,
+                                   0.05f);
+
+        AddVertsForTextTriangles2D(titleVerts,
+                                   "Press \"N\" to respawn,",
+                                   Vec2(30.f, SCREEN_CENTER_Y),
+                                   48.f,
+                                   BLACK,
+                                   1.f,
+                                   true,
+                                   0.05f);
+
+        AddVertsForTextTriangles2D(titleVerts,
+                                   "Press \"ESC\" to exit,",
+                                   Vec2(30.f, SCREEN_CENTER_Y - 100.f),
+                                   48.f,
+                                   BLACK,
+                                   1.f,
+                                   true,
+                                   0.05f);
+
+        g_theRenderer->DrawVertexArray(static_cast<int>(titleVerts.size()), titleVerts.data());
+    }
+
+    if (m_isGameOverMode)
+    {
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
+                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y),
+                         DEBUG_RENDER_GREEN,
+                         0.5f);
+
+        std::vector<Vertex_PCU> titleVerts;
+
+        AddVertsForTextTriangles2D(titleVerts,
+                                   "Victory!",
+                                   Vec2(30.f, SCREEN_CENTER_Y + 100.f),
+                                   48.f,
+                                   BLACK,
+                                   1.f,
+                                   true,
+                                   0.05f);
+
+        AddVertsForTextTriangles2D(titleVerts,
+                                   "Press \"ESC\" to exit,",
+                                   Vec2(30.f, SCREEN_CENTER_Y - 100.f),
+                                   48.f,
+                                   BLACK,
+                                   1.f,
+                                   true,
+                                   0.05f);
+
+        g_theRenderer->DrawVertexArray(static_cast<int>(titleVerts.size()), titleVerts.data());
     }
 }

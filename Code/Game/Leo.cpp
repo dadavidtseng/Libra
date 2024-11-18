@@ -39,6 +39,9 @@ void Leo::Update(const float deltaSeconds)
     if (m_isDead)
         return;
 
+    if (g_theGame->GetPlayerTank()->m_isDead)
+        return;
+    
     if (m_health <= 0)
     {
         m_isGarbage = true;
@@ -117,6 +120,9 @@ void Leo::UpdateBody(const float deltaSeconds)
     if (!playerTank)
         return;
 
+    if (playerTank->m_isDead)
+        m_hasTarget = false;
+    
     //Check if target is reached, but not seen; go back wander
     if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius))
     {

@@ -39,6 +39,9 @@ void Aries::Update(const float deltaSeconds)
     if (m_isDead)
         return;
 
+    if (g_theGame->GetPlayerTank()->m_isDead)
+        return;
+    
     if (m_health <= 0)
     {
         m_isGarbage = true;
@@ -112,6 +115,9 @@ void Aries::UpdateBody(const float deltaSeconds)
 
     const PlayerTank* playerTank = g_theGame->GetPlayerTank();
 
+    if (playerTank->m_isDead)
+        m_hasTarget = false;
+    
     if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius))
     {
         m_playerTankLastKnownPosition = Vec2::ZERO;

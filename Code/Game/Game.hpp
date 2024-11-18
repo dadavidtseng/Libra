@@ -47,20 +47,22 @@ private:
     void RenderUI() const;
 
 
-    Camera* m_worldCamera       = nullptr;
-    Camera* m_screenCamera      = nullptr;
+    Camera* m_worldCamera  = nullptr;
+    Camera* m_screenCamera = nullptr;
     // IntVec2 m_mapDimension      = IntVec2(24, 30);
-    bool    m_isAttractMode     = true;
-    bool    m_isDebugRendering  = false;
-    bool    m_isDebugCamera     = false;
-    bool    m_isPaused          = false;
-    bool    m_isSlowMo          = false;
-    bool    m_isFastMo          = false;
-    bool    m_isMarkedForDelete = false;
-    bool    m_isNoClip          = false;
-    float   m_glowIntensity     = 0.f;
-    bool    m_glowIncreasing    = false;
-    Vec2    m_baseCameraPos     = Vec2(0.f, 0.f);
+    bool  m_isAttractMode     = true;
+    bool  m_isGameOverMode    = false;
+    bool  m_isDebugRendering  = false;
+    bool  m_isDebugCamera     = false;
+    bool  m_isPaused          = false;
+    bool  m_isSlowMo          = false;
+    bool  m_isFastMo          = false;
+    bool  m_isMarkedForDelete = false;
+    bool  m_isNoClip          = false;
+    float m_glowIntensity     = 0.f;
+    float m_gameOverCountDown = 0.f;
+    bool  m_glowIncreasing    = false;
+    Vec2  m_baseCameraPos     = Vec2(0.f, 0.f);
 
     std::vector<Map*> m_maps;
     Map*              m_currentMap      = nullptr;
