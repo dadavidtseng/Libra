@@ -28,6 +28,7 @@ void TileDefinition::InitializeTileDefinitions(SpriteSheet const& spriteSheet)
     // Define each tile type and its properties
     s_tileDefinitions.emplace_back(TILE_TYPE_GRASS, spriteSheet.GetSpriteDef(0), false, Rgba8::WHITE);
     s_tileDefinitions.emplace_back(TILE_TYPE_STONE, spriteSheet.GetSpriteDef(17), true, Rgba8::WHITE);
+    s_tileDefinitions.emplace_back(TILE_TYPE_EXIT, spriteSheet.GetSpriteDef(57), true, Rgba8::WHITE);
 
     // Add other tile types as necessary
 }

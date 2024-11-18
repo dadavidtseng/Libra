@@ -17,6 +17,7 @@ enum TileType: int
     TILE_TYPE_INVALID = -1,
     TILE_TYPE_GRASS,
     TILE_TYPE_STONE,
+    TILE_TYPE_EXIT,
     NUM_TILE_TYPE
 };
 

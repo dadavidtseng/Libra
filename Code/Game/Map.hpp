@@ -47,6 +47,8 @@ public:
     void            AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
     void            RemoveEntityFromMap(Entity* entity);
     IntVec2         GetMapDimension() { return m_dimensions; }
+    int             GetMapIndex() const { return m_mapData.m_index; }
+    IntVec2         GetMapExitPosition() { return m_exitPosition; }
 
 private:
     void UpdateEntities(float deltaSeconds);
@@ -85,5 +87,6 @@ private:
     EntityList        m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList        m_bulletsByFaction[NUM_ENTITY_FACTIONS];
     IntVec2           m_dimensions;
-    Vec2              m_exitPosition = Vec2::ZERO;
+    IntVec2           m_exitPosition = IntVec2::ZERO;
+    MapData           m_mapData;
 };

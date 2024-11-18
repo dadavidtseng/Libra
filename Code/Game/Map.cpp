@@ -23,10 +23,11 @@
 
 //----------------------------------------------------------------------------------------------------
 Map::Map(MapData const& data)
-    : m_dimensions(data.m_dimensions.x, data.m_dimensions.y)
+    : m_dimensions(data.m_dimensions.x, data.m_dimensions.y),
+      m_mapData(data)
 {
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
-// m_exitPosition = 
+    m_exitPosition = IntVec2(m_dimensions.x-2, m_dimensions.y - 2);
     GenerateTiles();
     SpawnNewNPCs();
 }
@@ -222,6 +223,10 @@ void Map::GenerateTiles()
 
     SetLShapedBarrier(2, 2, 5, false);
     SetLShapedBarrier(m_dimensions.x - 9, m_dimensions.y - 9, 7, true);
+
+    m_tiles.emplace_back();
+    m_tiles.back().m_tileCoords = m_exitPosition;
+    m_tiles.back().m_type       = TILE_TYPE_EXIT;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -232,6 +237,7 @@ void Map::RenderTiles() const
 
     RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
     RenderTilesByType(TILE_TYPE_STONE, tileVertices);
+    RenderTilesByType(TILE_TYPE_EXIT, tileVertices);
 
     g_theRenderer->BindTexture(&g_theGame->GetTileSpriteSheet()->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
@@ -312,11 +318,11 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
     }
 
     int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
-    
+
     if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
     {
         Tile const& tile = m_tiles[tileIndex];
-        
+
         return tile.m_type == TILE_TYPE_STONE;
     }
 
@@ -453,7 +459,7 @@ void Map::SpawnNewNPCs()
     //         m_tiles.back().m_type       = type;
     //     }
     // }
-    
+
     SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, Vec2(4.5f, 5.5f), 0.f);
     SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, Vec2(2.5f, 7.5f), 0.f);
     SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, Vec2(7.5f, 5.5f), 0.f);

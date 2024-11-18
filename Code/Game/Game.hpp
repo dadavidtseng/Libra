@@ -38,7 +38,7 @@ private:
     void UpdateMarkForDelete();
     void UpdateFromKeyBoard();
     void UpdateFromController();
-    void UpdateCurrentMap(int newMapIndex);
+    void UpdateCurrentMap();
     void UpdateCamera(float deltaSeconds) const;
     void UpdateAttractMode(float deltaSeconds);
     void AdjustForPauseAndTimeDistortion(float& deltaSeconds) const;
