@@ -42,8 +42,6 @@ Game::Game()
     m_worldCamera->SetOrthoView(bottomLeft, Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
     m_screenCamera->SetOrthoView(bottomLeft, Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y));
 
-
-
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
 
@@ -68,6 +66,8 @@ Game::~Game()
 
     g_theAudio->StopSound(m_InGamePlayback);
     g_theAudio->StopSound(m_attractModePlayback);
+    g_theAudio->StopSound(m_gameWinPlayback);
+    g_theAudio->StopSound(m_gameLosePlayback);
 };
 
 //-----------------------------------------------------------------------------------------------
@@ -86,12 +86,29 @@ void Game::Update(float deltaSeconds)
         m_gameOverCountDown -= deltaSeconds;
     }
 
+    if (m_playerTank->m_isDead &&
+        m_gameOverCountDown <= 0.f)
+    {
+        m_isPaused       = true;
+        m_isGameLoseMode = true;
+        g_theAudio->StopSound(m_InGamePlayback);
+
+        if (m_gameLosePlayback == 0)
+            m_gameLosePlayback = g_theAudio->StartSound(m_gameLoseBgm);
+    }
+
     if (m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).x == m_currentMap->GetMapExitPosition().x &&
         m_currentMap->GetTileCoordsFromWorldPos(m_playerTank->m_position).y == m_currentMap->GetMapExitPosition().y)
     {
         if (m_currentMap->GetMapIndex() == 2)
         {
+            m_isPaused      = true;
             m_isGameWinMode = true;
+            g_theAudio->StopSound(m_InGamePlayback);
+
+            if (m_gameWinPlayback == 0)
+                m_gameWinPlayback = g_theAudio->StartSound(m_gameWinBgm);
+
             return;
         }
 
@@ -145,11 +162,20 @@ void Game::InitializeTiles()
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeAudio()
 {
-    m_attractModeBgm = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
-    m_InGameBgm      = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
-    m_clickSound     = g_theAudio->CreateOrGetSound(CLICK_SOUND);
-    m_pauseSound     = g_theAudio->CreateOrGetSound(PAUSE_SOUND);
-    m_resumeSound    = g_theAudio->CreateOrGetSound(RESUME_SOUND);
+    m_attractModeBgm       = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
+    m_InGameBgm            = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
+    m_gameWinBgm           = g_theAudio->CreateOrGetSound(GAME_WIN_BGM);
+    m_gameLoseBgm          = g_theAudio->CreateOrGetSound(GAME_LOSE_BGM);
+    m_clickSound           = g_theAudio->CreateOrGetSound(CLICK_SOUND);
+    m_pauseSound           = g_theAudio->CreateOrGetSound(PAUSE_SOUND);
+    m_resumeSound          = g_theAudio->CreateOrGetSound(RESUME_SOUND);
+    m_playerTankShootSound = g_theAudio->CreateOrGetSound(PLAYER_TANK_SHOOT_SOUND);
+    m_playerTankHitSound   = g_theAudio->CreateOrGetSound(PLAYER_TANK_HIT_SOUND);
+    m_enemyDiedSound       = g_theAudio->CreateOrGetSound(ENEMY_DIED_SOUND);
+    m_enemyHitSound        = g_theAudio->CreateOrGetSound(ENEMY_HIT_SOUND);
+    m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND);
+    m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND);
+    m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -198,8 +224,11 @@ void Game::UpdateFromKeyBoard()
         {
             if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
             {
-                m_isPaused      = true;
-                m_isGameWinMode = false;
+                m_isGameWinMode     = false;
+                m_isMarkedForDelete = true;
+                g_theAudio->StopSound(m_gameWinPlayback);
+                g_theAudio->StartSound(m_attractModeBgm);
+                g_theAudio->StartSound(m_clickSound);
             }
         }
 
@@ -208,8 +237,19 @@ void Game::UpdateFromKeyBoard()
         {
             if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
             {
-                m_isPaused       = true;
-                m_isGameLoseMode = false;
+                m_isGameLoseMode    = false;
+                m_isMarkedForDelete = true;
+                g_theAudio->StopSound(m_gameLosePlayback);
+                g_theAudio->StartSound(m_attractModeBgm);
+                g_theAudio->StartSound(m_clickSound);
+            }
+
+            if (g_theInput->WasKeyJustPressed(KEYCODE_N))
+            {
+                m_playerTank->m_health = PLAYER_TANK_INIT_HEALTH;
+                m_playerTank->m_isDead = false;
+                m_isGameLoseMode       = false;
+                m_isPaused             = false;
             }
         }
 
@@ -232,7 +272,11 @@ void Game::UpdateFromKeyBoard()
         {
             if (m_currentMap->GetMapIndex() == 2)
             {
+                m_isPaused      = true;
                 m_isGameWinMode = true;
+                g_theAudio->StopSound(m_InGamePlayback);
+                m_gameWinPlayback = g_theAudio->StartSound(m_gameWinBgm);
+
                 return;
             }
 
@@ -241,13 +285,13 @@ void Game::UpdateFromKeyBoard()
 
         if (g_theInput->WasKeyJustPressed(KEYCODE_P))
         {
-            if (!m_isPaused)
+            if (!m_isPaused && !m_isGameWinMode && !m_isGameLoseMode)
             {
                 m_isPaused = true;
                 g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
                 g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
             }
-            else if (m_isPaused)
+            else if (m_isPaused && !m_isGameWinMode && !m_isGameLoseMode)
             {
                 m_isPaused = false;
                 g_theAudio->StartSound(m_resumeSound, false, 1, 0, 1, false);
@@ -274,6 +318,11 @@ void Game::UpdateFromKeyBoard()
         {
             if (!m_isPaused && !m_isMarkedForDelete)
             {
+                if (m_isGameWinMode)
+                    return;
+                if (m_isGameLoseMode)
+                    return;
+
                 m_isPaused = true;
                 g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
                 g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
@@ -343,10 +392,10 @@ void Game::UpdateFromController()
 
         if (m_isAttractMode)
         {
-            m_isAttractMode = false;
-            m_isPaused      = false;
-            g_theAudio->StopSound(m_attractModePlayback);
+            m_isAttractMode  = false;
+            m_isPaused       = false;
             m_InGamePlayback = g_theAudio->StartSound(m_InGameBgm, true, 1, 0, m_InGameBgmSpeed, false);
+            g_theAudio->StopSound(m_attractModePlayback);
             g_theAudio->StartSound(m_clickSound);
         }
     }
@@ -426,6 +475,8 @@ void Game::UpdateCurrentMap()
     m_currentMap->AddEntityToMap(m_playerTank,
                                  Vec2(PLAYER_TANK_INIT_POSITION_X, PLAYER_TANK_INIT_POSITION_Y),
                                  PLAYER_TANK_INIT_ORIENTATION_DEGREES);
+
+    g_theAudio->StartSound(m_exitMapSound);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -543,8 +594,7 @@ void Game::RenderUI() const
                          0.5f);
     }
 
-    if (m_playerTank->m_isDead &&
-        m_gameOverCountDown <= 0.f)
+    if (m_isGameLoseMode)
     {
         DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), DEBUG_RENDER_RED,
                          0.5f);

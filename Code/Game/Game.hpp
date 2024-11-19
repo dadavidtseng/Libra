@@ -29,6 +29,13 @@ public:
     bool         IsMarkedForDelete() const { return m_isMarkedForDelete; }
     PlayerTank*  GetPlayerTank() const { return m_playerTank; }
     SpriteSheet* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
+    SoundID      GetPlayerTankShootSoundID() const { return m_playerTankShootSound; }
+    SoundID      GetPlayerTankHitSoundID() const { return m_playerTankHitSound; }
+    SoundID      GetEnemyDiedSoundID() const { return m_enemyDiedSound; }
+    SoundID      GetEnemyHitSoundID() const { return m_enemyHitSound; }
+    SoundID      GetEnemyShootSoundID() const { return m_enemyShootSound; }
+    SoundID      GetExitMapSoundID() const { return m_exitMapSound; }
+    SoundID      GetBulletBounceSoundID() const { return m_bulletBounceSound; }
 
 private:
     void InitializeMaps();
@@ -61,7 +68,7 @@ private:
     bool  m_isMarkedForDelete = false;
     bool  m_isNoClip          = false;
     float m_glowIntensity     = 0.f;
-    float m_gameOverCountDown = 0.f;
+    float m_gameOverCountDown = 3.f;
     bool  m_glowIncreasing    = false;
     Vec2  m_baseCameraPos     = Vec2(0.f, 0.f);
 
@@ -70,14 +77,25 @@ private:
     SpriteSheet*      m_tileSpriteSheet = nullptr;
     PlayerTank*       m_playerTank      = nullptr;
 
-    SoundID         m_attractModeBgm      = 0;
-    SoundPlaybackID m_attractModePlayback = 0;
-    SoundID         m_InGameBgm           = 0;
-    SoundPlaybackID m_InGamePlayback      = 0;
-    SoundID         m_clickSound          = 0;
-    SoundID         m_pauseSound          = 0;
-    SoundID         m_resumeSound         = 0;
-    float           m_InGameBgmSpeed      = 1.f;
+    SoundID         m_attractModeBgm       = 0;
+    SoundPlaybackID m_attractModePlayback  = 0;
+    SoundID         m_InGameBgm            = 0;
+    SoundPlaybackID m_InGamePlayback       = 0;
+    SoundID         m_gameWinBgm           = 0;
+    SoundPlaybackID m_gameWinPlayback      = 0;
+    SoundID         m_gameLoseBgm          = 0;
+    SoundPlaybackID m_gameLosePlayback     = 0;
+    SoundID         m_clickSound           = 0;
+    SoundID         m_pauseSound           = 0;
+    SoundID         m_resumeSound          = 0;
+    SoundID         m_playerTankShootSound = 0;
+    SoundID         m_playerTankHitSound   = 0;
+    SoundID         m_enemyDiedSound       = 0;
+    SoundID         m_enemyHitSound        = 0;
+    SoundID         m_enemyShootSound      = 0;
+    SoundID         m_exitMapSound         = 0;
+    SoundID         m_bulletBounceSound    = 0;
+    float           m_InGameBgmSpeed       = 1.f;
 
     // float numTilesInViewHorizontally
 };

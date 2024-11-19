@@ -46,6 +46,7 @@ void Scorpio::Update(float deltaSeconds)
 
     if (m_health <= 0)
     {
+        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
         m_isGarbage = true;
         m_isDead    = true;
     }
@@ -107,7 +108,7 @@ void Scorpio::UpdateTurret(const float deltaSeconds)
 
     // Turn and shoot ( or turn idly)
     PlayerTank* playerTank = g_theGame->GetPlayerTank();
-    if (m_map->HasLineOfSight(m_position, playerTank->m_position, SCORPIO_RANGE))
+    if (m_map->HasLineOfSight(m_position, playerTank->m_position, SCORPIO_RANGE) && !playerTank->m_isDead)
     {
         // Turn toward player
         float const targetOrientationDegrees = (m_playerTankLastKnownPosition - m_position).GetOrientationDegrees();
@@ -124,6 +125,7 @@ void Scorpio::UpdateTurret(const float deltaSeconds)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position + myFwdNormal * 0.45f, m_turretOrientationDegrees);
             m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
+            g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
         }
 
         m_playerTankLastKnownPosition = playerTank->m_position;

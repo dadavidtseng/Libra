@@ -48,12 +48,7 @@ void Map::Update(const float deltaSeconds)
     UpdateEntities(deltaSeconds);
     PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
     CheckEntityVsEntityCollision(m_entitiesByType[ENTITY_TYPE_BULLET], m_allEntities);
-
-    if (g_theGame->IsNoClip())
-        return;
-
     PushEntitiesOutOfWalls();
-
     DeleteGarbageEntities();
 }
 
@@ -209,12 +204,29 @@ void Map::GenerateTiles()
         {
             TileType type = TILE_TYPE_GRASS;
 
+            if (g_theRNG->RollRandomFloatInRange(0.f, 1.f) < 0.1f)
+            {
+                type = TILE_TYPE_SPARKLE_01;
+            }
+
+            if (g_theRNG->RollRandomFloatInRange(0.f, 1.f) > 0.8f)
+            {
+                type = TILE_TYPE_SPARKLE_02;
+            }
+
+            if (IsInLShape(x,y))
+            {
+                type = TILE_TYPE_FLOOR;
+            }
+            
             if (IsEdgeTile(x, y) ||
                 IsRandomTile(x, y))
             {
                 type = TILE_TYPE_STONE;
             }
 
+            
+            
             m_tiles.emplace_back();
             m_tiles.back().m_tileCoords = IntVec2(x, y);
             m_tiles.back().m_type       = type;
@@ -237,6 +249,9 @@ void Map::RenderTiles() const
 
     RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
     RenderTilesByType(TILE_TYPE_STONE, tileVertices);
+    RenderTilesByType(TILE_TYPE_SPARKLE_01, tileVertices);
+    RenderTilesByType(TILE_TYPE_SPARKLE_02, tileVertices);
+    RenderTilesByType(TILE_TYPE_FLOOR, tileVertices);
     RenderTilesByType(TILE_TYPE_EXIT, tileVertices);
 
     g_theRenderer->BindTexture(&g_theGame->GetTileSpriteSheet()->GetTexture());
@@ -312,8 +327,8 @@ bool Map::IsRandomTile(int x, int y) const
 
 bool Map::IsInLShape(int x, int y) const
 {
-    bool const inLeftLShape  = x <= 7 && y <= 7;
-    bool const inRightLShape = x >= m_dimensions.x - 9 && y >= m_dimensions.y - 9;
+    bool const inLeftLShape  = x <= 5 && y <= 5;
+    bool const inRightLShape = x >= m_dimensions.x - 8 && y >= m_dimensions.y - 8;
 
     return inLeftLShape || inRightLShape;
 }
@@ -459,7 +474,7 @@ void Map::SpawnNewNPCs()
                 if (IsEdgeTile(x, y) || IsTileSolid(IntVec2(x, y)) || IsInLShape(x, y)) continue;
 
                 Vec2 position(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
-                
+
                 if (IsPositionOccupied(position))
                     continue;
 
@@ -528,6 +543,9 @@ void Map::PushEntitiesOutOfWalls()
         if (IsBullet(entity))
             continue;
 
+        if (g_theGame->IsNoClip()&& entity->m_type == ENTITY_TYPE_PLAYER_TANK)
+            continue;
+        
         PushEntityOutOfSolidTiles(entity);
     }
 }
@@ -641,6 +659,15 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 
                 entityA->m_health--;
                 entityB->m_health--;
+
+                if (entityB->m_type == ENTITY_TYPE_PLAYER_TANK)
+                {
+                    g_theAudio->StartSound(g_theGame->GetPlayerTankHitSoundID());
+                }
+                else
+                {
+                    g_theAudio->StartSound(g_theGame->GetEnemyHitSoundID());
+                }
             }
 
         }

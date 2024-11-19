@@ -44,7 +44,7 @@ constexpr float PLAYER_TANK_INIT_ORIENTATION_DEGREES = 30.f;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS           = 0.3f;
 constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
 constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.1f;
-constexpr int   PLAYER_TANK_INIT_HEALTH              = 100000;
+constexpr int   PLAYER_TANK_INIT_HEALTH              = 10;
 
 //-----------------------------------------------------------------------------------------------
 // Scorpio-related
@@ -110,9 +110,18 @@ void DebugDrawBoxRing(Vec2 const& center, float radius, float thickness, Rgba8 c
 //
 extern const char* ATTRACT_MODE_BGM;
 extern const char* IN_GAME_BGM;
+extern const char* GAME_WIN_BGM;
+extern const char* GAME_LOSE_BGM;
 extern const char* CLICK_SOUND;
 extern const char* PAUSE_SOUND;
 extern const char* RESUME_SOUND;
+extern const char* PLAYER_TANK_SHOOT_SOUND;
+extern const char* PLAYER_TANK_HIT_SOUND;
+extern const char* ENEMY_DIED_SOUND;
+extern const char* ENEMY_HIT_SOUND;
+extern const char* ENEMY_SHOOT_SOUND;
+extern const char* EXIT_MAP_SOUND;
+extern const char* BULLET_BOUNCE_SOUND;
 
 //-----------------------------------------------------------------------------------------------
 // Texture-related

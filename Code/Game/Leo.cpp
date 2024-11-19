@@ -44,6 +44,7 @@ void Leo::Update(const float deltaSeconds)
     
     if (m_health <= 0)
     {
+        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
         m_isGarbage = true;
         m_isDead    = true;
     }
@@ -119,12 +120,10 @@ void Leo::UpdateBody(const float deltaSeconds)
 
     if (!playerTank)
         return;
-
-    if (playerTank->m_isDead)
-        m_hasTarget = false;
     
     //Check if target is reached, but not seen; go back wander
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius))
+    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius)||
+        playerTank->m_isDead)
     {
         // Clear my target; the player is nowhere to be seen from last known position
         m_playerTankLastKnownPosition = Vec2::ZERO;
@@ -150,6 +149,8 @@ void Leo::UpdateBody(const float deltaSeconds)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
             m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
+
+            g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
         }
     }
 

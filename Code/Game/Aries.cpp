@@ -44,6 +44,7 @@ void Aries::Update(const float deltaSeconds)
     
     if (m_health <= 0)
     {
+        g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
         m_isGarbage = true;
         m_isDead    = true;
     }
@@ -114,11 +115,9 @@ void Aries::UpdateBody(const float deltaSeconds)
     m_timeSinceLastRoll += deltaSeconds;
 
     const PlayerTank* playerTank = g_theGame->GetPlayerTank();
-
-    if (playerTank->m_isDead)
-        m_hasTarget = false;
     
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius))
+    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius)||
+        playerTank->m_isDead)
     {
         m_playerTankLastKnownPosition = Vec2::ZERO;
         m_hasTarget                   = false;

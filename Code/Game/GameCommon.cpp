@@ -29,11 +29,20 @@ Rgba8 const BLACK             = Rgba8(0, 0, 0);
 //-----------------------------------------------------------------------------------------------
 // Audio-related
 //
-const char* ATTRACT_MODE_BGM = "Data/Audios/AttractModeBgm.mp3";
-const char* IN_GAME_BGM      = "Data/Audios/InGameBgm.mp3";
-const char* CLICK_SOUND      = "Data/Audios/ClickSound.mp3";
-const char* PAUSE_SOUND      = "Data/Audios/PauseSound.mp3";
-const char* RESUME_SOUND     = "Data/Audios/ResumeSound.mp3";
+const char* ATTRACT_MODE_BGM        = "Data/Audios/AttractModeBgm.mp3";
+const char* IN_GAME_BGM             = "Data/Audios/InGameBgm.mp3";
+const char* GAME_WIN_BGM            = "Data/Audios/GameWinBgm.mp3";
+const char* GAME_LOSE_BGM           = "Data/Audios/GameLoseBgm.mp3";
+const char* CLICK_SOUND             = "Data/Audios/ClickSound.mp3";
+const char* PAUSE_SOUND             = "Data/Audios/PauseSound.mp3";
+const char* RESUME_SOUND            = "Data/Audios/ResumeSound.mp3";
+const char* PLAYER_TANK_SHOOT_SOUND = "Data/Audios/PlayerTankShoot.mp3";
+const char* PLAYER_TANK_HIT_SOUND   = "Data/Audios/PlayerTankHit.mp3";
+const char* ENEMY_DIED_SOUND        = "Data/Audios/EnemyDied.mp3";
+const char* ENEMY_HIT_SOUND         = "Data/Audios/EnemyHit.mp3";
+const char* ENEMY_SHOOT_SOUND       = "Data/Audios/EnemyShoot.mp3";
+const char* EXIT_MAP_SOUND          = "Data/Audios/ExitMap.mp3";
+const char* BULLET_BOUNCE_SOUND     = "Data/Audios/BulletBounce.mp3";
 
 //-----------------------------------------------------------------------------------------------
 // Texture-related

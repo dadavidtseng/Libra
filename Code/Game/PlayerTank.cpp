@@ -62,6 +62,8 @@ void PlayerTank::Update(const float deltaSeconds)
             Vec2 fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position+fwdNormal*0.5f, m_orientationDegrees);
             m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
+            
+            g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
         }
     }
 }
