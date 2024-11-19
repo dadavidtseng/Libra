@@ -22,9 +22,11 @@ enum TileType: int
 };
 
 //----------------------------------------------------------------------------------------------------
-class TileDefinition
+// class TileDefinition
+struct TileDefinition
 {
 public:
+//TileDefinition (XmlElement const& tileDefElement);
     TileDefinition() = default;
     TileDefinition(TileType tileType, SpriteDefinition const& spriteDef, bool isSolid = false, Rgba8 const& tintColor = Rgba8::WHITE);
 

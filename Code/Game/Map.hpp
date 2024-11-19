@@ -45,6 +45,7 @@ public:
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     bool            HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
+    // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
     void            AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);

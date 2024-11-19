@@ -26,7 +26,7 @@ private:
 	void UpdateFromController();
 	void UpdateFromKeyBoard();
 	void RequestQuit();
-	void DeleteAndCreateNewGame();
+	void DeleteAndCreateNewGameIfMarkedForDelete();
 
 	bool  m_isQuitting         = false;
 	float m_timeLastFrameStart = 0.f;

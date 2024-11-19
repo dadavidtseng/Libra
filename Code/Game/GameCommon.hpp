@@ -44,7 +44,7 @@ constexpr float PLAYER_TANK_INIT_ORIENTATION_DEGREES = 30.f;
 constexpr float PLAYER_TANK_PHYSICS_RADIUS           = 0.3f;
 constexpr float PLAYER_TANK_ANGULAR_VELOCITY         = 180.f;
 constexpr float PLAYER_TANK_SHOOT_COOLDOWN           = 0.1f;
-constexpr int   PLAYER_TANK_INIT_HEALTH              = 1;
+constexpr int   PLAYER_TANK_INIT_HEALTH              = 100000;
 
 //-----------------------------------------------------------------------------------------------
 // Scorpio-related

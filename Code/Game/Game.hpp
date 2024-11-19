@@ -51,7 +51,8 @@ private:
     Camera* m_screenCamera = nullptr;
     // IntVec2 m_mapDimension      = IntVec2(24, 30);
     bool  m_isAttractMode     = true;
-    bool  m_isGameOverMode    = false;
+    bool  m_isGameWinMode     = false;
+    bool  m_isGameLoseMode    = false;
     bool  m_isDebugRendering  = false;
     bool  m_isDebugCamera     = false;
     bool  m_isPaused          = false;
