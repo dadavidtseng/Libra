@@ -59,8 +59,9 @@ void PlayerTank::Update(const float deltaSeconds)
     {
         if (m_shootCoolDown <= 0.0f)
         {
-            Vec2 fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
-            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position+fwdNormal*0.5f, m_orientationDegrees);
+            float turretAbsoluteDegrees = m_orientationDegrees + m_turretRelativeOrientation;
+            Vec2 fwdNormal = Vec2::MakeFromPolarDegrees(turretAbsoluteDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position+fwdNormal*0.5f, turretAbsoluteDegrees);
             m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
             
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
@@ -132,7 +133,7 @@ void PlayerTank::DebugRender() const
     // TODO: ASK IF THIS IS OKAY!!!
     // Draw turret's current and goal orientations
     const Vec2 turretGoalVec    = Vec2::MakeFromPolarDegrees(m_turretGoalOrientationDegrees);
-    const Vec2 turretCurrentVec = Vec2::MakeFromPolarDegrees(m_turretOrientation + m_orientationDegrees);
+    const Vec2 turretCurrentVec = Vec2::MakeFromPolarDegrees(m_turretRelativeOrientation + m_orientationDegrees);
 
     DebugDrawLine(m_position + turretGoalVec,
                   m_position + turretGoalVec * 1.5f,
@@ -154,30 +155,33 @@ void PlayerTank::DebugRender() const
 void PlayerTank::UpdateBody(const float deltaSeconds)
 {
     XboxController const& controller = g_theInput->GetController(0);
-    m_bodyInput                      = controller.GetLeftStick().GetPosition() * 0.7f;
+    m_bodyInput                      = controller.GetLeftStick().GetPosition();
 
     if (g_theInput->IsKeyDown('W')) m_bodyInput += Vec2(0.f, 1.f);
     if (g_theInput->IsKeyDown('S')) m_bodyInput += Vec2(0.f, -1.f);
     if (g_theInput->IsKeyDown('A')) m_bodyInput += Vec2(-1.f, 0.f);
     if (g_theInput->IsKeyDown('D')) m_bodyInput += Vec2(1.f, 0.f);
 
-    if (m_bodyInput.GetLengthSquared() > 0.0f)
-    {
-        const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
-        m_targetOrientationDegrees = Atan2Degrees(m_bodyInput.y, m_bodyInput.x);
+	if (m_bodyInput.GetLengthSquared() <= 0.0f)
+		return;
 
-        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
+    m_bodyInput.ClampLength(1.f);   // if it's over 100%, clamp it
 
-        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
-        m_position += m_velocity;
-    }
+	const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
+	m_targetOrientationDegrees = m_bodyInput.GetOrientationDegrees();
+
+	TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
+
+	m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
+	m_position += m_velocity;
+
 }
 
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::UpdateTurret(const float deltaSeconds)
 {
     XboxController const& controller  = g_theInput->GetController(0);
-    Vec2                  turretInput = controller.GetRightStick().GetPosition() * 0.7f;
+    Vec2                  turretInput = controller.GetRightStick().GetPosition();
 
     if (g_theInput->IsKeyDown('I')) turretInput += Vec2(0.0f, 1.0f);
     if (g_theInput->IsKeyDown('K')) turretInput += Vec2(0.0f, -1.0f);
@@ -187,11 +191,12 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
     if (turretInput.GetLengthSquared() <= 0.0f)
         return;
 
-    m_turretGoalOrientationDegrees = Atan2Degrees(turretInput.y, turretInput.x);
+    m_turretGoalOrientationDegrees = turretInput.GetOrientationDegrees();
 
+    float turretGoalRelativeOrientation = m_turretGoalOrientationDegrees - m_orientationDegrees;
 
-    TurnToward(m_turretOrientation, m_turretGoalOrientationDegrees - m_orientationDegrees, deltaSeconds,
-               m_turretAngularVelocity);
+    TurnToward(m_turretRelativeOrientation, turretGoalRelativeOrientation, deltaSeconds,
+        m_turretMaxRotateSpeed);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -214,7 +219,7 @@ void PlayerTank::RenderTurret() const
     AddVertsForAABB2D(turretVerts, m_turretBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),
-                             1.0f, m_orientationDegrees + m_turretOrientation, m_position);
+                             1.0f, m_orientationDegrees + m_turretRelativeOrientation, m_position);
 
     g_theRenderer->BindTexture(m_turretTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(turretVerts.size()), turretVerts.data());

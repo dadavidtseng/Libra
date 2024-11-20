@@ -34,6 +34,8 @@ public:
 // TODO:
     // SetTileType(int tileX, int tileY, TileType tileType);
     // SetTileTypeInTriangle();
+    // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
+
     void Update(float deltaSeconds);
     void Render() const;
     void DebugRender() const;
@@ -45,7 +47,6 @@ public:
     Entity*         SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     bool            HasLineOfSight(Vec2 const& posA, Vec2 const& posB, float maxDist) const;
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
-    // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
     void            AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
@@ -62,7 +63,6 @@ private:
     // Map-related
     void GenerateTiles();
     void RenderTiles() const;
-    void RenderTilesByType(TileType tileType, std::vector<Vertex_PCU>& tileVertices) const;
     void SetLShapedBarrier(int startX, int startY, int size, bool isBottomLeft);
     bool IsEdgeTile(int x, int y) const;
     bool IsRandomTile(int x, int y) const;

@@ -31,9 +31,9 @@ private:
     AABB2    m_turretBounds;
     Texture* m_bodyTexture                  = nullptr;
     Texture* m_turretTexture                = nullptr;
-    float    m_turretOrientation            = 0.0f;
+    float    m_turretRelativeOrientation            = 0.0f;
     float    m_turretGoalOrientationDegrees = 0.0f;
-    float    m_turretAngularVelocity        = 360.0f;
+    float    m_turretMaxRotateSpeed        = 360.0f;
     float    m_shootCoolDown                = 0.f;
     Vec2     m_bodyInput                    = Vec2();
 };

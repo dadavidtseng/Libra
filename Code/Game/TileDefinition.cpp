@@ -5,6 +5,8 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/TileDefinition.hpp"
 
+#include <windows.h>
+
 //----------------------------------------------------------------------------------------------------
 class SpriteSheet;
 
@@ -18,6 +20,9 @@ TileDefinition::TileDefinition(TileType const tileType, SpriteDefinition const& 
       m_isSolid(isSolid),
       m_tintColor(tintColor)
 {
+    // m_name... = ParseXmlAttribute();
+
+    
 }
 
 //----------------------------------------------------------------------------------------------------

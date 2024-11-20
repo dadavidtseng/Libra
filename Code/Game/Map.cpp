@@ -4,7 +4,6 @@
 #include "Game/Map.hpp"
 //----------------------------------------------------------------------------------------------------
 
-
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/VertexUtils.hpp"
@@ -52,7 +51,6 @@ void Map::Update(const float deltaSeconds)
     DeleteGarbageEntities();
 }
 
-
 //----------------------------------------------------------------------------------------------------
 void Map::Render() const
 {
@@ -62,7 +60,6 @@ void Map::Render() const
     RenderTiles();
     RenderEntities();
 }
-
 
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRender() const
@@ -78,15 +75,15 @@ AABB2 Map::GetTileBounds(IntVec2 const& tileCoords) const
 {
     if (IsTileCoordsOutOfBounds(tileCoords))
     {
-        return {};
+        return AABB2{};
     }
 
-    float minsX = static_cast<float>(tileCoords.x);
-    float minsY = static_cast<float>(tileCoords.y);
-    Vec2  mins(minsX, minsY);
-    Vec2  maxs(mins + Vec2::ONE);
+    float const minsX = static_cast<float>(tileCoords.x);
+    float const minsY = static_cast<float>(tileCoords.y);
+    Vec2 const  mins(minsX, minsY);
+    Vec2 const  maxs(mins + Vec2::ONE);
 
-    return AABB2(mins, maxs);
+    return AABB2{ mins, maxs };
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -94,7 +91,7 @@ AABB2 Map::GetTileBounds(const int tileIndex) const
 {
     if (tileIndex < 0 || tileIndex >= static_cast<int>(m_tiles.size()))
     {
-        return {}; // 返回默認的 AABB2
+        return AABB2{};
     }
 
     int     tileX = tileIndex % m_dimensions.x;
@@ -107,8 +104,8 @@ AABB2 Map::GetTileBounds(const int tileIndex) const
 //----------------------------------------------------------------------------------------------------
 IntVec2 Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
 {
-    int tileX = static_cast<int>(floorf(worldPos.x));
-    int tileY = static_cast<int>(floorf(worldPos.y));
+    int const tileX = static_cast<int>(floorf(worldPos.x));
+    int const tileY = static_cast<int>(floorf(worldPos.y));
 
     if (IsTileCoordsOutOfBounds(IntVec2(tileX, tileY)))
     {
@@ -214,19 +211,17 @@ void Map::GenerateTiles()
                 type = TILE_TYPE_SPARKLE_02;
             }
 
-            if (IsInLShape(x,y))
+            if (IsInLShape(x, y))
             {
                 type = TILE_TYPE_FLOOR;
             }
-            
+
             if (IsEdgeTile(x, y) ||
                 IsRandomTile(x, y))
             {
                 type = TILE_TYPE_STONE;
             }
 
-            
-            
             m_tiles.emplace_back();
             m_tiles.back().m_tileCoords = IntVec2(x, y);
             m_tiles.back().m_type       = type;
@@ -245,38 +240,41 @@ void Map::GenerateTiles()
 void Map::RenderTiles() const
 {
     std::vector<Vertex_PCU> tileVertices;
-    tileVertices.reserve(3 * 2 * m_dimensions.x * m_dimensions.y);
+    int const               totalVertsNum = 3 * 2 * m_dimensions.x * m_dimensions.y;
+    tileVertices.reserve(totalVertsNum);
 
-    RenderTilesByType(TILE_TYPE_GRASS, tileVertices);
-    RenderTilesByType(TILE_TYPE_STONE, tileVertices);
-    RenderTilesByType(TILE_TYPE_SPARKLE_01, tileVertices);
-    RenderTilesByType(TILE_TYPE_SPARKLE_02, tileVertices);
-    RenderTilesByType(TILE_TYPE_FLOOR, tileVertices);
-    RenderTilesByType(TILE_TYPE_EXIT, tileVertices);
+    TileType tileTypes[] =
+    {
+        TILE_TYPE_GRASS,
+        TILE_TYPE_STONE,
+        TILE_TYPE_SPARKLE_01,
+        TILE_TYPE_SPARKLE_02,
+        TILE_TYPE_FLOOR,
+        TILE_TYPE_EXIT
+    };
+
+    for (TileType const& tileType : tileTypes)
+    {
+        TileDefinition const*  tileDef   = &TileDefinition::GetTileDefinition(tileType);
+        SpriteDefinition const spriteDef = tileDef->GetSpriteDefinition();
+
+        Vec2 const uvAtMins = spriteDef.GetUVsMins();
+        Vec2 const uvAtMaxs = spriteDef.GetUVsMaxs();
+
+        for (Tile const& tile : m_tiles)
+        {
+            if (tile.m_type == tileType)
+            {
+                Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
+                Vec2 const maxs = mins + Vec2::ONE;
+
+                AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
+            }
+        }
+    }
 
     g_theRenderer->BindTexture(&g_theGame->GetTileSpriteSheet()->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(tileVertices.size()), tileVertices.data());
-}
-
-//----------------------------------------------------------------------------------------------------
-void Map::RenderTilesByType(TileType const tileType, VertexList& tileVertices) const
-{
-    TileDefinition const*  tileDef   = &TileDefinition::GetTileDefinition(tileType);
-    SpriteDefinition const spriteDef = tileDef->GetSpriteDefinition();
-
-    Vec2 const uvAtMins = spriteDef.GetUVsMins();
-    Vec2 const uvAtMaxs = spriteDef.GetUVsMaxs();
-
-    for (Tile const& tile : m_tiles)
-    {
-        if (tile.m_type == tileType)
-        {
-            Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
-            Vec2 const maxs = mins + Vec2::ONE;
-
-            AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
-        }
-    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -340,7 +338,7 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
         return true; // Consider out-of-bounds as solid
     }
 
-    int tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+    int const tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
 
     if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
     {
@@ -355,7 +353,7 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
 //----------------------------------------------------------------------------------------------------
 bool Map::IsPointInSolid(Vec2 const& point) const
 {
-    IntVec2 tileCoords = GetTileCoordsFromWorldPos(point);
+    IntVec2 const tileCoords = GetTileCoordsFromWorldPos(point);
 
     return IsTileSolid(tileCoords);
 }
@@ -543,9 +541,9 @@ void Map::PushEntitiesOutOfWalls()
         if (IsBullet(entity))
             continue;
 
-        if (g_theGame->IsNoClip()&& entity->m_type == ENTITY_TYPE_PLAYER_TANK)
+        if (g_theGame->IsNoClip() && entity->m_type == ENTITY_TYPE_PLAYER_TANK)
             continue;
-        
+
         PushEntityOutOfSolidTiles(entity);
     }
 }

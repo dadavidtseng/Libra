@@ -42,7 +42,7 @@ Game::Game()
     m_worldCamera->SetOrthoView(bottomLeft, Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
     m_screenCamera->SetOrthoView(bottomLeft, Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y));
 
-    m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
+    // m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
 
 
@@ -91,6 +91,7 @@ void Game::Update(float deltaSeconds)
     {
         m_isPaused       = true;
         m_isGameLoseMode = true;
+        m_gameOverCountDown = 3.f;
         g_theAudio->StopSound(m_InGamePlayback);
 
         if (m_gameLosePlayback == 0)
@@ -139,8 +140,8 @@ void Game::Render() const
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, 50, 50, 50, IntVec2(24, 30) };
-    MapData const data02 = { 1, 10, 10, 10, IntVec2(50, 20) };
+    MapData const data01 = { 0, 30, 30, 30, IntVec2(24, 30) };
+    MapData const data02 = { 1, 50, 50, 50, IntVec2(50, 20) };
     MapData const data03 = { 2, 3, 3, 3, IntVec2(16, 16) };
     m_maps.reserve(3);
     m_maps.push_back(new Map(data01));

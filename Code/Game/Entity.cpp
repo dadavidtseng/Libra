@@ -24,18 +24,9 @@ void Entity::TurnToward(float&      orientationDegrees,
                         const float rotationSpeed)
 {
     // Calculate the new target orientation and get the shortest angular displacement
-    float const newTargetOrientation = GetTurnedTowardDegrees(orientationDegrees,
+    orientationDegrees = GetTurnedTowardDegrees(orientationDegrees,
                                                               targetOrientationDegrees,
                                                               rotationSpeed * deltaSeconds);
-
-    // Update the orientation
-    orientationDegrees = newTargetOrientation;
-
-    // Normalize orientationDegrees to (0, 360)
-    if (orientationDegrees >= 360.0f)
-        orientationDegrees -= 360.0f;
-    if (orientationDegrees < 0.0f)
-        orientationDegrees += 360.0f;
 }
 
 void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float const moveSpeed, float const deltaSeconds)
