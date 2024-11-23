@@ -31,7 +31,7 @@ private:
     AABB2    m_turretBounds;
     Texture* m_bodyTexture                 = nullptr;
     Texture* m_turretTexture               = nullptr;
-    float    m_turretOrientationDegrees    = 0.0f;
+    float    m_turretOrientationDegrees    = 0.f;
     float    m_shootCoolDown               = SCORPIO_SHOOT_COOLDOWN;
     Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
 };

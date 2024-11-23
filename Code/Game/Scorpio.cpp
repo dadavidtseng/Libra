@@ -33,11 +33,8 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Scorpio::Update(float deltaSeconds)
+void Scorpio::Update(float const deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -57,9 +54,6 @@ void Scorpio::Update(float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Scorpio::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -71,12 +65,6 @@ void Scorpio::Render() const
 //----------------------------------------------------------------------------------------------------
 void Scorpio::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
-    if (!g_theGame->IsDebugRendering())
-        return;
-
     if (m_isDead)
         return;
 
@@ -99,7 +87,7 @@ void Scorpio::DebugRender() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Scorpio::UpdateTurret(const float deltaSeconds)
+void Scorpio::UpdateTurret(float const deltaSeconds)
 {
     if (m_shootCoolDown > 0.0f)
     {
@@ -107,7 +95,7 @@ void Scorpio::UpdateTurret(const float deltaSeconds)
     }
 
     // Turn and shoot ( or turn idly)
-    PlayerTank* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, SCORPIO_RANGE) && !playerTank->m_isDead)
     {
         // Turn toward player

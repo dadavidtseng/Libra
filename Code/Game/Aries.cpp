@@ -33,9 +33,6 @@ Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
 //----------------------------------------------------------------------------------------------------
 void Aries::Update(const float deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -55,9 +52,6 @@ void Aries::Update(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Aries::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -67,12 +61,6 @@ void Aries::Render() const
 //----------------------------------------------------------------------------------------------------
 void Aries::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
-    if (!g_theGame->IsDebugRendering())
-        return;
-
     if (m_isDead)
         return;
 

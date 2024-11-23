@@ -19,17 +19,21 @@ Entity::Entity(Map* map, EntityType const type, EntityFaction const faction)
 
 //----------------------------------------------------------------------------------------------------
 void Entity::TurnToward(float&      orientationDegrees,
-                        const float targetOrientationDegrees,
-                        const float deltaSeconds,
-                        const float rotationSpeed)
+                        float const targetOrientationDegrees,
+                        float const deltaSeconds,
+                        float const rotationSpeed)
 {
     // Calculate the new target orientation and get the shortest angular displacement
     orientationDegrees = GetTurnedTowardDegrees(orientationDegrees,
-                                                              targetOrientationDegrees,
-                                                              rotationSpeed * deltaSeconds);
+                                                targetOrientationDegrees,
+                                                rotationSpeed * deltaSeconds);
 }
 
-void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float const moveSpeed, float const deltaSeconds)
+//----------------------------------------------------------------------------------------------------
+void Entity::MoveToward(Vec2&       currentPosition,
+                        Vec2 const& targetPosition,
+                        float const moveSpeed,
+                        float const deltaSeconds)
 {
     Vec2 const  direction        = targetPosition - currentPosition;
     float const distanceToTarget = direction.GetLength();
@@ -52,7 +56,11 @@ void Entity::MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float
         }
     }
 }
-void Entity::WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed)
+
+//----------------------------------------------------------------------------------------------------
+void Entity::WanderAround(float const deltaSeconds,
+                          float const moveSpeed,
+                          float const rotateSpeed)
 {
     Vec2 const fwdNormal = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
 

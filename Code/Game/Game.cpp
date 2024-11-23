@@ -5,12 +5,15 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Game.hpp"
 
+#include <iostream>
+
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EngineCommon.hpp"
-#include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -19,11 +22,45 @@
 #include "Game/PlayerTank.hpp"
 
 //----------------------------------------------------------------------------------------------------
-class SpriteSheet;
+
 
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
+    Strings s1 = SplitStringOnDelimiter( "Amy,Bret,Carl", ',' ); // split into 3 substrings: "Amy", "Bret", "Carl"
+    Strings s2 = SplitStringOnDelimiter( " -7.5, 3 ", ',' );     // split into 2: " -7.5" and " 3 " (including whitespace!)
+    Strings s3 = SplitStringOnDelimiter( "3~7", '~' );           // split into 2: "3" and "7"
+    Strings s4 = SplitStringOnDelimiter( "255, 128, 40", ',' );  // split into 3: "255", " 128", and " 40" (including spaces!)
+    Strings s5 = SplitStringOnDelimiter( "apple", '/' );         // split into 1: "apple"
+    Strings s6 = SplitStringOnDelimiter( "8/2/1973", '/' );      // split into 3: "8", "2", and "1973"
+    Strings s7 = SplitStringOnDelimiter( ",,", ',' );            // split into 3: "", "", and ""
+    Strings s8 = SplitStringOnDelimiter( ",,Hello,,", ',' );     // split into 5: "", "", "Hello", "", and ""
+    Strings s9 = SplitStringOnDelimiter( "", ',' );              // split into 1: ""
+
+    printf("%s %s %s\n", s1[0].c_str(), s1[1].c_str(), s1[2].c_str() );
+    printf("%s %s\n", s2[0].c_str(), s2[1].c_str());
+    printf("%s %s\n", s3[0].c_str(), s3[1].c_str());
+    printf("%s %s %s\n", s4[0].c_str(), s4[1].c_str(), s4[2].c_str() );
+    printf("%s\n", s5[0].c_str());
+    printf("%s %s %s\n", s6[0].c_str(), s6[1].c_str(), s6[2].c_str() );
+    printf("%s %s %s\n", s7[0].c_str(), s7[1].c_str(), s7[2].c_str() );
+    printf("%s %s %s %s %s\n", s8[0].c_str(), s8[1].c_str(), s8[2].c_str(), s8[3].c_str(), s8[4].c_str() );
+    printf("%s\n", s9[0].c_str());
+    
+    // TileHeatMap thm(IntVec2(4,3), 0.f);
+    // int numTiles = thm.GetNumTiles();
+    // for (int i = 0; i < numTiles; i++)
+    // {
+    //     float value = g_theRNG->RollRandomFloatInRange(20.f,25.f);
+    //     if (g_theRNG->RollPercentChance())
+    //     {
+    //         value = 999.f;
+    //     }
+    //     thm->SetValueAtIndex(tileindex, value);
+    // }
+
+    
+    
     InitializeTiles();
     InitializeMaps();
     InitializeAudio();
@@ -37,12 +74,12 @@ Game::Game()
                                                                                PLAYER_TANK_INIT_POSITION_Y),
                                                                           PLAYER_TANK_INIT_ORIENTATION_DEGREES));
 
-    Vec2 const bottomLeft = Vec2(0.f, 0.f);
+    Vec2 const bottomLeft = Vec2::ZERO;
 
     m_worldCamera->SetOrthoView(bottomLeft, Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
     m_screenCamera->SetOrthoView(bottomLeft, Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y));
 
-    // m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
+    m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
 
 
@@ -89,8 +126,8 @@ void Game::Update(float deltaSeconds)
     if (m_playerTank->m_isDead &&
         m_gameOverCountDown <= 0.f)
     {
-        m_isPaused       = true;
-        m_isGameLoseMode = true;
+        m_isPaused          = true;
+        m_isGameLoseMode    = true;
         m_gameOverCountDown = 3.f;
         g_theAudio->StopSound(m_InGamePlayback);
 
@@ -140,9 +177,9 @@ void Game::Render() const
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, 30, 30, 30, IntVec2(24, 30) };
-    MapData const data02 = { 1, 50, 50, 50, IntVec2(50, 20) };
-    MapData const data03 = { 2, 3, 3, 3, IntVec2(16, 16) };
+    MapData const data01 = { 0, 0.1f, 0.1f, 0.1f, IntVec2(24, 30) };
+    MapData const data02 = { 1, 0.1f, 0.1f, 0.1f, IntVec2(50, 20) };
+    MapData const data03 = { 2, 0.1f, 0.1f, 0.1f, IntVec2(16, 16) };
     m_maps.reserve(3);
     m_maps.push_back(new Map(data01));
     m_maps.push_back(new Map(data02));
@@ -153,16 +190,22 @@ void Game::InitializeMaps()
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeTiles()
 {
+    printf("( Game ) Start  | InitializeTiles\n");
+
     Texture*      tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
     IntVec2 const spriteCoords = IntVec2(8, 8);
     m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
 
     TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
+
+    printf("( Game ) Finish | InitializeTiles\n");
 }
 
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeAudio()
 {
+    printf("( Game ) Start  | InitializeAudio\n");
+
     m_attractModeBgm       = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
     m_InGameBgm            = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
     m_gameWinBgm           = g_theAudio->CreateOrGetSound(GAME_WIN_BGM);
@@ -177,6 +220,8 @@ void Game::InitializeAudio()
     m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND);
     m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND);
     m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND);
+
+    printf("( Game ) Finish | InitializeAudio\n");
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -197,7 +242,6 @@ void Game::UpdateMarkForDelete()
             g_theAudio->StartSound(m_clickSound);
         }
     }
-
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -469,7 +513,7 @@ void Game::UpdateFromController()
 //----------------------------------------------------------------------------------------------------
 void Game::UpdateCurrentMap()
 {
-    int currentMapIndex = m_currentMap->GetMapIndex();
+    int const currentMapIndex = m_currentMap->GetMapIndex();
 
     m_currentMap->RemoveEntityFromMap(m_playerTank);
     m_currentMap = m_maps[currentMapIndex + 1];
@@ -481,7 +525,7 @@ void Game::UpdateCurrentMap()
 }
 
 //----------------------------------------------------------------------------------------------------
-void Game::UpdateCamera(const float deltaSeconds) const
+void Game::UpdateCamera(float const deltaSeconds) const
 {
     UNUSED(deltaSeconds)
 
@@ -497,17 +541,17 @@ void Game::UpdateCamera(const float deltaSeconds) const
     Vec2 cameraMin = Vec2(playerTankPosition.x - WORLD_CENTER_X, playerTankPosition.y - WORLD_CENTER_Y);
     Vec2 cameraMax = Vec2(playerTankPosition.x + WORLD_CENTER_X, playerTankPosition.y + WORLD_CENTER_Y);
 
-    cameraMin.x = RangeMapClamped(cameraMin.x, mapMinX, mapMaxX - 16.f, mapMinX, mapMaxX - 16.f);
-    cameraMax.x = RangeMapClamped(cameraMax.x, mapMinX + 16.f, mapMaxX, mapMinX + 16.f, mapMaxX);
+    cameraMin.x = RangeMapClamped(cameraMin.x, mapMinX, mapMaxX - WORLD_SIZE_X, mapMinX, mapMaxX - WORLD_SIZE_X);
+    cameraMax.x = RangeMapClamped(cameraMax.x, mapMinX + WORLD_SIZE_X, mapMaxX, mapMinX + WORLD_SIZE_X, mapMaxX);
 
-    cameraMin.y = RangeMapClamped(cameraMin.y, mapMinY, mapMaxY - 8.f, mapMinY, mapMaxY - 8.f);
-    cameraMax.y = RangeMapClamped(cameraMax.y, mapMinY + 8.f, mapMaxY, mapMinY + 8.f, mapMaxY);
+    cameraMin.y = RangeMapClamped(cameraMin.y, mapMinY, mapMaxY - WORLD_SIZE_Y, mapMinY, mapMaxY - WORLD_SIZE_Y);
+    cameraMax.y = RangeMapClamped(cameraMax.y, mapMinY + WORLD_SIZE_Y, mapMaxY, mapMinY + WORLD_SIZE_Y, mapMaxY);
 
     m_worldCamera->SetOrthoView(cameraMin, cameraMax);
 
     if (m_isDebugCamera)
     {
-        Vec2 const bottomLeft = Vec2(0.f, 0.f);
+        Vec2 const bottomLeft = Vec2::ZERO;
 
         float const mapWidth  = static_cast<float>(m_currentMap->GetMapDimension().x);
         float const mapHeight = static_cast<float>(m_currentMap->GetMapDimension().y);
@@ -531,7 +575,7 @@ void Game::UpdateCamera(const float deltaSeconds) const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Game::UpdateAttractMode(const float deltaSeconds)
+void Game::UpdateAttractMode(float const deltaSeconds)
 {
     if (!m_isAttractMode)
         return;
@@ -591,13 +635,16 @@ void Game::RenderUI() const
 
     if (m_isPaused)
     {
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), BLACK,
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
+                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), BLACK,
                          0.5f);
     }
 
     if (m_isGameLoseMode)
     {
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y), Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), DEBUG_RENDER_RED,
+        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
+                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y),
+                         DEBUG_RENDER_RED,
                          0.5f);
 
         std::vector<Vertex_PCU> titleVerts;

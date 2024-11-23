@@ -4,15 +4,15 @@
 
 //-----------------------------------------------------------------------------------------------
 #pragma once
-#include "TileDefinition.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
-#include "Engine/Math/IntVec2.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include "Game/TileDefinition.hpp"
 
 //-----------------------------------------------------------------------------------------------
 class Camera;
 class Map;
 class PlayerTank;
+
 
 //-----------------------------------------------------------------------------------------------
 class Game
@@ -23,12 +23,9 @@ public:
 
     void         Update(float deltaSeconds);
     void         Render() const;
-    bool         IsAttractMode() const { return m_isAttractMode; }
-    bool         IsNoClip() const { return m_isNoClip; }
-    bool         IsDebugRendering() const { return m_isDebugRendering; }
-    bool         IsMarkedForDelete() const { return m_isMarkedForDelete; }
-    PlayerTank*  GetPlayerTank() const { return m_playerTank; }
-    SpriteSheet* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
+    
+    PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
+    SpriteSheet const* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
     SoundID      GetPlayerTankShootSoundID() const { return m_playerTankShootSound; }
     SoundID      GetPlayerTankHitSoundID() const { return m_playerTankHitSound; }
     SoundID      GetEnemyDiedSoundID() const { return m_enemyDiedSound; }
@@ -36,6 +33,11 @@ public:
     SoundID      GetEnemyShootSoundID() const { return m_enemyShootSound; }
     SoundID      GetExitMapSoundID() const { return m_exitMapSound; }
     SoundID      GetBulletBounceSoundID() const { return m_bulletBounceSound; }
+
+    bool         IsAttractMode() const { return m_isAttractMode; }
+    bool         IsNoClip() const { return m_isNoClip; }
+    bool         IsDebugRendering() const { return m_isDebugRendering; }
+    bool         IsMarkedForDelete() const { return m_isMarkedForDelete; }
 
 private:
     void InitializeMaps();
@@ -56,7 +58,6 @@ private:
 
     Camera* m_worldCamera  = nullptr;
     Camera* m_screenCamera = nullptr;
-    // IntVec2 m_mapDimension      = IntVec2(24, 30);
     bool  m_isAttractMode     = true;
     bool  m_isGameWinMode     = false;
     bool  m_isGameLoseMode    = false;

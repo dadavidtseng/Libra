@@ -33,7 +33,7 @@ public:
     TileDefinition() = default;
     TileDefinition(TileType tileType, SpriteDefinition const& spriteDef, bool isSolid = false, Rgba8 const& tintColor = Rgba8::WHITE);
 
-    static void           InitializeTileDefinitions(SpriteSheet const& spriteSheet);
+    static void                  InitializeTileDefinitions(SpriteSheet const& spriteSheet);
     static TileDefinition const& GetTileDefinition(TileType tileType);  // pass by pointer
 
     bool                               IsSolid() const { return m_isSolid; }
@@ -49,3 +49,8 @@ private:
     bool             m_isSolid;
     Rgba8            m_tintColor;
 };
+
+// TileDefinition*             a; // pointer to tile __cpp_nested_namespace_definitions
+// TileDefinition const*       b;    // pointer that can _NODISCARD_TRY_CHANGE_STATE, to a  tileDef that can't
+// TileDefinition* const       c;    // pointer that is stuck pointing at this forever
+// TileDefinition const* const d; // pointer that is stuck pointing at this forever, 

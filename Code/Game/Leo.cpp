@@ -31,51 +31,39 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Leo::Update(const float deltaSeconds)
+void Leo::Update(float const deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
     if (g_theGame->GetPlayerTank()->m_isDead)
         return;
-    
+
     if (m_health <= 0)
     {
         g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
         m_isGarbage = true;
         m_isDead    = true;
     }
-    
+
     UpdateBody(deltaSeconds);
 }
 
 //----------------------------------------------------------------------------------------------------
 void Leo::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
-    
+
     RenderBody();
 }
 
 //----------------------------------------------------------------------------------------------------
 void Leo::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
-    if (!g_theGame->IsDebugRendering())
-        return;
-
     if (m_isDead)
         return;
-    
+
     Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     Vec2 const leftNormal = fwdNormal.GetRotated90Degrees();
 
@@ -110,19 +98,19 @@ void Leo::DebugRender() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Leo::UpdateBody(const float deltaSeconds)
+void Leo::UpdateBody(float const deltaSeconds)
 {
     m_timeSinceLastRoll += deltaSeconds;
 
     UpdateShootCoolDown(deltaSeconds);
 
-    const PlayerTank* playerTank = g_theGame->GetPlayerTank();
+     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
 
     if (!playerTank)
         return;
-    
+
     //Check if target is reached, but not seen; go back wander
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius)||
+    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius) ||
         playerTank->m_isDead)
     {
         // Clear my target; the player is nowhere to be seen from last known position
@@ -190,7 +178,7 @@ void Leo::RenderBody() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Leo::UpdateShootCoolDown(float deltaSeconds)
+void Leo::UpdateShootCoolDown(float const deltaSeconds)
 {
     if (m_shootCoolDown > 0.0f)
     {

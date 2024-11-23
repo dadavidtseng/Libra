@@ -41,11 +41,8 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
 Bullet::~Bullet() = default;
 
 //----------------------------------------------------------------------------------------------------
-void Bullet::Update(const float deltaSeconds)
+void Bullet::Update(float const deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -61,9 +58,6 @@ void Bullet::Update(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Bullet::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -73,12 +67,6 @@ void Bullet::Render() const
 //----------------------------------------------------------------------------------------------------
 void Bullet::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
-    if (!g_theGame->IsDebugRendering())
-        return;
-
     if (m_isDead)
         return;
 
@@ -89,20 +77,20 @@ void Bullet::DebugRender() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Bullet::UpdateBody(float deltaSeconds)
+void Bullet::UpdateBody(float const deltaSeconds)
 {
     m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees, m_moveSpeed);
 
-    Vec2 nextPosition = m_position + m_velocity * deltaSeconds;
+    Vec2 const nextPosition = m_position + m_velocity * deltaSeconds;
 
     if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition)))
     {
         m_health--;
 
-        IntVec2 normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
-        Vec2    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
-        Vec2    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());
-        m_orientationDegrees      = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
+        IntVec2 const normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
+        Vec2 const    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
+        Vec2 const    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());
+        m_orientationDegrees            = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
     }
     else
     {

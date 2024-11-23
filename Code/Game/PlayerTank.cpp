@@ -36,9 +36,6 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::Update(const float deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -72,9 +69,6 @@ void PlayerTank::Update(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     if (m_isDead)
         return;
 
@@ -86,12 +80,6 @@ void PlayerTank::Render() const
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
-    if (!g_theGame->IsDebugRendering())
-        return;
-
     if (m_isDead)
         return;
 
