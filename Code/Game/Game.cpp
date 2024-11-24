@@ -13,7 +13,6 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -56,7 +55,7 @@ Game::Game()
     //     {
     //         value = 999.f;
     //     }
-    //     thm->SetValueAtIndex(tileindex, value);
+    //     thm->SetValueAtIndex(tileIndex, value);
     // }
 
     
@@ -177,7 +176,7 @@ void Game::Render() const
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, 0.1f, 0.1f, 0.1f, IntVec2(24, 30) };
+    MapData const data01 = { 0, 0.f, 0.f, 0.1f, IntVec2(24, 30) };
     MapData const data02 = { 1, 0.1f, 0.1f, 0.1f, IntVec2(50, 20) };
     MapData const data03 = { 2, 0.1f, 0.1f, 0.1f, IntVec2(16, 16) };
     m_maps.reserve(3);
@@ -405,29 +404,96 @@ void Game::UpdateFromController()
 {
     XboxController const& controller = g_theInput->GetController(0);
 
-    if (!m_isAttractMode &&
-        controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_UP))
-        m_isDebugRendering = !m_isDebugRendering;
-
-    if (!m_isAttractMode &&
-        controller.WasButtonJustPressed(XBOX_BUTTON_LSHOULDER))
-        m_isDebugCamera = !m_isDebugCamera;
-
-    if (!m_isAttractMode &&
-        controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_DOWN))
-        m_isNoClip = !m_isNoClip;
-
-    if (controller.WasButtonJustPressed(XBOX_BUTTON_START))
+    // AttractMode
+    if (m_isAttractMode)
     {
-        if (!m_isAttractMode)
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_START))
         {
-            if (!m_isPaused)
+            m_isAttractMode = false;
+            m_isPaused      = false;
+            g_theAudio->StopSound(m_attractModePlayback);
+            m_InGamePlayback = g_theAudio->StartSound(m_InGameBgm, true, 1, 0, m_InGameBgmSpeed, false);
+            g_theAudio->StartSound(m_clickSound);
+            return;
+        }
+    }
+
+    // InGameMode
+    if (!m_isAttractMode)
+    {
+        // GameWinMode
+        if (m_isGameWinMode)
+        {
+            if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
+            {
+                m_isGameWinMode     = false;
+                m_isMarkedForDelete = true;
+                g_theAudio->StopSound(m_gameWinPlayback);
+                g_theAudio->StartSound(m_attractModeBgm);
+                g_theAudio->StartSound(m_clickSound);
+            }
+        }
+
+        // GameLoseMode
+        if (m_isGameLoseMode)
+        {
+            if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
+            {
+                m_isGameLoseMode    = false;
+                m_isMarkedForDelete = true;
+                g_theAudio->StopSound(m_gameLosePlayback);
+                g_theAudio->StartSound(m_attractModeBgm);
+                g_theAudio->StartSound(m_clickSound);
+            }
+
+            if (controller.WasButtonJustPressed(XBOX_BUTTON_A))
+            {
+                m_playerTank->m_health = PLAYER_TANK_INIT_HEALTH;
+                m_playerTank->m_isDead = false;
+                m_isGameLoseMode       = false;
+                m_isPaused             = false;
+            }
+        }
+
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_UP))
+        {
+            m_isDebugRendering = !m_isDebugRendering;
+        }
+
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_DOWN))
+        {
+            m_isNoClip = !m_isNoClip;
+        }
+
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_LSHOULDER))
+        {
+            m_isDebugCamera = !m_isDebugCamera;
+        }
+
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_B))
+        {
+            if (m_currentMap->GetMapIndex() == 2)
+            {
+                m_isPaused      = true;
+                m_isGameWinMode = true;
+                g_theAudio->StopSound(m_InGamePlayback);
+                m_gameWinPlayback = g_theAudio->StartSound(m_gameWinBgm);
+
+                return;
+            }
+
+            UpdateCurrentMap();
+        }
+
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_START))
+        {
+            if (!m_isPaused && !m_isGameWinMode && !m_isGameLoseMode)
             {
                 m_isPaused = true;
                 g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
                 g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
             }
-            else if (m_isPaused)
+            else if (m_isPaused && !m_isGameWinMode && !m_isGameLoseMode)
             {
                 m_isPaused = false;
                 g_theAudio->StartSound(m_resumeSound, false, 1, 0, 1, false);
@@ -435,29 +501,7 @@ void Game::UpdateFromController()
             }
         }
 
-        if (m_isAttractMode)
-        {
-            m_isAttractMode  = false;
-            m_isPaused       = false;
-            m_InGamePlayback = g_theAudio->StartSound(m_InGameBgm, true, 1, 0, m_InGameBgmSpeed, false);
-            g_theAudio->StopSound(m_attractModePlayback);
-            g_theAudio->StartSound(m_clickSound);
-        }
-    }
-
-    if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
-    {
-        if (!m_isPaused && !m_isMarkedForDelete && !m_isAttractMode)
-        {
-            m_isPaused = true;
-            g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
-            g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
-        }
-    }
-
-    if (controller.WasButtonJustPressed(XBOX_BUTTON_RSHOULDER))
-    {
-        if (!m_isAttractMode)
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_RSHOULDER))
         {
             if (!m_isPaused)
             {
@@ -471,42 +515,45 @@ void Game::UpdateFromController()
                 m_playerTank->Update(1.f / 60.f);
             }
         }
-    }
 
-    if (controller.WasButtonJustPressed(XBOX_BUTTON_RTHUMB))
-    {
-        if (m_isAttractMode)
-            return;
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
+        {
+            if (!m_isPaused && !m_isMarkedForDelete)
+            {
+                if (m_isGameWinMode)
+                    return;
+                if (m_isGameLoseMode)
+                    return;
 
-        m_isSlowMo = true;
-        g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.1f);
-    }
+                m_isPaused = true;
+                g_theAudio->StartSound(m_pauseSound, false, 1, 0, 1, false);
+                g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.f);
+            }
+        }
 
-    if (controller.WasButtonJustReleased(XBOX_BUTTON_RTHUMB))
-    {
-        if (m_isAttractMode)
-            return;
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_RTHUMB))
+        {
+            m_isSlowMo = true;
+            g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 0.1f);
+        }
 
-        m_isSlowMo = false;
-        g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
-    }
+        if (controller.WasButtonJustReleased(XBOX_BUTTON_RTHUMB))
+        {
+            m_isSlowMo = false;
+            g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
+        }
 
-    if (controller.WasButtonJustPressed(XBOX_BUTTON_LTHUMB))
-    {
-        if (m_isAttractMode)
-            return;
+        if (controller.WasButtonJustPressed(XBOX_BUTTON_LTHUMB))
+        {
+            m_isFastMo = true;
+            g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 4.0f);
+        }
 
-        m_isFastMo = true;
-        g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 4.0f);
-    }
-
-    if (controller.WasButtonJustReleased(XBOX_BUTTON_LTHUMB))
-    {
-        if (m_isAttractMode)
-            return;
-
-        m_isFastMo = false;
-        g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
+        if (controller.WasButtonJustReleased(XBOX_BUTTON_LTHUMB))
+        {
+            m_isFastMo = false;
+            g_theAudio->SetSoundPlaybackSpeed(m_InGamePlayback, 1.f);
+        }
     }
 }
 

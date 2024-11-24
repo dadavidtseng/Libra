@@ -21,23 +21,23 @@ public:
     Game();
     ~Game();
 
-    void         Update(float deltaSeconds);
-    void         Render() const;
-    
+    void Update(float deltaSeconds);
+    void Render() const;
+
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
     SpriteSheet const* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
-    SoundID      GetPlayerTankShootSoundID() const { return m_playerTankShootSound; }
-    SoundID      GetPlayerTankHitSoundID() const { return m_playerTankHitSound; }
-    SoundID      GetEnemyDiedSoundID() const { return m_enemyDiedSound; }
-    SoundID      GetEnemyHitSoundID() const { return m_enemyHitSound; }
-    SoundID      GetEnemyShootSoundID() const { return m_enemyShootSound; }
-    SoundID      GetExitMapSoundID() const { return m_exitMapSound; }
-    SoundID      GetBulletBounceSoundID() const { return m_bulletBounceSound; }
+    SoundID            GetPlayerTankShootSoundID() const { return m_playerTankShootSound; }
+    SoundID            GetPlayerTankHitSoundID() const { return m_playerTankHitSound; }
+    SoundID            GetEnemyDiedSoundID() const { return m_enemyDiedSound; }
+    SoundID            GetEnemyHitSoundID() const { return m_enemyHitSound; }
+    SoundID            GetEnemyShootSoundID() const { return m_enemyShootSound; }
+    SoundID            GetExitMapSoundID() const { return m_exitMapSound; }
+    SoundID            GetBulletBounceSoundID() const { return m_bulletBounceSound; }
 
-    bool         IsAttractMode() const { return m_isAttractMode; }
-    bool         IsNoClip() const { return m_isNoClip; }
-    bool         IsDebugRendering() const { return m_isDebugRendering; }
-    bool         IsMarkedForDelete() const { return m_isMarkedForDelete; }
+    bool IsAttractMode() const { return m_isAttractMode; }
+    bool IsNoClip() const { return m_isNoClip; }
+    bool IsDebugRendering() const { return m_isDebugRendering; }
+    bool IsMarkedForDelete() const { return m_isMarkedForDelete; }
 
 private:
     void InitializeMaps();
@@ -56,22 +56,22 @@ private:
     void RenderUI() const;
 
 
-    Camera* m_worldCamera  = nullptr;
-    Camera* m_screenCamera = nullptr;
-    bool  m_isAttractMode     = true;
-    bool  m_isGameWinMode     = false;
-    bool  m_isGameLoseMode    = false;
-    bool  m_isDebugRendering  = false;
-    bool  m_isDebugCamera     = false;
-    bool  m_isPaused          = false;
-    bool  m_isSlowMo          = false;
-    bool  m_isFastMo          = false;
-    bool  m_isMarkedForDelete = false;
-    bool  m_isNoClip          = false;
-    float m_glowIntensity     = 0.f;
-    float m_gameOverCountDown = 3.f;
-    bool  m_glowIncreasing    = false;
-    Vec2  m_baseCameraPos     = Vec2(0.f, 0.f);
+    Camera* m_worldCamera       = nullptr;
+    Camera* m_screenCamera      = nullptr;
+    bool    m_isAttractMode     = true;
+    bool    m_isGameWinMode     = false;
+    bool    m_isGameLoseMode    = false;
+    bool    m_isDebugRendering  = false;
+    bool    m_isDebugCamera     = false;
+    bool    m_isPaused          = false;
+    bool    m_isSlowMo          = false;
+    bool    m_isFastMo          = false;
+    bool    m_isMarkedForDelete = false;
+    bool    m_isNoClip          = false;
+    float   m_glowIntensity     = 0.f;
+    float   m_gameOverCountDown = 3.f;
+    bool    m_glowIncreasing    = false;
+    Vec2    m_baseCameraPos     = Vec2(0.f, 0.f);
 
     std::vector<Map*> m_maps;
     Map*              m_currentMap      = nullptr;

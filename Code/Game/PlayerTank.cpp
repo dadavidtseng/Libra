@@ -52,15 +52,17 @@ void PlayerTank::Update(const float deltaSeconds)
         m_shootCoolDown -= deltaSeconds;
     }
 
-    if (g_theInput->IsKeyDown(KEYCODE_SPACE))
+    XboxController const& controller = g_theInput->GetController(0);
+
+    if (g_theInput->IsKeyDown(KEYCODE_SPACE) || controller.IsButtonDown(XBOX_BUTTON_A))
     {
         if (m_shootCoolDown <= 0.0f)
         {
-            float turretAbsoluteDegrees = m_orientationDegrees + m_turretRelativeOrientation;
-            Vec2 fwdNormal = Vec2::MakeFromPolarDegrees(turretAbsoluteDegrees);
-            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position+fwdNormal*0.5f, turretAbsoluteDegrees);
+            float const turretAbsoluteDegrees = m_orientationDegrees + m_turretRelativeOrientation;
+            Vec2 const  fwdNormal             = Vec2::MakeFromPolarDegrees(turretAbsoluteDegrees);
+            m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position + fwdNormal * 0.2f, turretAbsoluteDegrees);
             m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
-            
+
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
         }
     }
@@ -150,18 +152,18 @@ void PlayerTank::UpdateBody(const float deltaSeconds)
     if (g_theInput->IsKeyDown('A')) m_bodyInput += Vec2(-1.f, 0.f);
     if (g_theInput->IsKeyDown('D')) m_bodyInput += Vec2(1.f, 0.f);
 
-	if (m_bodyInput.GetLengthSquared() <= 0.0f)
-		return;
+    if (m_bodyInput.GetLengthSquared() <= 0.0f)
+        return;
 
     m_bodyInput.ClampLength(1.f);   // if it's over 100%, clamp it
 
-	const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
-	m_targetOrientationDegrees = m_bodyInput.GetOrientationDegrees();
+    const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
+    m_targetOrientationDegrees = m_bodyInput.GetOrientationDegrees();
 
-	TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
+    TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
 
-	m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
-	m_position += m_velocity;
+    m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
+    m_position += m_velocity;
 
 }
 
@@ -184,7 +186,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
     float turretGoalRelativeOrientation = m_turretGoalOrientationDegrees - m_orientationDegrees;
 
     TurnToward(m_turretRelativeOrientation, turretGoalRelativeOrientation, deltaSeconds,
-        m_turretMaxRotateSpeed);
+               m_turretMaxRotateSpeed);
 }
 
 //----------------------------------------------------------------------------------------------------

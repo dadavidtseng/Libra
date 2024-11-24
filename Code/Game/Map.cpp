@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Map.hpp"
 
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/TileHeatMap.hpp"
@@ -112,7 +113,11 @@ IntVec2 const Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     int const tileY = RoundDownToInt(worldPos.y);
 
     if (IsTileCoordsOutOfBounds(IntVec2(tileX, tileY)))
+    {
+        printf("%d, %d", tileX, tileY);
         ERROR_AND_DIE("tileCoords is out of bound")
+    }
+        
 
     return IntVec2(tileX, tileY);
 }
@@ -265,6 +270,8 @@ void Map::DebugRenderEntities() const
 }
 void Map::GenerateDistanceFieldHeatMap(TileHeatMap& heatMap, IntVec2 const& startCoords)
 {
+    UNUSED(heatMap)
+    UNUSED(startCoords)
     // GUARANTEE_OR_DIE(heatMap.m_dimensions == m_dimensions, "Heat map and Map did not match dimensions!")
     //
     // heatMap.SetAllValues(999.f);
@@ -726,6 +733,9 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
                         Vec2 const            reflectedVelocity = entityA->m_velocity.GetReflected(raycastResult2D.m_impactNormal);
 
                         entityA->m_orientationDegrees = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
+                        entityA->m_health--;
+                        g_theAudio->StartSound(g_theGame->GetEnemyHitSoundID());
+                        return;
                     }
                 }
 

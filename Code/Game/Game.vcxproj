@@ -225,6 +225,9 @@
   <ItemGroup>
     <None Include="..\..\Docs\README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Docs\img.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

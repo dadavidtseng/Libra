@@ -143,7 +143,8 @@ void App::BeginFrame() const
 //-----------------------------------------------------------------------------------------------
 void App::Update(const float deltaSeconds)
 {
-    DeleteAndCreateNewGameIfMarkedForDelete();
+    if (g_theGame->IsMarkedForDelete())
+        DeleteAndCreateNewGame();
     UpdateFromController();
     UpdateFromKeyBoard();
     g_theGame->Update(deltaSeconds);
@@ -184,7 +185,7 @@ void App::UpdateFromKeyBoard()
     {
         if (!g_theGame->IsAttractMode())
         {
-            DeleteAndCreateNewGameIfMarkedForDelete();
+            DeleteAndCreateNewGame();
         }
     }
 }
@@ -192,19 +193,20 @@ void App::UpdateFromKeyBoard()
 //-----------------------------------------------------------------------------------------------
 void App::UpdateFromController()
 {
-    if (g_theGame->IsAttractMode())
-        return;
-
     XboxController const& controller = g_theInput->GetController(0);
 
     if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
     {
-        RequestQuit();
+        if (g_theGame->IsAttractMode())
+            RequestQuit();
     }
 
     if (controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_RIGHT))
     {
-        DeleteAndCreateNewGameIfMarkedForDelete();
+        if (!g_theGame->IsAttractMode())
+        {
+            DeleteAndCreateNewGame();
+        }
     }
 }
 
@@ -215,13 +217,10 @@ void App::RequestQuit()
 }
 
 //-----------------------------------------------------------------------------------------------
-void App::DeleteAndCreateNewGameIfMarkedForDelete()
+void App::DeleteAndCreateNewGame()
 {
-    if (g_theGame->IsMarkedForDelete())
-    {
-        delete g_theGame;
-        g_theGame = nullptr;
+    delete g_theGame;
+    g_theGame = nullptr;
 
-        g_theGame = new Game();
-    }
+    g_theGame = new Game();
 }
