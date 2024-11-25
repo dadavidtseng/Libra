@@ -30,8 +30,10 @@ class Map
 {
 public:
     int      GetNumTiles() const;
+    void     TestTileHeatMap();
     void     CreateHeatMaps();
     explicit Map(MapData const& data);
+    
     ~Map();
 
 // TODO:
@@ -40,7 +42,7 @@ public:
     // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
 
     void Update(float deltaSeconds);
-    void Render() const;
+    void Render();
     void DebugRender() const;
 
     AABB2 GetMapBounds() const;

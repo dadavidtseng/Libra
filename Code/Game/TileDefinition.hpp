@@ -36,11 +36,11 @@ public:
     static void                  InitializeTileDefinitions(SpriteSheet const& spriteSheet);
     static TileDefinition const& GetTileDefinition(TileType tileType);  // pass by pointer
 
+    TileType                           GetTileType() const { return m_tileType; }
+    SpriteDefinition                   GetSpriteDefinition() const { return m_spriteDef; }
     bool                               IsSolid() const { return m_isSolid; }
     Rgba8                              GetTintColor() const { return m_tintColor; }
     AABB2                              GetUVs() const { return m_spriteDef.GetUVs(); }
-    TileType                           GetTileType() const { return m_tileType; }
-    SpriteDefinition                   GetSpriteDefinition() const { return m_spriteDef; }
     static std::vector<TileDefinition> s_tileDefinitions;   // store by pointer   
 
 private:

@@ -9,10 +9,11 @@
 
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
-#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
@@ -24,20 +25,11 @@
 //----------------------------------------------------------------------------------------------------
 
 
+
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
-    // TileHeatMap thm(IntVec2(4,3), 0.f);
-    // int numTiles = thm.GetNumTiles();
-    // for (int i = 0; i < numTiles; i++)
-    // {
-    //     float value = g_theRNG->RollRandomFloatInRange(20.f,25.f);
-    //     if (g_theRNG->RollPercentChance())
-    //     {
-    //         value = 999.f;
-    //     }
-    //     thm->SetValueAtIndex(tileIndex, value);
-    // }
+
 
     InitializeTiles();
     InitializeMaps();
@@ -142,8 +134,22 @@ void Game::Update(float deltaSeconds)
     m_currentMap->Update(deltaSeconds);
 }
 
+void Game::TestBitfontMap() const
+{
+    if (!m_isAttractMode)
+        return;
+
+// ...and then, each frame; draw two text strings on screen
+    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
+
+    std::vector<Vertex_PCU> textVerts;
+    g_testFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
+    g_testFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
+    g_theRenderer->BindTexture(&g_testFont->GetTexture());
+    g_theRenderer->DrawVertexArray(textVerts.size(), textVerts.data());
+}
 //-----------------------------------------------------------------------------------------------
-void Game::Render() const
+void Game::Render()
 {
     g_theRenderer->BeginCamera(*m_worldCamera);
 
@@ -157,15 +163,8 @@ void Game::Render() const
     RenderAttractMode();
     RenderUI();
 
-    // ...and then, each frame; draw two text strings on screen
-    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
-
-    std::vector<Vertex_PCU> textVerts;
-    g_testFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
-    g_testFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
-    g_theRenderer->BindTexture(&g_testFont->GetTexture());
-    g_theRenderer->DrawVertexArray(textVerts.size(), textVerts.data());
-
+    TestBitfontMap();
+    
     g_theRenderer->EndCamera(*m_screenCamera);
 }
 

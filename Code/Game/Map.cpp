@@ -8,7 +8,7 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/StringUtils.hpp"
-#include "Engine/Core/TileHeatMap.hpp"
+#include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -27,24 +27,62 @@ int Map::GetNumTiles() const
 {
     return m_dimensions.x * m_dimensions.y;
 }
+void Map::TestTileHeatMap()
+{
+    TileHeatMap thm(IntVec2(24, 30), 0.f);
+    int         numTiles = thm.GetTileNums();
+    for (int i = 0; i < numTiles; i++)
+    {
+        float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
+        thm.SetValueAtIndex(i, value);
+        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_type].IsSolid())
+        {
+            value = 999.f;
+        }
+        thm.SetValueAtIndex(i, value);
+    }
+
+    // Define the total bounds for the heat map
+    AABB2 totalBounds(Vec2(0.0f, 0.0f), Vec2(24.f, 30.f)); // Assuming each tile is 1x1 unit
+
+    // Define the range of values expected in the heat map
+    FloatRange valueRange(20.0f, 25.0f);
+
+    // Define the colors for interpolation
+    Rgba8 lowColor(0, 0, 255, 255);  // Blue for the lowest value
+    Rgba8 highColor(255, 0, 0, 255); // Red for the highest value
+
+    // Define the special value and its color
+    float specialValue = 999.0f;
+    Rgba8 specialColor=Rgba8::RED; // Green for the special value
+
+    // Create the vertex list
+    VertexList verts;
+
+    // Add vertices for debug drawing
+    thm.AddVertsForDebugDraw(verts, totalBounds, valueRange, lowColor, highColor, specialValue, specialColor);
+    g_theRenderer->BindTexture(nullptr);
+    g_theRenderer->DrawVertexArray(verts.size(), verts.data());
+}
+
 void Map::CreateHeatMaps()
 {
 //     m_testDistanceField = new TileHeatMap(m_dimensions, 0.f);
 //     GenerateDistanceFieldHeatMap(*m_testDistanceField, IntVec2::ONE);
 //
 // //----------------------------------------------------------------------------------------------------
-//     m_testHeatMap = new TileHeatMap(m_dimensions, 3.14f);
-//     int numTiles  = m_testHeatMap->GetNumTiles();
-//     for (int i = 0; i < numTiles; ++i)
-//     {
-//         float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
-//         m_testHeatMap->SetValueAtIndex(i, value);
-//         if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileType].m_isSolid)
-//         {
-//             value = 999.f;
-//         }
-//
-//     }
+     // m_testHeatMap = new TileHeatMap(m_dimensions, 3.14f);
+     // int numTiles  = m_testHeatMap->GetTileNums();
+     // for (int i = 0; i < numTiles; ++i)
+     // {
+     //     float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
+     //     m_testHeatMap->SetValueAtIndex(i, value);
+     //     if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileType].m_isSolid)
+     //     {
+     //         value = 999.f;
+     //     }
+     //
+     // }
 }
 //----------------------------------------------------------------------------------------------------
 Map::Map(MapData const& data)
@@ -85,13 +123,14 @@ void Map::Update(float const deltaSeconds)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::Render() const
+void Map::Render()
 {
     if (g_theGame->IsAttractMode())
         return;
 
     RenderTiles();
     RenderEntities();
+    TestTileHeatMap();
 }
 
 //----------------------------------------------------------------------------------------------------

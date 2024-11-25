@@ -22,7 +22,8 @@ public:
     ~Game();
 
     void Update(float deltaSeconds);
-    void Render() const;
+    void TestBitfontMap() const;
+    void Render();
 
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
     SpriteSheet const* GetTileSpriteSheet() const { return m_tileSpriteSheet; }
