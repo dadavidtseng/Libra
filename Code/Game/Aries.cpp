@@ -17,15 +17,16 @@
 Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = ARIES_PHYSICS_RADIUS;
+    m_physicsRadius               = g_gameConfigBlackboard.GetValue("ariesPhysicsRadius", 0.25f);
+    m_detectRange                 = g_gameConfigBlackboard.GetValue("ariesDetectRange", 10.f);
+    m_moveSpeed                   = g_gameConfigBlackboard.GetValue("ariesMoveSpeed", 0.5f);
+    m_rotateSpeed                 = g_gameConfigBlackboard.GetValue("ariesRotateSpeed", 90.f);
+    m_health                      = g_gameConfigBlackboard.GetValue("ariesInitHealth", 8);
+    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
+    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
+    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
     m_playerTankLastKnownPosition = m_position;
-
-    m_isPushedByWalls    = true;
-    m_isPushedByEntities = true;
-    m_doesPushEntities   = true;
-
-    m_health = 3;
-
+    
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
@@ -38,7 +39,7 @@ void Aries::Update(const float deltaSeconds)
 
     if (g_theGame->GetPlayerTank()->m_isDead)
         return;
-    
+
     if (m_health <= 0)
     {
         g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
@@ -103,8 +104,8 @@ void Aries::UpdateBody(const float deltaSeconds)
     m_timeSinceLastRoll += deltaSeconds;
 
     const PlayerTank* playerTank = g_theGame->GetPlayerTank();
-    
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius)||
+
+    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius) ||
         playerTank->m_isDead)
     {
         m_playerTankLastKnownPosition = Vec2::ZERO;
@@ -119,14 +120,14 @@ void Aries::UpdateBody(const float deltaSeconds)
     {
         m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
 
-        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, ARIES_ANGULAR_VELOCITY);
+        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
 
-        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * ARIES_MOVE_SPEED * deltaSeconds;
+        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * m_moveSpeed * deltaSeconds;
         m_position += m_velocity;
 
     }
 
-    if (m_map->HasLineOfSight(m_position, playerTank->m_position, ARIES_RANGE))
+    if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange))
     {
         m_hasTarget = true;
 
@@ -138,11 +139,11 @@ void Aries::UpdateBody(const float deltaSeconds)
             m_orientationDegrees,
             targetOrientationDegrees,
             deltaSeconds,
-            ARIES_ANGULAR_VELOCITY);
+            m_rotateSpeed);
     }
     else
     {
-        WanderAround(deltaSeconds, ARIES_MOVE_SPEED, ARIES_ANGULAR_VELOCITY);
+        WanderAround(deltaSeconds, m_moveSpeed, m_rotateSpeed);
     }
 }
 

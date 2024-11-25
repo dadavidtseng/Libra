@@ -6,6 +6,7 @@
 #include "Game/App.hpp"
 
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -13,6 +14,7 @@
 #include "Engine/Renderer/Window.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
+#include "Engine/Core/NamedStrings.hpp"
 
 //-----------------------------------------------------------------------------------------------
 App*                   g_theApp      = nullptr; // Created and owned by Main_Windows.cpp
@@ -32,6 +34,8 @@ App::~App() = default;
 //-----------------------------------------------------------------------------------------------
 void App::Startup()
 {
+    LoadGameConfig("Data/GameConfig.xml");
+
     // Create All Engine Subsystems
     InputSystemConfig inputConfig;
     g_theInput = new InputSystem(inputConfig);
@@ -52,7 +56,7 @@ void App::Startup()
     windowConfig.m_consoleTitle[9]  = "| '-------------' | | '--------------' | | '--------------' | | '--------------' | | '--------------' |\n";
     windowConfig.m_consoleTitle[10] = " '---------------'   '----------------'   '----------------'   '----------------'   '----------------'\n";
 
-    windowConfig.m_windowTitle = "SD1-A6: Libra Prototype";
+    windowConfig.m_windowTitle = "SD1-A7: Libra Playable";
     g_theWindow                = new Window(windowConfig);
 
     RenderConfig renderConfig;
@@ -223,4 +227,27 @@ void App::DeleteAndCreateNewGame()
     g_theGame = nullptr;
 
     g_theGame = new Game();
+}
+
+//----------------------------------------------------------------------------------------------------
+void App::LoadGameConfig(char const* gameConfigXmlFilePath)
+{
+    XmlDocument     gameConfigXml;
+    XmlResult const result = gameConfigXml.LoadFile(gameConfigXmlFilePath);
+
+    if (result == XmlResult::XML_SUCCESS)
+    {
+        if (XmlElement const* rootElement = gameConfigXml.RootElement())
+        {
+            g_gameConfigBlackboard.PopulateFromXmlElementAttributes(*rootElement);
+        }
+        else
+        {
+            printf("WARNING: game config from file \"%s\" was invalid (missing root element)\n", gameConfigXmlFilePath);
+        }
+    }
+    else
+    {
+        printf("WARNING: failed to load game config from file \"%s\"\n", gameConfigXmlFilePath);
+    }
 }

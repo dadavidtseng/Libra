@@ -17,14 +17,15 @@
 Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = LEO_PHYSICS_RADIUS;
+    m_physicsRadius               = g_gameConfigBlackboard.GetValue("leoPhysicsRadius", 0.25f);
+    m_detectRange                 = g_gameConfigBlackboard.GetValue("leoDetectRange", 10.f);
+    m_moveSpeed                   = g_gameConfigBlackboard.GetValue("leoMoveSpeed", 0.5f);
+    m_rotateSpeed                 = g_gameConfigBlackboard.GetValue("leoRotateSpeed", 90.f);
+    m_health                      = g_gameConfigBlackboard.GetValue("leoInitHealth", 3);
+    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("leoIsPushedByWalls", true);
+    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("leoIsPushedByEntities", true);
+    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
     m_playerTankLastKnownPosition = m_position;
-
-    m_isPushedByWalls    = true;
-    m_isPushedByEntities = true;
-    m_doesPushEntities   = true;
-
-    m_health = LEO_INIT_HEALTH;
 
     m_BodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
@@ -104,7 +105,7 @@ void Leo::UpdateBody(float const deltaSeconds)
 
     UpdateShootCoolDown(deltaSeconds);
 
-     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
 
     if (!playerTank)
         return;
@@ -127,23 +128,22 @@ void Leo::UpdateBody(float const deltaSeconds)
     {
         m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
 
-        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, LEO_ANGULAR_VELOCITY);
+        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
 
-        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * LEO_MOVE_SPEED * deltaSeconds;
+        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * m_moveSpeed * deltaSeconds;
         m_position += m_velocity;
 
-        if (degreesToTarget < 5.f &&
+        if (degreesToTarget < m_shootDegreesThreshold &&
             m_shootCoolDown <= 0.0f)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position, m_orientationDegrees);
-            m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
-
+            m_shootCoolDown = g_gameConfigBlackboard.GetValue("leoShootCoolDown", 1.f);
             g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
         }
     }
 
     // TurnToward if entity sees target
-    if (m_map->HasLineOfSight(m_position, playerTank->m_position, LEO_RANGE))
+    if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange))
     {
         m_hasTarget = true;
 
@@ -155,12 +155,12 @@ void Leo::UpdateBody(float const deltaSeconds)
             m_orientationDegrees,
             m_targetOrientationDegrees,
             deltaSeconds,
-            LEO_ANGULAR_VELOCITY);
+            m_rotateSpeed);
     }
     else
     {
         // if not, wander around
-        WanderAround(deltaSeconds, LEO_MOVE_SPEED, LEO_ANGULAR_VELOCITY);
+        WanderAround(deltaSeconds, m_moveSpeed, m_rotateSpeed);
     }
 }
 

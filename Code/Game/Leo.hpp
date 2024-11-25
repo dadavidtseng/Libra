@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------------------------------
 #pragma once
 #include "GameCommon.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 #include "Game/Entity.hpp"
@@ -30,6 +31,7 @@ private:
     AABB2    m_BodyBounds;
     Texture* m_BodyTexture                 = nullptr;
     Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
-    float    m_shootCoolDown               = LEO_SHOOT_COOLDOWN;
+    float    m_shootCoolDown               = 0.f;
+    float    m_shootDegreesThreshold       = g_gameConfigBlackboard.GetValue("leoShootDegreesThreshold", 5.f);
     bool     m_hasTarget                   = false;
 };

@@ -62,8 +62,10 @@ public:
     Vec2          m_position                 = Vec2::ZERO;
     Vec2          m_velocity                 = Vec2::ZERO;
     float         m_moveSpeed                = 0.f;
+    float         m_rotateSpeed              = 0.f;
     float         m_orientationDegrees       = 0.f;
     float         m_targetOrientationDegrees = 0.f;
+    float         m_detectRange              = 0.f;
     float         m_physicsRadius            = 0.f;
     float         m_timeSinceLastRoll        = 0.f;
     int           m_health                   = 0;

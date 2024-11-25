@@ -26,26 +26,6 @@
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
-    Strings s1 = SplitStringOnDelimiter( "Amy,Bret,Carl", ',' ); // split into 3 substrings: "Amy", "Bret", "Carl"
-    Strings s2 = SplitStringOnDelimiter( " -7.5, 3 ", ',' );     // split into 2: " -7.5" and " 3 " (including whitespace!)
-    Strings s3 = SplitStringOnDelimiter( "3~7", '~' );           // split into 2: "3" and "7"
-    Strings s4 = SplitStringOnDelimiter( "255, 128, 40", ',' );  // split into 3: "255", " 128", and " 40" (including spaces!)
-    Strings s5 = SplitStringOnDelimiter( "apple", '/' );         // split into 1: "apple"
-    Strings s6 = SplitStringOnDelimiter( "8/2/1973", '/' );      // split into 3: "8", "2", and "1973"
-    Strings s7 = SplitStringOnDelimiter( ",,", ',' );            // split into 3: "", "", and ""
-    Strings s8 = SplitStringOnDelimiter( ",,Hello,,", ',' );     // split into 5: "", "", "Hello", "", and ""
-    Strings s9 = SplitStringOnDelimiter( "", ',' );              // split into 1: ""
-
-    printf("%s %s %s\n", s1[0].c_str(), s1[1].c_str(), s1[2].c_str() );
-    printf("%s %s\n", s2[0].c_str(), s2[1].c_str());
-    printf("%s %s\n", s3[0].c_str(), s3[1].c_str());
-    printf("%s %s %s\n", s4[0].c_str(), s4[1].c_str(), s4[2].c_str() );
-    printf("%s\n", s5[0].c_str());
-    printf("%s %s %s\n", s6[0].c_str(), s6[1].c_str(), s6[2].c_str() );
-    printf("%s %s %s\n", s7[0].c_str(), s7[1].c_str(), s7[2].c_str() );
-    printf("%s %s %s %s %s\n", s8[0].c_str(), s8[1].c_str(), s8[2].c_str(), s8[3].c_str(), s8[4].c_str() );
-    printf("%s\n", s9[0].c_str());
-    
     // TileHeatMap thm(IntVec2(4,3), 0.f);
     // int numTiles = thm.GetNumTiles();
     // for (int i = 0; i < numTiles; i++)
@@ -58,8 +38,6 @@ Game::Game()
     //     thm->SetValueAtIndex(tileIndex, value);
     // }
 
-    
-    
     InitializeTiles();
     InitializeMaps();
     InitializeAudio();
@@ -67,16 +45,24 @@ Game::Game()
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
 
+    Vec2 const playerTankInitPosition = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
+    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees",30.f);
+
+
+
     m_playerTank = dynamic_cast<PlayerTank*>(m_currentMap->SpawnNewEntity(ENTITY_TYPE_PLAYER_TANK,
                                                                           ENTITY_FACTION_GOOD,
-                                                                          Vec2(PLAYER_TANK_INIT_POSITION_X,
-                                                                               PLAYER_TANK_INIT_POSITION_Y),
-                                                                          PLAYER_TANK_INIT_ORIENTATION_DEGREES));
+                                                                          playerTankInitPosition,
+                                                                          playerTankInitOrientationDegrees));
 
-    Vec2 const bottomLeft = Vec2::ZERO;
+    Vec2 const  bottomLeft  = Vec2::ZERO;
+    float const worldSizeX  = g_gameConfigBlackboard.GetValue("worldSizeX", 16.f);
+    float const worldSizeY  = g_gameConfigBlackboard.GetValue("worldSizeY", 8.f);
+    float const screenSizeX = g_gameConfigBlackboard.GetValue("screenSizeX", 1600.f);
+    float const screenSizeY = g_gameConfigBlackboard.GetValue("screenSizeY", 800.f);
 
-    m_worldCamera->SetOrthoView(bottomLeft, Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
-    m_screenCamera->SetOrthoView(bottomLeft, Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y));
+    m_worldCamera->SetOrthoView(bottomLeft, Vec2(worldSizeX, worldSizeY));
+    m_screenCamera->SetOrthoView(bottomLeft, Vec2(screenSizeX, screenSizeY));
 
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
@@ -290,7 +276,7 @@ void Game::UpdateFromKeyBoard()
 
             if (g_theInput->WasKeyJustPressed(KEYCODE_N))
             {
-                m_playerTank->m_health = PLAYER_TANK_INIT_HEALTH;
+                m_playerTank->m_health = g_gameConfigBlackboard.GetValue("playerTankInitHealth", 100);
                 m_playerTank->m_isDead = false;
                 m_isGameLoseMode       = false;
                 m_isPaused             = false;
@@ -448,7 +434,7 @@ void Game::UpdateFromController()
 
             if (controller.WasButtonJustPressed(XBOX_BUTTON_A))
             {
-                m_playerTank->m_health = PLAYER_TANK_INIT_HEALTH;
+                m_playerTank->m_health = g_gameConfigBlackboard.GetValue("playerTankInitHealth", 100);
                 m_playerTank->m_isDead = false;
                 m_isGameLoseMode       = false;
                 m_isPaused             = false;
@@ -560,13 +546,16 @@ void Game::UpdateFromController()
 //----------------------------------------------------------------------------------------------------
 void Game::UpdateCurrentMap()
 {
-    int const currentMapIndex = m_currentMap->GetMapIndex();
+    int const  currentMapIndex        = m_currentMap->GetMapIndex();
+    Vec2 const playerTankInitPosition = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
+    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees",30.f);
+
 
     m_currentMap->RemoveEntityFromMap(m_playerTank);
     m_currentMap = m_maps[currentMapIndex + 1];
     m_currentMap->AddEntityToMap(m_playerTank,
-                                 Vec2(PLAYER_TANK_INIT_POSITION_X, PLAYER_TANK_INIT_POSITION_Y),
-                                 PLAYER_TANK_INIT_ORIENTATION_DEGREES);
+                                 playerTankInitPosition,
+                                 playerTankInitOrientationDegrees);
 
     g_theAudio->StartSound(m_exitMapSound);
 }
@@ -575,6 +564,11 @@ void Game::UpdateCurrentMap()
 void Game::UpdateCamera(float const deltaSeconds) const
 {
     UNUSED(deltaSeconds)
+
+    float const worldSizeX   = g_gameConfigBlackboard.GetValue("worldSizeX", 16.f);
+    float const worldSizeY   = g_gameConfigBlackboard.GetValue("worldSizeY", 8.f);
+    float const worldCenterX = g_gameConfigBlackboard.GetValue("worldCenterX", 8.f);
+    float const worldCenterY = g_gameConfigBlackboard.GetValue("worldCenterY", 4.f);
 
     if (!m_playerTank)
         return;
@@ -585,14 +579,14 @@ void Game::UpdateCamera(float const deltaSeconds) const
     const float     mapMaxX            = static_cast<float>(m_currentMap->GetMapDimension().x);
     const float     mapMaxY            = static_cast<float>(m_currentMap->GetMapDimension().y);
 
-    Vec2 cameraMin = Vec2(playerTankPosition.x - WORLD_CENTER_X, playerTankPosition.y - WORLD_CENTER_Y);
-    Vec2 cameraMax = Vec2(playerTankPosition.x + WORLD_CENTER_X, playerTankPosition.y + WORLD_CENTER_Y);
+    Vec2 cameraMin = Vec2(playerTankPosition.x - worldCenterX, playerTankPosition.y - worldCenterY);
+    Vec2 cameraMax = Vec2(playerTankPosition.x + worldCenterX, playerTankPosition.y + worldCenterY);
 
-    cameraMin.x = RangeMapClamped(cameraMin.x, mapMinX, mapMaxX - WORLD_SIZE_X, mapMinX, mapMaxX - WORLD_SIZE_X);
-    cameraMax.x = RangeMapClamped(cameraMax.x, mapMinX + WORLD_SIZE_X, mapMaxX, mapMinX + WORLD_SIZE_X, mapMaxX);
+    cameraMin.x = RangeMapClamped(cameraMin.x, mapMinX, mapMaxX - worldSizeX, mapMinX, mapMaxX - worldSizeX);
+    cameraMax.x = RangeMapClamped(cameraMax.x, mapMinX + worldSizeX, mapMaxX, mapMinX + worldSizeX, mapMaxX);
 
-    cameraMin.y = RangeMapClamped(cameraMin.y, mapMinY, mapMaxY - WORLD_SIZE_Y, mapMinY, mapMaxY - WORLD_SIZE_Y);
-    cameraMax.y = RangeMapClamped(cameraMax.y, mapMinY + WORLD_SIZE_Y, mapMaxY, mapMinY + WORLD_SIZE_Y, mapMaxY);
+    cameraMin.y = RangeMapClamped(cameraMin.y, mapMinY, mapMaxY - worldSizeY, mapMinY, mapMaxY - worldSizeY);
+    cameraMax.y = RangeMapClamped(cameraMax.y, mapMinY + worldSizeY, mapMaxY, mapMinY + worldSizeY, mapMaxY);
 
     m_worldCamera->SetOrthoView(cameraMin, cameraMax);
 
@@ -603,8 +597,8 @@ void Game::UpdateCamera(float const deltaSeconds) const
         float const mapWidth  = static_cast<float>(m_currentMap->GetMapDimension().x);
         float const mapHeight = static_cast<float>(m_currentMap->GetMapDimension().y);
 
-        constexpr float aspectRatio = WORLD_SIZE_X / WORLD_SIZE_Y;
-        float           newScreenX,newScreenY;
+        float aspectRatio = worldSizeX / worldSizeY;
+        float newScreenX,newScreenY;
 
         if (mapWidth / mapHeight > aspectRatio)
         {
@@ -677,20 +671,25 @@ void Game::RenderAttractMode() const
 //----------------------------------------------------------------------------------------------------
 void Game::RenderUI() const
 {
+    float const screenSizeX   = g_gameConfigBlackboard.GetValue("screenSizeX", 1600.f);
+    float const screenSizeY   = g_gameConfigBlackboard.GetValue("screenSizeY", 800.f);
+    float const screenCenterX = g_gameConfigBlackboard.GetValue("screenCenterX", 800.f);
+    float const screenCenterY = g_gameConfigBlackboard.GetValue("screenCenterY", 400.f);
+
     if (m_isAttractMode)
         return;
 
     if (m_isPaused)
     {
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
-                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y), BLACK,
+        DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
+                         Vec2(screenSizeX, screenSizeY), BLACK,
                          0.5f);
     }
 
     if (m_isGameLoseMode)
     {
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
-                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y),
+        DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
+                         Vec2(screenSizeX, screenSizeY),
                          DEBUG_RENDER_RED,
                          0.5f);
 
@@ -698,7 +697,7 @@ void Game::RenderUI() const
 
         AddVertsForTextTriangles2D(titleVerts,
                                    "You are dead...",
-                                   Vec2(30.f, SCREEN_CENTER_Y + 100.f),
+                                   Vec2(30.f, screenCenterY + 100.f),
                                    48.f,
                                    BLACK,
                                    1.f,
@@ -707,7 +706,7 @@ void Game::RenderUI() const
 
         AddVertsForTextTriangles2D(titleVerts,
                                    "Press \"N\" to respawn,",
-                                   Vec2(30.f, SCREEN_CENTER_Y),
+                                   Vec2(30.f, screenCenterY),
                                    48.f,
                                    BLACK,
                                    1.f,
@@ -716,7 +715,7 @@ void Game::RenderUI() const
 
         AddVertsForTextTriangles2D(titleVerts,
                                    "Press \"ESC\" to exit,",
-                                   Vec2(30.f, SCREEN_CENTER_Y - 100.f),
+                                   Vec2(30.f, screenCenterY - 100.f),
                                    48.f,
                                    BLACK,
                                    1.f,
@@ -728,8 +727,8 @@ void Game::RenderUI() const
 
     if (m_isGameWinMode)
     {
-        DebugDrawGlowBox(Vec2(SCREEN_CENTER_X, SCREEN_CENTER_Y),
-                         Vec2(SCREEN_SIZE_X, SCREEN_SIZE_Y),
+        DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
+                         Vec2(screenSizeX, screenSizeY),
                          DEBUG_RENDER_GREEN,
                          0.5f);
 
@@ -737,7 +736,7 @@ void Game::RenderUI() const
 
         AddVertsForTextTriangles2D(titleVerts,
                                    "Victory!",
-                                   Vec2(30.f, SCREEN_CENTER_Y + 100.f),
+                                   Vec2(30.f, screenCenterY + 100.f),
                                    48.f,
                                    BLACK,
                                    1.f,
@@ -746,7 +745,7 @@ void Game::RenderUI() const
 
         AddVertsForTextTriangles2D(titleVerts,
                                    "Press \"ESC\" to exit,",
-                                   Vec2(30.f, SCREEN_CENTER_Y - 100.f),
+                                   Vec2(30.f, screenCenterY - 100.f),
                                    48.f,
                                    BLACK,
                                    1.f,

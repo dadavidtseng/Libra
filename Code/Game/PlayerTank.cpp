@@ -5,9 +5,9 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/PlayerTank.hpp"
 
+#include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
-#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -17,14 +17,12 @@
 PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius      = PLAYER_TANK_PHYSICS_RADIUS;
-    m_orientationDegrees = PLAYER_TANK_INIT_ORIENTATION_DEGREES;
-
-    m_isPushedByWalls    = true;
-    m_isPushedByEntities = true;
-    m_doesPushEntities   = true;
-
-    m_health = PLAYER_TANK_INIT_HEALTH;
+    m_physicsRadius      = g_gameConfigBlackboard.GetValue("playerTankPhysicsRadius", 0.3f);
+    m_rotateSpeed        = g_gameConfigBlackboard.GetValue("playerTankBodyRotateSpeed", 180.f);
+    m_health             = g_gameConfigBlackboard.GetValue("playerTankInitHealth", 100);
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("playerTankIsPushedByWalls", true);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("playerTankIsPushedByEntities", true);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("playerTankDoesPushEntities", true);
 
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
@@ -61,7 +59,7 @@ void PlayerTank::Update(const float deltaSeconds)
             float const turretAbsoluteDegrees = m_orientationDegrees + m_turretRelativeOrientation;
             Vec2 const  fwdNormal             = Vec2::MakeFromPolarDegrees(turretAbsoluteDegrees);
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position + fwdNormal * 0.2f, turretAbsoluteDegrees);
-            m_shootCoolDown = PLAYER_TANK_SHOOT_COOLDOWN;
+            m_shootCoolDown = g_gameConfigBlackboard.GetValue("playerTankShootCoolDown", 0.1f);
 
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
         }
@@ -160,7 +158,7 @@ void PlayerTank::UpdateBody(const float deltaSeconds)
     const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
     m_targetOrientationDegrees = m_bodyInput.GetOrientationDegrees();
 
-    TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, PLAYER_TANK_ANGULAR_VELOCITY);
+    TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
 
     m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * moveDelta.GetLength();
     m_position += m_velocity;
@@ -186,7 +184,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
     float turretGoalRelativeOrientation = m_turretGoalOrientationDegrees - m_orientationDegrees;
 
     TurnToward(m_turretRelativeOrientation, turretGoalRelativeOrientation, deltaSeconds,
-               m_turretMaxRotateSpeed);
+               m_turretRotateSpeed);
 }
 
 //----------------------------------------------------------------------------------------------------

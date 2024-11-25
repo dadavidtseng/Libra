@@ -17,15 +17,14 @@
 Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = SCORPIO_PHYSICS_RADIUS;
+    m_physicsRadius               = g_gameConfigBlackboard.GetValue("scorpioPhysicsRadius", 0.35f);
+    m_detectRange                 = g_gameConfigBlackboard.GetValue("scorpioDetectRange", 10.f);
+    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("scorpioIsPushedByWalls", true);
+    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
+    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
+    m_health                      = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
     m_playerTankLastKnownPosition = m_position;
-
-    m_isPushedByWalls    = true;
-    m_isPushedByEntities = false;
-    m_doesPushEntities   = true;
-
-    m_health = SCORPIO_INIT_HEALTH;
-
+    
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
@@ -96,23 +95,23 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
 
     // Turn and shoot ( or turn idly)
     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
-    if (m_map->HasLineOfSight(m_position, playerTank->m_position, SCORPIO_RANGE) && !playerTank->m_isDead)
+    if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange) && !playerTank->m_isDead)
     {
         // Turn toward player
         float const targetOrientationDegrees = (m_playerTankLastKnownPosition - m_position).GetOrientationDegrees();
 
-        TurnToward(m_turretOrientationDegrees, targetOrientationDegrees, deltaSeconds, SCORPIO_ANGULAR_VELOCITY);
+        TurnToward(m_turretOrientationDegrees, targetOrientationDegrees, deltaSeconds, m_turretRotateSpeed);
 
         // Shot at player if facing close enough to orientation
         Vec2 const  dispToTarget    = playerTank->m_position - m_position;
         Vec2 const  myFwdNormal     = Vec2::MakeFromPolarDegrees(m_turretOrientationDegrees);
         float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, myFwdNormal);
 
-        if (degreesToTarget < SCORPIO_SHOOT_DEGREES_THRESHOLD &&
+        if (degreesToTarget < m_shootDegreesThreshold &&
             m_shootCoolDown <= 0.0f)
         {
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position + myFwdNormal * 0.45f, m_turretOrientationDegrees);
-            m_shootCoolDown = SCORPIO_SHOOT_COOLDOWN;
+            m_shootCoolDown = g_gameConfigBlackboard.GetValue("scorpioShootCoolDown", 0.3f);
             g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
         }
 
@@ -121,7 +120,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
     else
     {
         // turn blindly
-        m_turretOrientationDegrees += deltaSeconds * SCORPIO_ANGULAR_VELOCITY;
+        m_turretOrientationDegrees += deltaSeconds * m_turretRotateSpeed;
     }
 }
 

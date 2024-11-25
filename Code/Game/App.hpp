@@ -9,25 +9,26 @@
 class App
 {
 public:
-	App();
-	~App();
-	void Startup();
-	void Shutdown();
-	void RunFrame();
+    App();
+    ~App();
+    void Startup();
+    void Shutdown();
+    void RunFrame();
 
-	void RunMainLoop();
+    void RunMainLoop();
 
 private:
-	void BeginFrame() const;
-	void Update(float deltaSeconds);
-	void Render() const;
-	void EndFrame() const;
+    void BeginFrame() const;
+    void Update(float deltaSeconds);
+    void Render() const;
+    void EndFrame() const;
 
-	void UpdateFromController();
-	void UpdateFromKeyBoard();
-	void RequestQuit();
-	void DeleteAndCreateNewGame();
+    void UpdateFromController();
+    void UpdateFromKeyBoard();
+    void RequestQuit();
+    void DeleteAndCreateNewGame();
+    void LoadGameConfig(char const* gameConfigXmlFilePath);
 
-	bool  m_isQuitting         = false;
-	float m_timeLastFrameStart = 0.f;
+    bool  m_isQuitting         = false;
+    float m_timeLastFrameStart = 0.f;
 };

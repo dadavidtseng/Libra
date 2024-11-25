@@ -24,14 +24,14 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
     if (faction == ENTITY_FACTION_GOOD)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_GOOD_IMG);
-        m_health      = BULLET_GOOD_INIT_HEALTH;
-        m_moveSpeed   = BULLET_GOOD_SPEED;
+        m_health      = g_gameConfigBlackboard.GetValue("bulletGoodInitHealth", 3);
+        m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletGoodMoveSpeed", 5.f);
     }
     if (faction == ENTITY_FACTION_EVIL)
     {
         m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(BULLET_EVIL_IMG);
-        m_health      = BULLET_EVIL_INIT_HEALTH;
-        m_moveSpeed   = BULLET_EVIL_SPEED;
+        m_health      = g_gameConfigBlackboard.GetValue("bulletEvilInitHealth", 1);
+        m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletEvilMoveSpeed", 3.f);
     }
 
     m_BodyBounds    = AABB2(Vec2(-0.1f, -0.05f), Vec2(0.1f, 0.05f));
