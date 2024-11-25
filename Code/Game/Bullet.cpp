@@ -17,9 +17,9 @@
 Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_isPushedByWalls    = false;
-    m_isPushedByEntities = false;
-    m_doesPushEntities   = false;
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("bulletIsPushedByWalls", true);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("bulletIsPushedByEntities", true);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("bulletDoesPushEntities", true);
 
     if (faction == ENTITY_FACTION_GOOD)
     {
