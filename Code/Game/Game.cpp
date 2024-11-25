@@ -13,6 +13,7 @@
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -45,8 +46,8 @@ Game::Game()
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
 
-    Vec2 const playerTankInitPosition = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
-    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees",30.f);
+    Vec2 const  playerTankInitPosition           = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
+    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees", 30.f);
 
 
 
@@ -155,6 +156,15 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
+
+    // ...and then, each frame; draw two text strings on screen
+    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
+
+    std::vector<Vertex_PCU> textVerts;
+    g_testFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
+    g_testFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
+    g_theRenderer->BindTexture(&g_testFont->GetTexture());
+    g_theRenderer->DrawVertexArray(textVerts.size(), textVerts.data());
 
     g_theRenderer->EndCamera(*m_screenCamera);
 }
@@ -546,9 +556,9 @@ void Game::UpdateFromController()
 //----------------------------------------------------------------------------------------------------
 void Game::UpdateCurrentMap()
 {
-    int const  currentMapIndex        = m_currentMap->GetMapIndex();
-    Vec2 const playerTankInitPosition = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
-    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees",30.f);
+    int const   currentMapIndex                  = m_currentMap->GetMapIndex();
+    Vec2 const  playerTankInitPosition           = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
+    float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees", 30.f);
 
 
     m_currentMap->RemoveEntityFromMap(m_playerTank);
@@ -666,9 +676,9 @@ void Game::RenderAttractMode() const
         return;
 
     DebugDrawGlowCircle(Vec2(800, 400),
-        400.0f,
-        Rgba8::RED,
-        m_glowIntensity);
+                        400.0f,
+                        Rgba8::RED,
+                        m_glowIntensity);
 }
 
 //----------------------------------------------------------------------------------------------------
