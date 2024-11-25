@@ -74,7 +74,7 @@ void Bullet::DebugRender() const
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.03f,
-                  DEBUG_RENDER_CYAN);
+                  Rgba8::CYAN);
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -73,16 +73,16 @@ void Scorpio::DebugRender() const
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.03f,
-                  DEBUG_RENDER_CYAN);
+                  Rgba8::CYAN);
 
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
                   0.03f,
-                  DEBUG_RENDER_RED);
+                  Rgba8::RED);
     DebugDrawLine(m_position,
                   m_position + leftNormal,
                   0.03f,
-                  DEBUG_RENDER_GREEN);
+                  Rgba8::GREEN);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -157,5 +157,5 @@ void Scorpio::RenderLaser() const
     Ray2 const            ray             = Ray2(m_position, fwdNormal.GetNormalized(), 10000);
     RaycastResult2D const raycastResult2D = m_map->RaycastVsTiles(ray);
 
-    DebugDrawLine(m_position + fwdNormal * 0.45f, raycastResult2D.m_impactPos, 0.05f, DEBUG_RENDER_RED);
+    DebugDrawLine(m_position + fwdNormal * 0.45f, raycastResult2D.m_impactPos, 0.05f, Rgba8::RED);
 }

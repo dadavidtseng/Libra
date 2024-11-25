@@ -191,7 +191,7 @@ void Game::InitializeAudio()
 {
     printf("( Game ) Start  | InitializeAudio\n");
 
-    m_attractModeBgm       = g_theAudio->CreateOrGetSound(ATTRACT_MODE_BGM);
+    m_attractModeBgm       = g_theAudio->CreateOrGetSound(g_gameConfigBlackboard.GetValue("attractModeBgm", "Data/Audios/AttractModeBgm.mp3"));
     m_InGameBgm            = g_theAudio->CreateOrGetSound(IN_GAME_BGM);
     m_gameWinBgm           = g_theAudio->CreateOrGetSound(GAME_WIN_BGM);
     m_gameLoseBgm          = g_theAudio->CreateOrGetSound(GAME_LOSE_BGM);
@@ -665,7 +665,10 @@ void Game::RenderAttractMode() const
     if (!m_isAttractMode)
         return;
 
-    DebugDrawGlowCircle(Vec2(800, 400), 400.0f, DEBUG_RENDER_RED, m_glowIntensity);
+    DebugDrawGlowCircle(Vec2(800, 400),
+        400.0f,
+        Rgba8::RED,
+        m_glowIntensity);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -682,7 +685,7 @@ void Game::RenderUI() const
     if (m_isPaused)
     {
         DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
-                         Vec2(screenSizeX, screenSizeY), BLACK,
+                         Vec2(screenSizeX, screenSizeY), Rgba8::BLACK,
                          0.5f);
     }
 
@@ -690,7 +693,7 @@ void Game::RenderUI() const
     {
         DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
                          Vec2(screenSizeX, screenSizeY),
-                         DEBUG_RENDER_RED,
+                         Rgba8::RED,
                          0.5f);
 
         std::vector<Vertex_PCU> titleVerts;
@@ -699,7 +702,7 @@ void Game::RenderUI() const
                                    "You are dead...",
                                    Vec2(30.f, screenCenterY + 100.f),
                                    48.f,
-                                   BLACK,
+                                   Rgba8::BLACK,
                                    1.f,
                                    true,
                                    0.05f);
@@ -708,7 +711,7 @@ void Game::RenderUI() const
                                    "Press \"N\" to respawn,",
                                    Vec2(30.f, screenCenterY),
                                    48.f,
-                                   BLACK,
+                                   Rgba8::BLACK,
                                    1.f,
                                    true,
                                    0.05f);
@@ -717,7 +720,7 @@ void Game::RenderUI() const
                                    "Press \"ESC\" to exit,",
                                    Vec2(30.f, screenCenterY - 100.f),
                                    48.f,
-                                   BLACK,
+                                   Rgba8::BLACK,
                                    1.f,
                                    true,
                                    0.05f);
@@ -729,7 +732,7 @@ void Game::RenderUI() const
     {
         DebugDrawGlowBox(Vec2(screenCenterX, screenCenterY),
                          Vec2(screenSizeX, screenSizeY),
-                         DEBUG_RENDER_GREEN,
+                         Rgba8::GREEN,
                          0.5f);
 
         std::vector<Vertex_PCU> titleVerts;
@@ -738,7 +741,7 @@ void Game::RenderUI() const
                                    "Victory!",
                                    Vec2(30.f, screenCenterY + 100.f),
                                    48.f,
-                                   BLACK,
+                                   Rgba8::BLACK,
                                    1.f,
                                    true,
                                    0.05f);
@@ -747,7 +750,7 @@ void Game::RenderUI() const
                                    "Press \"ESC\" to exit,",
                                    Vec2(30.f, screenCenterY - 100.f),
                                    48.f,
-                                   BLACK,
+                                   Rgba8::BLACK,
                                    1.f,
                                    true,
                                    0.05f);

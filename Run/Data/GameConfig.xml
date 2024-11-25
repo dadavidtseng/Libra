@@ -10,6 +10,9 @@
     <worldSizeY>8</worldSizeY>
     <worldCenterX>8</worldCenterX>
     <worldCenterY>4</worldCenterY>
+    
+    <!-- Audio-related -->
+    <attractModeBgm>Data/Audios/AttractModeBgm.mp3</attractModeBgm>
 
     <!-- PlayerTank-related -->
     <playerTankInitPosition>2,2</playerTankInitPosition>

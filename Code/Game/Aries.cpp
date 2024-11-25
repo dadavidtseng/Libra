@@ -26,7 +26,7 @@ Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
     m_doesPushEntities            = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
     m_playerTankLastKnownPosition = m_position;
-    
+
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
@@ -71,31 +71,34 @@ void Aries::DebugRender() const
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.05f,
-                  DEBUG_RENDER_CYAN);
+                  Rgba8::CYAN);
 
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
                   0.05f,
-                  DEBUG_RENDER_RED);
+                  Rgba8::RED);
     DebugDrawLine(m_position,
                   m_position + leftNormal,
                   0.05f,
-                  DEBUG_RENDER_GREEN);
+                  Rgba8::GREEN);
 
     if (m_playerTankLastKnownPosition != Vec2::ZERO)
     {
         DebugDrawLine(m_position,
                       m_playerTankLastKnownPosition,
                       0.05f,
-                      DEBUG_RENDER_GREY);
+                      Rgba8::GREY);
 
-        DebugDrawGlowCircle(m_playerTankLastKnownPosition, 0.1f, DEBUG_RENDER_GREY, 1.f);
+        DebugDrawGlowCircle(m_playerTankLastKnownPosition,
+                            0.1f,
+                            Rgba8::GREY,
+                            1.f);
     }
 
     DebugDrawLine(m_position,
                   m_position + m_velocity,
                   0.025f,
-                  DEBUG_RENDER_YELLOW);
+                  Rgba8::YELLOW);
 }
 
 //----------------------------------------------------------------------------------------------------

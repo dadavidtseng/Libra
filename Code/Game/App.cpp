@@ -163,7 +163,7 @@ void App::Update(const float deltaSeconds)
 //
 void App::Render() const
 {
-    g_theRenderer->ClearScreen(BLACK);
+    g_theRenderer->ClearScreen(Rgba8::BLACK);
     g_theGame->Render();
 }
 

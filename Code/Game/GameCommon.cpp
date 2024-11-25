@@ -1,8 +1,8 @@
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 // GameCommon.cpp
-//
+//----------------------------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 #include "Game/GameCommon.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
@@ -11,27 +11,10 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
-//-----------------------------------------------------------------------------------------------
-// DebugRender color-related
-//
-Rgba8 const DEBUG_RENDER_GREY    = Rgba8(50, 50, 50);
-Rgba8 const DEBUG_RENDER_RED     = Rgba8(255, 0, 0);
-Rgba8 const DEBUG_RENDER_GREEN   = Rgba8(0, 255, 0);
-Rgba8 const DEBUG_RENDER_MAGENTA = Rgba8(255, 0, 255);
-Rgba8 const DEBUG_RENDER_CYAN    = Rgba8(0, 255, 255);
-Rgba8 const DEBUG_RENDER_YELLOW  = Rgba8(255, 255, 0);
-Rgba8 const DEBUG_RENDER_BLUE    = Rgba8(0, 0, 255);
-
-Rgba8 const TRANSPARENT_BLACK = Rgba8(0, 0, 0, 150);
-Rgba8 const TRANSPARENT_RED   = Rgba8(255, 0, 0, 50);
-Rgba8 const TRANSPARENT_GREEN = Rgba8(0, 255, 0, 50);
-Rgba8 const BLACK             = Rgba8(0, 0, 0);
-
-
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 // Audio-related
 //
-const char* ATTRACT_MODE_BGM        = "Data/Audios/AttractModeBgm.mp3";
+// const char* ATTRACT_MODE_BGM        = "Data/Audios/AttractModeBgm.mp3";
 const char* IN_GAME_BGM             = "Data/Audios/InGameBgm.mp3";
 const char* GAME_WIN_BGM            = "Data/Audios/GameWinBgm.mp3";
 const char* GAME_LOSE_BGM           = "Data/Audios/GameLoseBgm.mp3";
@@ -46,8 +29,8 @@ const char* ENEMY_SHOOT_SOUND       = "Data/Audios/EnemyShoot.mp3";
 const char* EXIT_MAP_SOUND          = "Data/Audios/ExitMap.mp3";
 const char* BULLET_BOUNCE_SOUND     = "Data/Audios/BulletBounce.mp3";
 
-//-----------------------------------------------------------------------------------------------
-// Texture-related
+//----------------------------------------------------------------------------------------------------
+//// Texture-related
 //
 const char* PLAYER_TANK_BODY_IMG   = "Data/Images/PlayerTankBody.png";
 const char* PLAYER_TANK_TURRET_IMG = "Data/Images/PlayerTankTurret.png";
@@ -59,10 +42,7 @@ const char* BULLET_GOOD_IMG        = "Data/Images/BulletGood.png";
 const char* BULLET_EVIL_IMG        = "Data/Images/BulletEvil.png";
 const char* TILE_TEXTURE_IMG       = "Data/Images/Terrain_8x8.png";
 
-//-----------------------------------------------------------------------------------------------
-
-
-
+//----------------------------------------------------------------------------------------------------
 void DebugDrawRing(Vec2 const& center, float const radius, float const thickness, Rgba8 const& color)
 {
     float const   halfThickness = 0.5f * thickness;

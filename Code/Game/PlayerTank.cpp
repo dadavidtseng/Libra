@@ -90,17 +90,17 @@ void PlayerTank::DebugRender() const
     DebugDrawRing(m_position,
                   m_physicsRadius,
                   0.05f,
-                  DEBUG_RENDER_CYAN); // Inner circle (physics radius)
+                  Rgba8::CYAN); // Inner circle (physics radius)
 
     // Local space vectors
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
                   0.05f,
-                  DEBUG_RENDER_RED); // i vector (red)
+                  Rgba8::RED); // i vector (red)
     DebugDrawLine(m_position,
                   m_position + leftNormal,
                   0.05f,
-                  DEBUG_RENDER_GREEN); // j vector (green)
+                  Rgba8::GREEN); // j vector (green)
 
     // Player tank's target and current orientations
     const Vec2 goalOrientationVec    = Vec2::MakeFromPolarDegrees(m_targetOrientationDegrees);
@@ -110,13 +110,13 @@ void PlayerTank::DebugRender() const
     DebugDrawLine(m_position + goalOrientationVec,
                   m_position + goalOrientationVec * 1.5f,
                   0.15f,
-                  DEBUG_RENDER_BLUE);
+                  Rgba8::BLUE);
 
     // Draw current orientation line (blue line segment inside the circle)
     DebugDrawLine(m_position,
                   m_position + currentOrientationVec,
                   0.1f,
-                  DEBUG_RENDER_BLUE);
+                  Rgba8::BLUE);
 
     // TODO: ASK IF THIS IS OKAY!!!
     // Draw turret's current and goal orientations
@@ -126,17 +126,17 @@ void PlayerTank::DebugRender() const
     DebugDrawLine(m_position + turretGoalVec,
                   m_position + turretGoalVec * 1.5f,
                   0.075f,
-                  DEBUG_RENDER_GREY);
+                  Rgba8::GREY);
 
     DebugDrawLine(m_position,
                   m_position + turretCurrentVec,
                   0.05f,
-                  DEBUG_RENDER_GREY);
+                  Rgba8::GREY);
 
     DebugDrawLine(m_position,
                   m_position + m_bodyInput,
                   0.025f,
-                  DEBUG_RENDER_YELLOW);
+                  Rgba8::YELLOW);
 }
 
 //----------------------------------------------------------------------------------------------------
