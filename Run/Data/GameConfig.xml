@@ -64,8 +64,8 @@
     <bulletEvilMoveSpeed>3</bulletEvilMoveSpeed>
     <bulletGoodInitHealth>3</bulletGoodInitHealth>
     <bulletEvilInitHealth>1</bulletEvilInitHealth>
-    <bulletIsPushedByWalls>true</bulletIsPushedByWalls>
-    <bulletIsPushedByEntities>true</bulletIsPushedByEntities>
-    <bulletDoesPushEntities>true</bulletDoesPushEntities>
+    <bulletIsPushedByWalls>false</bulletIsPushedByWalls>
+    <bulletIsPushedByEntities>false</bulletIsPushedByEntities>
+    <bulletDoesPushEntities>false</bulletDoesPushEntities>
     
 </GameConfig>
