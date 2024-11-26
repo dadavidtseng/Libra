@@ -1,71 +1,30 @@
-<GameConfig>
-    <!-- Screen configuration -->
-    <screenSizeX>1600</screenSizeX>
-    <screenSizeY>800</screenSizeY>
-    <screenCenterX>800</screenCenterX>
-    <screenCenterY>400</screenCenterY>
+<MapDefinitions>
 
-    <!-- World configuration -->
-    <worldSizeX>16</worldSizeX>
-    <worldSizeY>8</worldSizeY>
-    <worldCenterX>8</worldCenterX>
-    <worldCenterY>4</worldCenterY>
-    
-    <!-- Audio-related -->
-    <attractModeBgm>Data/Audios/AttractModeBgm.mp3</attractModeBgm>
+    <MapDefinition
+            name="Map01"
+            index="0"
+            scorpioSpawnPercentage="0.2"
+            leoSpawnPercentage="0.2"
+            ariesSpawnPercentage="0.2"
+            dimensions="24,30"
+    />
 
-    <!-- PlayerTank-related -->
-    <playerTankInitPosition>2,2</playerTankInitPosition>
-    <playerTankInitOrientationDegrees>30</playerTankInitOrientationDegrees>
-    <playerTankInitHealth>100</playerTankInitHealth>
-    <playerTankPhysicsRadius>0.3</playerTankPhysicsRadius>
-    <playerTankShootCoolDown>0.1</playerTankShootCoolDown>
-    <playerTankBodyRotateSpeed>180</playerTankBodyRotateSpeed>
-    <playerTankTurretRotateSpeed>360</playerTankTurretRotateSpeed>
-    <playerTankIsPushedByWalls>true</playerTankIsPushedByWalls>
-    <playerTankIsPushedByEntities>true</playerTankIsPushedByEntities>
-    <playerTankDoesPushEntities>true</playerTankDoesPushEntities>
+    <MapDefinition
+            name="Map02"
+            index="1"
+            scorpioSpawnPercentage="0.3"
+            leoSpawnPercentage="0.3"
+            ariesSpawnPercentage="0.3"
+            dimensions="50,20"
+    />
 
-    <!-- Scorpio-related -->
-    <scorpioPhysicsRadius>0.35</scorpioPhysicsRadius>
-    <scorpioDetectRange>10</scorpioDetectRange>
-    <scorpioInitHealth>5</scorpioInitHealth>
-    <scorpioShootCoolDown>0.3</scorpioShootCoolDown>
-    <scorpioShootDegreesThreshold>5</scorpioShootDegreesThreshold>
-    <scorpioTurretRotateSpeed>90</scorpioTurretRotateSpeed>
-    <scorpioIsPushedByWalls>true</scorpioIsPushedByWalls>
-    <scorpioIsPushedByEntities>false</scorpioIsPushedByEntities>
-    <scorpioDoesPushEntities>true</scorpioDoesPushEntities>
+    <MapDefinition
+            name="Map03"
+            index="2"
+            scorpioSpawnPercentage="0.1"
+            leoSpawnPercentage="0.1"
+            ariesSpawnPercentage="0.1"
+            dimensions="16,16"
+    />
 
-    <!-- Leo-related -->
-    <leoPhysicsRadius>0.25</leoPhysicsRadius>
-    <leoDetectRange>10</leoDetectRange>
-    <leoInitHealth>3</leoInitHealth>
-    <leoShootCoolDown>1</leoShootCoolDown>
-    <leoShootDegreesThreshold>5</leoShootDegreesThreshold>
-    <leoMoveSpeed>0.5</leoMoveSpeed>
-    <leoRotateSpeed>90</leoRotateSpeed>
-    <leoIsPushedByWalls>true</leoIsPushedByWalls>
-    <leoIsPushedByEntities>true</leoIsPushedByEntities>
-    <leoDoesPushEntities>true</leoDoesPushEntities>
-
-    <!-- Aries-related -->
-    <ariesPhysicsRadius>0.25</ariesPhysicsRadius>
-    <ariesDetectRange>10</ariesDetectRange>
-    <ariesInitHealth>8</ariesInitHealth>
-    <ariesMoveSpeed>0.5</ariesMoveSpeed>
-    <ariesRotateSpeed>90</ariesRotateSpeed>
-    <ariesIsPushedByWalls>true</ariesIsPushedByWalls>
-    <ariesIsPushedByEntities>true</ariesIsPushedByEntities>
-    <ariesDoesPushEntities>true</ariesDoesPushEntities>
-
-    <!-- Bullet-related -->
-    <bulletGoodMoveSpeed>5</bulletGoodMoveSpeed>
-    <bulletEvilMoveSpeed>3</bulletEvilMoveSpeed>
-    <bulletGoodInitHealth>3</bulletGoodInitHealth>
-    <bulletEvilInitHealth>1</bulletEvilInitHealth>
-    <bulletIsPushedByWalls>true</bulletIsPushedByWalls>
-    <bulletIsPushedByEntities>true</bulletIsPushedByEntities>
-    <bulletDoesPushEntities>true</bulletDoesPushEntities>
-    
-</GameConfig>
+</MapDefinitions>

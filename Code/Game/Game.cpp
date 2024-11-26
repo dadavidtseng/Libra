@@ -164,21 +164,27 @@ void Game::Render()
     RenderUI();
 
     TestBitfontMap();
-    
+
     g_theRenderer->EndCamera(*m_screenCamera);
 }
 
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeMaps()
 {
-    MapData const data01 = { 0, 0.f, 0.f, 0.1f, IntVec2(24, 30) };
-    MapData const data02 = { 1, 0.1f, 0.1f, 0.1f, IntVec2(50, 20) };
-    MapData const data03 = { 2, 0.1f, 0.1f, 0.1f, IntVec2(16, 16) };
+    printf("( Game ) Start  | InitializeMaps\n");
+    
+    MapDefinition::InitializeMapDefs();
+    
     m_maps.reserve(3);
-    m_maps.push_back(new Map(data01));
-    m_maps.push_back(new Map(data02));
-    m_maps.push_back(new Map(data03));
+    
+    for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
+    {
+        m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
+    }
+    
     m_currentMap = m_maps[0];
+
+    printf("( Game ) Finish | InitializeMaps\n");
 }
 
 //----------------------------------------------------------------------------------------------------

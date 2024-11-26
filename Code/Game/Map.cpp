@@ -5,6 +5,7 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Map.hpp"
 
+#include "MapDefinition.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/StringUtils.hpp"
@@ -84,11 +85,12 @@ void Map::CreateHeatMaps()
     //
     // }
 }
+
 //----------------------------------------------------------------------------------------------------
-Map::Map(MapData const& data)
-    : m_dimensions(data.m_dimensions.x, data.m_dimensions.y),
-      m_mapData(data)
+Map::Map(MapDefinition const& mapDef)
+    : m_mapDef(&mapDef)
 {
+    m_dimensions = mapDef.GetDimensions();
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
     m_exitPosition = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
 
@@ -251,17 +253,7 @@ void Map::RenderTiles() const
 
     tileVertices.reserve(static_cast<size_t>(3) * 2 * m_dimensions.x * m_dimensions.y);
 
-    String tileNames[] =
-    {
-        "Grass",
-        "Stone",
-        "Sparkle_01",
-        "Sparkle_02",
-        "Floor",
-        "Exit"
-    };
-
-    for (String const& tileName : tileNames)
+    for (String const& tileName : TileDefinition::GetTileNames())
     {
         TileDefinition const*  tileDef   = TileDefinition::GetTileDefByName(tileName);
         SpriteDefinition const spriteDef = tileDef->GetSpriteDef();
@@ -345,7 +337,7 @@ void Map::GenerateDistanceFieldHeatMap(TileHeatMap& heatMap, IntVec2 const& star
 //----------------------------------------------------------------------------------------------------
 void Map::GenerateAllTiles()
 {
-    printf("( Map%d ) Start  | GenerateAllTiles\n", m_mapData.m_index);
+    printf("( Map%d ) Start  | GenerateAllTiles\n", m_mapDef->GetIndex());
 
     for (int y = 0; y < m_dimensions.y; ++y)
     {
@@ -384,7 +376,7 @@ void Map::GenerateAllTiles()
     GenerateLShapeTiles(m_dimensions.x - 9, m_dimensions.y - 9, 7, 7, true);
     GenerateExitPosTile();
 
-    printf("( Map%d ) Finish | GenerateAllTiles\n", m_mapData.m_index);
+    printf("( Map%d ) Finish | GenerateAllTiles\n", m_mapDef->GetIndex());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -594,7 +586,7 @@ void Map::DeleteGarbageEntities()
 //----------------------------------------------------------------------------------------------------
 void Map::SpawnNewNPCs()
 {
-    printf("( Map%d ) Start  | SpawnNewNPCs\n", m_mapData.m_index);
+    printf("( Map%d ) Start  | SpawnNewNPCs\n", m_mapDef->GetIndex());
 
     for (int i = 0; i < m_dimensions.x * m_dimensions.y; ++i)
     {
@@ -613,26 +605,26 @@ void Map::SpawnNewNPCs()
         switch (g_theRNG->RollRandomIntInRange(0, 3))
         {
             case 0:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapData.m_scorpioSpawnPercentage)
+                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetScorpioSpawnPercentage())
                     SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
                 break;
 
             case 1:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapData.m_leoSpawnPercentage)
+                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetLeoSpawnPercentage())
                     SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
                 break;
 
             case 2:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapData.m_ariesSpawnPercentage)
+                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetAriesSpawnPercentage())
                     SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
                 break;
         }
     }
 
-    printf("( Map%d ) Finish | SpawnNewNPCs\n", m_mapData.m_index);
+    printf("( Map%d ) Finish | SpawnNewNPCs\n", m_mapDef->GetIndex());
 }
 
 //----------------------------------------------------------------------------------------------------

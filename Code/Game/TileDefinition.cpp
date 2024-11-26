@@ -11,38 +11,19 @@ class SpriteSheet;
 //----------------------------------------------------------------------------------------------------
 std::vector<TileDefinition*> TileDefinition::s_tileDefinitions;
 
+//----------------------------------------------------------------------------------------------------
 TileDefinition::TileDefinition(XmlElement const& tileDefElement, SpriteSheet const& spriteSheet)
 {
-    // Extract the name attribute
-    char const* name = tileDefElement.Attribute("name");
-    if (name != nullptr)
-    {
-        m_name = String(name);
-    }
-
-    // Extract the spriteIndex attribute
-    int const spriteIndex = tileDefElement.IntAttribute("spriteIndex", -1);
+    m_name                = ParseXmlAttribute(tileDefElement, "name", "Unnamed");
+    int const spriteIndex = ParseXmlAttribute(tileDefElement, "spriteIndex", -1);
 
     if (spriteIndex != -1)
     {
-        // Assuming you have a way to get the sprite definition from the sprite sheet
         m_spriteDef = spriteSheet.GetSpriteDef(spriteIndex);
     }
 
-    // Extract the isSolid attribute
-    m_isSolid = tileDefElement.BoolAttribute("isSolid", false);
-
-    // Extract the tint attribute
-    char const* tintStr = tileDefElement.Attribute("tintColor");
-    
-    if (tintStr != nullptr)
-    {
-        m_tintColor.SetFromText(tintStr);
-    }
-    else
-    {
-        m_tintColor = Rgba8::WHITE; // Default tint color
-    }
+    m_isSolid   = ParseXmlAttribute(tileDefElement, "isSolid", false);
+    m_tintColor = ParseXmlAttribute(tileDefElement, "tintColor", Rgba8::WHITE);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -52,7 +33,7 @@ TileDefinition::~TileDefinition()
     {
         delete tileDef;
     }
-    
+
     s_tileDefinitions.clear();
 }
 
@@ -60,10 +41,8 @@ TileDefinition::~TileDefinition()
 void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
 {
     XmlDocument tileDefXml;
-
     if (tileDefXml.LoadFile("Data/Definitions/TileDefinitions.xml") != XmlResult::XML_SUCCESS)
     {
-        // Handle error (e.g., log it, throw an exception, etc.)
         return;
     }
 
@@ -71,12 +50,10 @@ void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
     {
         for (XmlElement* element = root->FirstChildElement("TileDefinition"); element != nullptr; element = element->NextSiblingElement("TileDefinition"))
         {
-            // Create a TileDefinition from the XML element
             TileDefinition* tileDef = new TileDefinition(*element, spriteSheet);
             s_tileDefinitions.push_back(tileDef);
         }
     }
-
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -91,4 +68,20 @@ TileDefinition const* TileDefinition::GetTileDefByName(String const& name)
     }
 
     return nullptr;
+}
+
+//----------------------------------------------------------------------------------------------------
+Strings TileDefinition::GetTileNames()
+{
+    Strings tileNames;
+
+    for (TileDefinition const* tileDef : s_tileDefinitions)
+    {
+        if (tileDef)
+        {
+            tileNames.push_back(tileDef->GetName());
+        }
+    }
+
+    return tileNames;
 }
