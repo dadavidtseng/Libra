@@ -190,7 +190,7 @@ void Game::InitializeTiles()
     IntVec2 const spriteCoords = IntVec2(8, 8);
     m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
 
-    TileDefinition::InitializeTileDefinitions(*m_tileSpriteSheet);
+    TileDefinition::InitializeTileDefs(*m_tileSpriteSheet);
 
     printf("( Game ) Finish | InitializeTiles\n");
 }

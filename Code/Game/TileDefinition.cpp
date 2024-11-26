@@ -5,44 +5,90 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/TileDefinition.hpp"
 
-#include <windows.h>
-
 //----------------------------------------------------------------------------------------------------
 class SpriteSheet;
 
 //----------------------------------------------------------------------------------------------------
-std::vector<TileDefinition> TileDefinition::s_tileDefinitions;
+std::vector<TileDefinition*> TileDefinition::s_tileDefinitions;
 
-//----------------------------------------------------------------------------------------------------
-TileDefinition::TileDefinition(TileType const tileType, SpriteDefinition const& spriteDef, bool const isSolid, Rgba8 const& tintColor)
-    : m_tileType(tileType),
-      m_spriteDef(spriteDef),
-      m_isSolid(isSolid),
-      m_tintColor(tintColor)
+TileDefinition::TileDefinition(XmlElement const& tileDefElement, SpriteSheet const& spriteSheet)
 {
-    // m_name... = ParseXmlAttribute();
+    // Extract the name attribute
+    char const* name = tileDefElement.Attribute("name");
+    if (name != nullptr)
+    {
+        m_name = String(name);
+    }
 
+    // Extract the spriteIndex attribute
+    int const spriteIndex = tileDefElement.IntAttribute("spriteIndex", -1);
+
+    if (spriteIndex != -1)
+    {
+        // Assuming you have a way to get the sprite definition from the sprite sheet
+        m_spriteDef = spriteSheet.GetSpriteDef(spriteIndex);
+    }
+
+    // Extract the isSolid attribute
+    m_isSolid = tileDefElement.BoolAttribute("isSolid", false);
+
+    // Extract the tint attribute
+    char const* tintStr = tileDefElement.Attribute("tintColor");
     
+    if (tintStr != nullptr)
+    {
+        m_tintColor.SetFromText(tintStr);
+    }
+    else
+    {
+        m_tintColor = Rgba8::WHITE; // Default tint color
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
-void TileDefinition::InitializeTileDefinitions(SpriteSheet const& spriteSheet)
+TileDefinition::~TileDefinition()
 {
-    s_tileDefinitions.reserve(NUM_TILE_TYPE);
-
-    // Define each tile type and its properties
-    s_tileDefinitions.emplace_back(TILE_TYPE_GRASS, spriteSheet.GetSpriteDef(0), false, Rgba8::WHITE);
-    s_tileDefinitions.emplace_back(TILE_TYPE_STONE, spriteSheet.GetSpriteDef(28), true, Rgba8::WHITE);
-    s_tileDefinitions.emplace_back(TILE_TYPE_SPARKLE_01, spriteSheet.GetSpriteDef(20), false, Rgba8::WHITE);
-    s_tileDefinitions.emplace_back(TILE_TYPE_SPARKLE_02, spriteSheet.GetSpriteDef(21), false, Rgba8::WHITE);
-    s_tileDefinitions.emplace_back(TILE_TYPE_FLOOR, spriteSheet.GetSpriteDef(52), false, Rgba8::WHITE);
-    s_tileDefinitions.emplace_back(TILE_TYPE_EXIT, spriteSheet.GetSpriteDef(57), false, Rgba8::WHITE);
-
-    // Add other tile types as necessary
+    for (TileDefinition const* tileDef : s_tileDefinitions)
+    {
+        delete tileDef;
+    }
+    
+    s_tileDefinitions.clear();
 }
 
 //----------------------------------------------------------------------------------------------------
-TileDefinition const& TileDefinition::GetTileDefinition(TileType const tileType)
+void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
 {
-    return s_tileDefinitions[tileType];
+    XmlDocument tileDefXml;
+
+    if (tileDefXml.LoadFile("Data/Definitions/TileDefinitions.xml") != XmlResult::XML_SUCCESS)
+    {
+        // Handle error (e.g., log it, throw an exception, etc.)
+        return;
+    }
+
+    if (XmlElement* root = tileDefXml.FirstChildElement("TileDefinitions"))
+    {
+        for (XmlElement* element = root->FirstChildElement("TileDefinition"); element != nullptr; element = element->NextSiblingElement("TileDefinition"))
+        {
+            // Create a TileDefinition from the XML element
+            TileDefinition* tileDef = new TileDefinition(*element, spriteSheet);
+            s_tileDefinitions.push_back(tileDef);
+        }
+    }
+
+}
+
+//----------------------------------------------------------------------------------------------------
+TileDefinition const* TileDefinition::GetTileDefByName(String const& name)
+{
+    for (TileDefinition const* tileDef : s_tileDefinitions)
+    {
+        if (tileDef->GetName() == name)
+        {
+            return tileDef;
+        }
+    }
+
+    return nullptr;
 }

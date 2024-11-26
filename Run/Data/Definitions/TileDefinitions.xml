@@ -1,0 +1,45 @@
+<TileDefinitions>
+
+    <TileDefinition
+            name="Grass"
+            isSolid="false"
+            spriteIndex="0"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Stone"
+            isSolid="true"
+            spriteIndex="28"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Sparkle_01"
+            isSolid="false"
+            spriteIndex="20"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Sparkle_02"
+            isSolid="false"
+            spriteIndex="21"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Floor"
+            isSolid="false"
+            spriteIndex="52"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Exit"
+            isSolid="false"
+            spriteIndex="57"
+            tintColor="255, 255, 255"
+    />
+    
+</TileDefinitions>

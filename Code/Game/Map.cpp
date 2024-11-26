@@ -35,10 +35,10 @@ void Map::TestTileHeatMap()
     {
         float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
         thm.SetValueAtIndex(i, value);
-        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_type].IsSolid())
-        {
-            value = 999.f;
-        }
+        // if (TileDefinition::s_tileDefinitions[m_tiles[i].m_type].IsSolid())
+        // {
+        //     value = 999.f;
+        // }
         thm.SetValueAtIndex(i, value);
     }
 
@@ -54,7 +54,7 @@ void Map::TestTileHeatMap()
 
     // Define the special value and its color
     float specialValue = 999.0f;
-    Rgba8 specialColor=Rgba8::RED; // Green for the special value
+    Rgba8 specialColor = Rgba8::RED; // Green for the special value
 
     // Create the vertex list
     VertexList verts;
@@ -71,18 +71,18 @@ void Map::CreateHeatMaps()
 //     GenerateDistanceFieldHeatMap(*m_testDistanceField, IntVec2::ONE);
 //
 // //----------------------------------------------------------------------------------------------------
-     // m_testHeatMap = new TileHeatMap(m_dimensions, 3.14f);
-     // int numTiles  = m_testHeatMap->GetTileNums();
-     // for (int i = 0; i < numTiles; ++i)
-     // {
-     //     float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
-     //     m_testHeatMap->SetValueAtIndex(i, value);
-     //     if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileType].m_isSolid)
-     //     {
-     //         value = 999.f;
-     //     }
-     //
-     // }
+    // m_testHeatMap = new TileHeatMap(m_dimensions, 3.14f);
+    // int numTiles  = m_testHeatMap->GetTileNums();
+    // for (int i = 0; i < numTiles; ++i)
+    // {
+    //     float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
+    //     m_testHeatMap->SetValueAtIndex(i, value);
+    //     if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileType].m_isSolid)
+    //     {
+    //         value = 999.f;
+    //     }
+    //
+    // }
 }
 //----------------------------------------------------------------------------------------------------
 Map::Map(MapData const& data)
@@ -130,7 +130,7 @@ void Map::Render()
 
     RenderTiles();
     RenderEntities();
-    TestTileHeatMap();
+    // TestTileHeatMap();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ IntVec2 const Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
         printf("%d, %d", tileX, tileY);
         ERROR_AND_DIE("tileCoords is out of bound")
     }
-        
+
 
     return IntVec2(tileX, tileY);
 }
@@ -218,7 +218,7 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
     {
         Tile const& tile = m_tiles[tileIndex];
 
-        return tile.m_type == TILE_TYPE_STONE;
+        return tile.m_tileName == "Stone";
     }
 
     return false;
@@ -251,27 +251,27 @@ void Map::RenderTiles() const
 
     tileVertices.reserve(static_cast<size_t>(3) * 2 * m_dimensions.x * m_dimensions.y);
 
-    TileType tileTypes[] =
+    String tileNames[] =
     {
-        TILE_TYPE_GRASS,
-        TILE_TYPE_STONE,
-        TILE_TYPE_SPARKLE_01,
-        TILE_TYPE_SPARKLE_02,
-        TILE_TYPE_FLOOR,
-        TILE_TYPE_EXIT
+        "Grass",
+        "Stone",
+        "Sparkle_01",
+        "Sparkle_02",
+        "Floor",
+        "Exit"
     };
 
-    for (TileType const& tileType : tileTypes)
+    for (String const& tileName : tileNames)
     {
-        TileDefinition const*  tileDef   = &TileDefinition::GetTileDefinition(tileType);
-        SpriteDefinition const spriteDef = tileDef->GetSpriteDefinition();
+        TileDefinition const*  tileDef   = TileDefinition::GetTileDefByName(tileName);
+        SpriteDefinition const spriteDef = tileDef->GetSpriteDef();
 
         Vec2 const uvAtMins = spriteDef.GetUVsMins();
         Vec2 const uvAtMaxs = spriteDef.GetUVsMaxs();
 
         for (Tile const& tile : m_tiles)
         {
-            if (tile.m_type == tileType)
+            if (tile.m_tileName == tileName)
             {
                 Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
                 Vec2 const maxs = mins + Vec2::ONE;
@@ -351,32 +351,32 @@ void Map::GenerateAllTiles()
     {
         for (int x = 0; x < m_dimensions.x; ++x)
         {
-            TileType type = TILE_TYPE_GRASS;
+            String tileName = "Grass";
 
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.1f)
             {
-                type = TILE_TYPE_SPARKLE_01;
+                tileName = "Sparkle_01";
             }
 
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.2f)
             {
-                type = TILE_TYPE_SPARKLE_02;
+                tileName = "Sparkle_02";
             }
 
             if (IsTileCoordsInLShape(x, y))
             {
-                type = TILE_TYPE_FLOOR;
+                tileName = "Floor";
             }
 
             if (IsEdgeTile(x, y) ||
                 (!IsTileCoordsInLShape(x, y) && g_theRNG->RollRandomFloatZeroToOne() < 0.1f))
             {
-                type = TILE_TYPE_STONE;
+                tileName = "Stone";
             }
 
             m_tiles.emplace_back();
             m_tiles.back().m_tileCoords = IntVec2(x, y);
-            m_tiles.back().m_type       = type;
+            m_tiles.back().m_tileName   = tileName;
         }
     }
 
@@ -404,14 +404,14 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
             {
                 if (y == 0 || x == 0)
                 {
-                    m_tiles[tileIndex].m_type = TILE_TYPE_STONE;
+                    m_tiles[tileIndex].m_tileName = "Stone";
                 }
             }
             else
             {
                 if (y == height - 1 || x == width - 1)
                 {
-                    m_tiles[tileIndex].m_type = TILE_TYPE_STONE;
+                    m_tiles[tileIndex].m_tileName = "Stone";
                 }
             }
         }
@@ -423,7 +423,7 @@ void Map::GenerateExitPosTile()
 {
     m_tiles.emplace_back();
     m_tiles.back().m_tileCoords = m_exitPosition;
-    m_tiles.back().m_type       = TILE_TYPE_EXIT;
+    m_tiles.back().m_tileName   = "Exit";
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -838,7 +838,7 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
         {
             Tile const& tile = m_tiles[tileIndex];
 
-            if (tile.m_type == TILE_TYPE_STONE)
+            if (tile.m_tileName == "Stone")
             {
                 raycastResult.m_didImpact    = true;
                 raycastResult.m_impactDist   = t;

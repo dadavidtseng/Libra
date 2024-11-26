@@ -10,7 +10,7 @@
 #include "Game/TileDefinition.hpp"
 
 //----------------------------------------------------------------------------------------------------
-enum TileType;
+// enum TileType;
 
 //----------------------------------------------------------------------------------------------------
 // "Flyweight" design pattern ( each tile only knows its type )
@@ -24,6 +24,8 @@ struct Tile
     
 
     IntVec2  m_tileCoords = IntVec2(-1, -1);
-    TileType m_type       = TILE_TYPE_INVALID;
+    // TileType m_type       = TILE_TYPE_INVALID;
+    // TileDefinition* m_tileDefinition = nullptr;
+    String m_tileName;
     // int m_tileDefIndex = -1;
 };
