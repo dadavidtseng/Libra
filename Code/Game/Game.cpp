@@ -13,7 +13,6 @@
 #include "Engine/Core/SimpleTriangleFont.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
@@ -177,11 +176,12 @@ void Game::InitializeMaps()
     
     m_maps.reserve(3);
     
-    for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
-    {
-        m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
-    }
-    
+    // for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
+    // {
+    //     m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
+    // }
+    m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[0]));
+
     m_currentMap = m_maps[0];
 
     printf("( Game ) Finish | InitializeMaps\n");

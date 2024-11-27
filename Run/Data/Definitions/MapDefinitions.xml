@@ -3,9 +3,9 @@
     <MapDefinition
             name="Map01"
             index="0"
-            scorpioSpawnPercentage="0.2"
-            leoSpawnPercentage="0.2"
-            ariesSpawnPercentage="0.2"
+            scorpioSpawnPercentage="0"
+            leoSpawnPercentage="0"
+            ariesSpawnPercentage="0"
             dimensions="24,30"
     />
 

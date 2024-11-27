@@ -14,6 +14,7 @@
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteDefinition.hpp"
 #include "Game/Aries.hpp"
@@ -24,66 +25,73 @@
 #include "Game/PlayerTank.hpp"
 #include "Game/Scorpio.hpp"
 
+//----------------------------------------------------------------------------------------------------
 int Map::GetNumTiles() const
 {
     return m_dimensions.x * m_dimensions.y;
 }
-void Map::TestTileHeatMap()
+
+void Map::DebugRenderTileIndex() const
 {
-    TileHeatMap thm(IntVec2(24, 30), 0.f);
-    int         numTiles = thm.GetTileNums();
-    for (int i = 0; i < numTiles; i++)
+    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
+    
+    for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
-        float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
-        thm.SetValueAtIndex(i, value);
-        // if (TileDefinition::s_tileDefinitions[m_tiles[i].m_type].IsSolid())
-        // {
-        //     value = 999.f;
-        // }
-        thm.SetValueAtIndex(i, value);
+        for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+        {
+            IntVec2 tileCoords(tileX, tileY);
+            int     tileIndex = tileY * m_dimensions.x + tileX;
+            float   value     = m_testDistanceField->GetValueAtCoords(tileX, tileY);
+
+            
+            std::vector<Vertex_PCU> textVerts;
+            g_testFont->AddVertsForText2D(textVerts, Vec2((float)tileX,(float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theRenderer->BindTexture(&g_testFont->GetTexture());
+            g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+        }
     }
+}
 
-    // Define the total bounds for the heat map
-    AABB2 totalBounds(Vec2(0.0f, 0.0f), Vec2(24.f, 30.f)); // Assuming each tile is 1x1 unit
+//----------------------------------------------------------------------------------------------------
+void Map::RenderTileHeatMap() const
+{
+    AABB2 const      totalBounds(Vec2::ZERO, Vec2(24.f, 30.f));
+    // FloatRange const valueRange(0.f, 10.f);
 
-    // Define the range of values expected in the heat map
-    FloatRange valueRange(20.0f, 25.0f);
-
-    // Define the colors for interpolation
-    Rgba8 lowColor(0, 0, 255, 255);  // Blue for the lowest value
-    Rgba8 highColor(255, 0, 0, 255); // Red for the highest value
-
-    // Define the special value and its color
-    float specialValue = 999.0f;
-    Rgba8 specialColor = Rgba8::RED; // Green for the special value
-
+    // // Define the colors for interpolation
+    Rgba8 const lowColor  = Rgba8::BLACK;
+    Rgba8 const highColor = Rgba8::WHITE;
+    //
+    // // Define the special value and its color
+    // constexpr float specialValue = 999999.f;
+    // Rgba8 const     specialColor = Rgba8::RED;
+    
     // Create the vertex list
     VertexList verts;
 
     // Add vertices for debug drawing
-    thm.AddVertsForDebugDraw(verts, totalBounds, valueRange, lowColor, highColor, specialValue, specialColor);
+    FloatRange valueRange = m_testDistanceField->GetRangeOfValuesExcludingSpecial(999.f);
+    m_testDistanceField->AddVertsForDebugDraw(verts, totalBounds, valueRange, lowColor, highColor);
     g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(verts.size(), verts.data());
+    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
 
 void Map::CreateHeatMaps()
 {
-//     m_testDistanceField = new TileHeatMap(m_dimensions, 0.f);
-//     GenerateDistanceFieldHeatMap(*m_testDistanceField, IntVec2::ONE);
-//
-// //----------------------------------------------------------------------------------------------------
-    // m_testHeatMap = new TileHeatMap(m_dimensions, 3.14f);
-    // int numTiles  = m_testHeatMap->GetTileNums();
-    // for (int i = 0; i < numTiles; ++i)
-    // {
-    //     float value = g_theRNG->RollRandomFloatInRange(20.f, 25.f);
-    //     m_testHeatMap->SetValueAtIndex(i, value);
-    //     if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileType].m_isSolid)
-    //     {
-    //         value = 999.f;
-    //     }
-    //
-    // }
+    m_testDistanceField = new TileHeatMap(IntVec2(24, 30), 0.f);
+    GenerateDistanceFieldHeatMap(*m_testDistanceField, IntVec2::ONE);
+    // PopulateDistanceField(*m_testDistanceField, IntVec2(10,10), 999999.f, false);
+
+    // m_testDistanceField = new TileHeatMap(IntVec2(24, 30), 0.f);
+    int numTiles  = m_testDistanceField->GetTileNums();
+    for (int i = 0; i < numTiles; i++)
+    {
+        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileDefIndex]->IsSolid())
+        {
+            m_testDistanceField->SetValueAtIndex(i, 999.f);
+        }
+        // m_testHeatMap->SetValueAtIndex(i, 999999.f);
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -98,7 +106,7 @@ Map::Map(MapDefinition const& mapDef)
     SpawnNewNPCs();
     CreateHeatMaps();
 
-    // while (!wasSucessful)
+    // while (!wasSuccessful)
     // {
     //     PopulateTiles();
     // }
@@ -130,9 +138,11 @@ void Map::Render()
     if (g_theGame->IsAttractMode())
         return;
 
-    RenderTiles();
+    // RenderTiles();
+    RenderTileHeatMap();
+    DebugRenderTileIndex();
+
     RenderEntities();
-    // TestTileHeatMap();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -299,39 +309,63 @@ void Map::DebugRenderEntities() const
             entity->DebugRender();
     }
 }
-void Map::GenerateDistanceFieldHeatMap(TileHeatMap& heatMap, IntVec2 const& startCoords)
+
+void Map::GenerateDistanceFieldHeatMap(TileHeatMap const& heatMap, IntVec2 const& startCoords) const
 {
-    UNUSED(heatMap)
-    UNUSED(startCoords)
+    printf("(%d, %d), (%d, %d)\n", heatMap.m_dimensions.x, heatMap.m_dimensions.y, m_dimensions.x, m_dimensions.y);
     // GUARANTEE_OR_DIE(heatMap.m_dimensions == m_dimensions, "Heat map and Map did not match dimensions!")
-    //
-    // heatMap.SetAllValues(999.f);
-    // heatMap.SetValueAtCoords(startCoords, 0.f);
-    //
-    // float currentSearchValue = 0.f;
-    // bool  isStillGoing    = false;
-    // while (!isStillGoing)    // // For each pass, assume we're done UNLESS something changes
-    // {
-    //     isStillGoing = false;
-    //     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
-    //     {
-    //         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
-    //         {
-    //             int   tileIndex = tileY * m_dimensions.x + tileX;
-    //             float value     = heatMap.GetValueAtCoords(tileX, tileY);
-    //
-    //             if (value == currentSearchValue)
-    //             {
-    //                 // Found a search value ! Spread to cardinal neighbors...
-    //                 heatMap.SetValueAtCoordsIfSmallerThanCurrent(tileX, tileY + 1, currentSearchValue + 1.f);
-    //                 heatMap.SetValueAtCoordsIfSmallerThanCurrent(tileX + 1, tileY, currentSearchValue + 1.f);
-    //                 heatMap.SetValueAtCoordsIfSmallerThanCurrent(tileX, tileY - 1, currentSearchValue + 1.f);
-    //                 heatMap.SetValueAtCoordsIfSmallerThanCurrent(tileX - 1, tileY, currentSearchValue + 1.f);
-    //             }
-    //         }
-    //     }
-    //     currentSearchValue++;
-    // }
+
+    heatMap.SetAllValues(999.f);
+    heatMap.SetValueAtCoords(startCoords, 0.f);
+
+    float currentSearchValue = 0.f;
+    bool  isStillGoing       = true;
+    while (isStillGoing)// For each pass, assume we're done UNLESS something changes
+    {
+        isStillGoing = false;
+        for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
+        {
+            for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+            {
+                IntVec2 tileCoords(tileX, tileY);
+                int     tileIndex = tileY * m_dimensions.x + tileX;
+                float   value     = heatMap.GetValueAtCoords(tileX, tileY);
+
+                if (value == currentSearchValue)
+                {
+                    // Found a search value ! Spread to cardinal neighbors...
+                    IntVec2 n               = tileCoords + IntVec2(0, 1);
+                    IntVec2 e               = tileCoords + IntVec2(1, 0);
+                    IntVec2 w               = tileCoords + IntVec2(-1, 0);
+                    IntVec2 s               = tileCoords + IntVec2(0, -1);
+                    float   nextSearchValue = currentSearchValue + 1.f;
+
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(e, nextSearchValue);
+                        isStillGoing = true;
+                    }
+                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(n, nextSearchValue);
+                        isStillGoing = true;
+                    }
+                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(s, nextSearchValue);
+                        isStillGoing = true;
+                    }
+                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(w, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                }
+            }
+        }
+        currentSearchValue++;
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -343,32 +377,38 @@ void Map::GenerateAllTiles()
     {
         for (int x = 0; x < m_dimensions.x; ++x)
         {
-            String tileName = "Grass";
-
+            String tileName  = "Grass";
+            int    tileIndex = 0;
+            
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.1f)
             {
-                tileName = "Sparkle_01";
+                tileName  = "Sparkle_01";
+                tileIndex = 2;
             }
-
+            
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.2f)
             {
-                tileName = "Sparkle_02";
+                tileName  = "Sparkle_02";
+                tileIndex = 3;
             }
-
+            
             if (IsTileCoordsInLShape(x, y))
             {
-                tileName = "Floor";
+                tileName  = "Floor";
+                tileIndex = 4;
             }
-
+            
             if (IsEdgeTile(x, y) ||
                 (!IsTileCoordsInLShape(x, y) && g_theRNG->RollRandomFloatZeroToOne() < 0.1f))
             {
-                tileName = "Stone";
+                tileName  = "Stone";
+                tileIndex = 1;
             }
 
             m_tiles.emplace_back();
-            m_tiles.back().m_tileCoords = IntVec2(x, y);
-            m_tiles.back().m_tileName   = tileName;
+            m_tiles.back().m_tileCoords   = IntVec2(x, y);
+            m_tiles.back().m_tileName     = tileName;
+            m_tiles.back().m_tileDefIndex = tileIndex;
         }
     }
 
@@ -396,14 +436,16 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
             {
                 if (y == 0 || x == 0)
                 {
-                    m_tiles[tileIndex].m_tileName = "Stone";
+                    m_tiles[tileIndex].m_tileName     = "Stone";
+                    m_tiles[tileIndex].m_tileDefIndex = 1;
                 }
             }
             else
             {
                 if (y == height - 1 || x == width - 1)
                 {
-                    m_tiles[tileIndex].m_tileName = "Stone";
+                    m_tiles[tileIndex].m_tileName     = "Stone";
+                    m_tiles[tileIndex].m_tileDefIndex = 1;
                 }
             }
         }
@@ -414,8 +456,9 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
 void Map::GenerateExitPosTile()
 {
     m_tiles.emplace_back();
-    m_tiles.back().m_tileCoords = m_exitPosition;
-    m_tiles.back().m_tileName   = "Exit";
+    m_tiles.back().m_tileCoords   = m_exitPosition;
+    m_tiles.back().m_tileName     = "Exit";
+    m_tiles.back().m_tileDefIndex = 5;
 }
 
 //----------------------------------------------------------------------------------------------------

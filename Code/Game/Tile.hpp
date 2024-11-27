@@ -27,5 +27,5 @@ struct Tile
     // TileType m_type       = TILE_TYPE_INVALID;
     // TileDefinition* m_tileDefinition = nullptr;
     String m_tileName;
-    // int m_tileDefIndex = -1;
+    int m_tileDefIndex = -1;
 };

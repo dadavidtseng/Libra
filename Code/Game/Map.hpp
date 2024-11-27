@@ -12,27 +12,18 @@
 #include "Game/Entity.hpp"
 #include "Game/Tile.hpp"
 
-struct MapDefinition;
+//----------------------------------------------------------------------------------------------------
 class TileHeatMap;
-//----------------------------------------------------------------------------------------------------
+struct MapDefinition;
 struct Vertex_PCU;
-
-//----------------------------------------------------------------------------------------------------
-// struct MapData
-// {
-//     int     m_index;
-//     float   m_scorpioSpawnPercentage;
-//     float   m_leoSpawnPercentage;
-//     float   m_ariesSpawnPercentage;
-//     IntVec2 m_dimensions;
-// };
 
 //-----------------------------------------------------------------------------------------------
 class Map
 {
 public:
     int      GetNumTiles() const;
-    void     TestTileHeatMap();
+    void     DebugRenderTileIndex() const;
+    void     RenderTileHeatMap() const;
     void     CreateHeatMaps();
     explicit Map(MapDefinition const& mapDef);
 
@@ -71,7 +62,7 @@ private:
     void RenderTiles() const;
     void RenderEntities() const;
     void DebugRenderEntities() const;
-    void GenerateDistanceFieldHeatMap(TileHeatMap& heatMap, const IntVec2& startCoords);
+    void GenerateDistanceFieldHeatMap(const TileHeatMap& heatMap, const IntVec2& startCoords) const;
 
     // Map-related
     void        GenerateAllTiles();
