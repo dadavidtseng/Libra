@@ -5,11 +5,13 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Map.hpp"
 
+#include <cmath>
+
 #include "MapDefinition.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
-#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/HeatMaps.hpp"
+#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -25,72 +27,23 @@
 #include "Game/PlayerTank.hpp"
 #include "Game/Scorpio.hpp"
 
-//----------------------------------------------------------------------------------------------------
-int Map::GetNumTiles() const
-{
-    return m_dimensions.x * m_dimensions.y;
-}
-
 void Map::DebugRenderTileIndex() const
 {
     BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
-    
+
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
             IntVec2 tileCoords(tileX, tileY);
             int     tileIndex = tileY * m_dimensions.x + tileX;
-            float   value     = m_testDistanceField->GetValueAtCoords(tileX, tileY);
-
+            float   value     = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
             
             std::vector<Vertex_PCU> textVerts;
-            g_testFont->AddVertsForText2D(textVerts, Vec2((float)tileX,(float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_testFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
             g_theRenderer->BindTexture(&g_testFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
-    }
-}
-
-//----------------------------------------------------------------------------------------------------
-void Map::RenderTileHeatMap() const
-{
-    AABB2 const      totalBounds(Vec2::ZERO, Vec2(24.f, 30.f));
-    // FloatRange const valueRange(0.f, 10.f);
-
-    // // Define the colors for interpolation
-    Rgba8 const lowColor  = Rgba8::BLACK;
-    Rgba8 const highColor = Rgba8::WHITE;
-    //
-    // // Define the special value and its color
-    // constexpr float specialValue = 999999.f;
-    // Rgba8 const     specialColor = Rgba8::RED;
-    
-    // Create the vertex list
-    VertexList verts;
-
-    // Add vertices for debug drawing
-    FloatRange valueRange = m_testDistanceField->GetRangeOfValuesExcludingSpecial(999.f);
-    m_testDistanceField->AddVertsForDebugDraw(verts, totalBounds, valueRange, lowColor, highColor);
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
-}
-
-void Map::CreateHeatMaps()
-{
-    m_testDistanceField = new TileHeatMap(IntVec2(24, 30), 0.f);
-    GenerateDistanceFieldHeatMap(*m_testDistanceField, IntVec2::ONE);
-    // PopulateDistanceField(*m_testDistanceField, IntVec2(10,10), 999999.f, false);
-
-    // m_testDistanceField = new TileHeatMap(IntVec2(24, 30), 0.f);
-    int numTiles  = m_testDistanceField->GetTileNums();
-    for (int i = 0; i < numTiles; i++)
-    {
-        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileDefIndex]->IsSolid())
-        {
-            m_testDistanceField->SetValueAtIndex(i, 999.f);
-        }
-        // m_testHeatMap->SetValueAtIndex(i, 999999.f);
     }
 }
 
@@ -101,10 +54,12 @@ Map::Map(MapDefinition const& mapDef)
     m_dimensions = mapDef.GetDimensions();
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
     m_exitPosition = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
+    m_tileHeatMap  = new TileHeatMap(m_dimensions, 0.f);
 
     GenerateAllTiles();
     SpawnNewNPCs();
-    CreateHeatMaps();
+    GenerateHeatMaps();
+    GenerateDistanceField(IntVec2::ONE, 999.f);
 
     // while (!wasSuccessful)
     // {
@@ -133,12 +88,12 @@ void Map::Update(float const deltaSeconds)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::Render()
+void Map::Render() const
 {
     if (g_theGame->IsAttractMode())
         return;
 
-    // RenderTiles();
+    RenderTiles();
     RenderTileHeatMap();
     DebugRenderTileIndex();
 
@@ -169,7 +124,6 @@ IntVec2 const Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
         ERROR_AND_DIE("tileCoords is out of bound")
     }
 
-
     return IntVec2(tileX, tileY);
 }
 
@@ -184,6 +138,12 @@ Vec2 const Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
     float const     worldY        = static_cast<float>(tileCoords.y) + halfTileWidth;
 
     return Vec2(worldX, worldY);
+}
+
+//----------------------------------------------------------------------------------------------------
+int Map::GetNumTiles() const
+{
+    return m_dimensions.x * m_dimensions.y;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -300,6 +260,18 @@ void Map::RenderEntities() const
 }
 
 //----------------------------------------------------------------------------------------------------
+void Map::RenderTileHeatMap() const
+{
+    AABB2 const totalBounds(Vec2::ZERO, Vec2(24.f, 30.f));
+    
+    VertexList verts;
+    
+    m_tileHeatMap->AddVertsForDebugDraw(verts, totalBounds);
+    g_theRenderer->BindTexture(nullptr);
+    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
+}
+
+//----------------------------------------------------------------------------------------------------
 void Map::DebugRenderEntities() const
 {
     for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
@@ -307,64 +279,6 @@ void Map::DebugRenderEntities() const
         if (Entity const* entity = m_allEntities[entityIndex])
 
             entity->DebugRender();
-    }
-}
-
-void Map::GenerateDistanceFieldHeatMap(TileHeatMap const& heatMap, IntVec2 const& startCoords) const
-{
-    printf("(%d, %d), (%d, %d)\n", heatMap.m_dimensions.x, heatMap.m_dimensions.y, m_dimensions.x, m_dimensions.y);
-    // GUARANTEE_OR_DIE(heatMap.m_dimensions == m_dimensions, "Heat map and Map did not match dimensions!")
-
-    heatMap.SetAllValues(999.f);
-    heatMap.SetValueAtCoords(startCoords, 0.f);
-
-    float currentSearchValue = 0.f;
-    bool  isStillGoing       = true;
-    while (isStillGoing)// For each pass, assume we're done UNLESS something changes
-    {
-        isStillGoing = false;
-        for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
-        {
-            for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
-            {
-                IntVec2 tileCoords(tileX, tileY);
-                int     tileIndex = tileY * m_dimensions.x + tileX;
-                float   value     = heatMap.GetValueAtCoords(tileX, tileY);
-
-                if (value == currentSearchValue)
-                {
-                    // Found a search value ! Spread to cardinal neighbors...
-                    IntVec2 n               = tileCoords + IntVec2(0, 1);
-                    IntVec2 e               = tileCoords + IntVec2(1, 0);
-                    IntVec2 w               = tileCoords + IntVec2(-1, 0);
-                    IntVec2 s               = tileCoords + IntVec2(0, -1);
-                    float   nextSearchValue = currentSearchValue + 1.f;
-
-                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
-                    {
-                        heatMap.SetValueAtCoords(e, nextSearchValue);
-                        isStillGoing = true;
-                    }
-                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
-                    {
-                        heatMap.SetValueAtCoords(n, nextSearchValue);
-                        isStillGoing = true;
-                    }
-                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
-                    {
-                        heatMap.SetValueAtCoords(s, nextSearchValue);
-                        isStillGoing = true;
-                    }
-                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
-                    {
-                        heatMap.SetValueAtCoords(w, nextSearchValue);
-                        isStillGoing = true;
-                    }
-
-                }
-            }
-        }
-        currentSearchValue++;
     }
 }
 
@@ -379,25 +293,25 @@ void Map::GenerateAllTiles()
         {
             String tileName  = "Grass";
             int    tileIndex = 0;
-            
+
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.1f)
             {
                 tileName  = "Sparkle_01";
                 tileIndex = 2;
             }
-            
+
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.2f)
             {
                 tileName  = "Sparkle_02";
                 tileIndex = 3;
             }
-            
+
             if (IsTileCoordsInLShape(x, y))
             {
                 tileName  = "Floor";
                 tileIndex = 4;
             }
-            
+
             if (IsEdgeTile(x, y) ||
                 (!IsTileCoordsInLShape(x, y) && g_theRNG->RollRandomFloatZeroToOne() < 0.1f))
             {
@@ -537,6 +451,86 @@ IntVec2 Map::RollRandomTileCoords() const
     int const randomY = g_theRNG->RollRandomIntInRange(0, m_dimensions.y - 1);
 
     return IntVec2(randomX, randomY);
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateHeatMaps() const
+{
+    printf("( Map%d ) Start  | GenerateHeatMaps\n", m_mapDef->GetIndex());
+
+    int const numTiles = m_tileHeatMap->GetTileNums();
+    for (int i = 0; i < numTiles; i++)
+    {
+        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileDefIndex]->IsSolid())
+        {
+            m_tileHeatMap->SetValueAtIndex(i, 999.f);
+        }
+    }
+
+    printf("( Map%d ) Finish | GenerateHeatMaps\n", m_mapDef->GetIndex());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateDistanceField(IntVec2 const& startCoords, float const specialValue) const
+{
+    printf("( Map%d ) Start  | GenerateDistanceField\n", m_mapDef->GetIndex());
+
+    m_tileHeatMap->SetValueAtAllTiles(specialValue);
+    m_tileHeatMap->SetValueAtCoords(startCoords, 0.f);
+
+    float currentSearchValue = 0.f;
+    bool  isStillGoing       = true;
+
+    while (isStillGoing)// For each pass, assume we're done UNLESS something changes
+    {
+        isStillGoing = false;
+
+        for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
+        {
+            for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+            {
+                IntVec2     tileCoords(tileX, tileY);
+                float const value = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
+
+                if (std::fabs(value - currentSearchValue) < EPSILON)
+                {
+                    // Found a search value ! Spread to cardinal neighbors...
+                    IntVec2     n               = tileCoords + IntVec2(0, 1);
+                    IntVec2     e               = tileCoords + IntVec2(1, 0);
+                    IntVec2     w               = tileCoords + IntVec2(-1, 0);
+                    IntVec2     s               = tileCoords + IntVec2(0, -1);
+                    float const nextSearchValue = currentSearchValue + 1.f;
+
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && m_tileHeatMap->GetValueAtCoords(e) > nextSearchValue)
+                    {
+                        m_tileHeatMap->SetValueAtCoords(e, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && m_tileHeatMap->GetValueAtCoords(n) > nextSearchValue)
+                    {
+                        m_tileHeatMap->SetValueAtCoords(n, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && m_tileHeatMap->GetValueAtCoords(s) > nextSearchValue)
+                    {
+                        m_tileHeatMap->SetValueAtCoords(s, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && m_tileHeatMap->GetValueAtCoords(w) > nextSearchValue)
+                    {
+                        m_tileHeatMap->SetValueAtCoords(w, nextSearchValue);
+                        isStillGoing = true;
+                    }
+                }
+            }
+        }
+        currentSearchValue++;
+    }
+
+    printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
 }
 
 //----------------------------------------------------------------------------------------------------

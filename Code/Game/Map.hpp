@@ -21,30 +21,27 @@ struct Vertex_PCU;
 class Map
 {
 public:
-    int      GetNumTiles() const;
     void     DebugRenderTileIndex() const;
-    void     RenderTileHeatMap() const;
-    void     CreateHeatMaps();
     explicit Map(MapDefinition const& mapDef);
 
     ~Map();
 
-// TODO:
-    // SetTileType(int tileX, int tileY, TileType tileType);
-    // SetTileTypeInTriangle();
-    // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
+    // TODO:
+// SetTileType(int tileX, int tileY, TileType tileType);
+// SetTileTypeInTriangle();
+// RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
 
     void Update(float deltaSeconds);
-    void Render();
+    void Render() const;
     void DebugRender() const;
 
-    AABB2 GetMapBounds() const;
     // Accessors (const methods)
     IntVec2 const GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     Vec2 const    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
     IntVec2 const GetMapDimension() const { return m_dimensions; }
     IntVec2 const GetMapExitPosition() const { return m_exitPosition; }
     int           GetMapIndex() const { return m_mapDef->GetIndex(); }
+    int           GetNumTiles() const;
 
     // Mutators (non-const methods)
     Entity* SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
@@ -61,8 +58,9 @@ private:
     void UpdateEntities(float deltaSeconds) const;
     void RenderTiles() const;
     void RenderEntities() const;
+    void RenderTileHeatMap() const;
     void DebugRenderEntities() const;
-    void GenerateDistanceFieldHeatMap(const TileHeatMap& heatMap, const IntVec2& startCoords) const;
+
 
     // Map-related
     void        GenerateAllTiles();
@@ -75,6 +73,10 @@ private:
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2 const GetTileBounds(int tileIndex) const;
     IntVec2     RollRandomTileCoords() const;
+
+    // Heatmap-related
+    void GenerateHeatMaps() const;
+    void GenerateDistanceField(IntVec2 const& startCoords, float specialValue) const;
 
     // Entity-lifetime-related
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);
@@ -102,6 +104,5 @@ private:
     MapDefinition const* m_mapDef = nullptr;
 
     // MetaData management
-    TileHeatMap* m_testHeatMap       = nullptr;
-    TileHeatMap* m_testDistanceField = nullptr;
+    TileHeatMap* m_tileHeatMap = nullptr;
 };
