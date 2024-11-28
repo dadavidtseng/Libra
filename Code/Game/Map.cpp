@@ -38,7 +38,7 @@ void Map::DebugRenderTileIndex() const
             IntVec2 tileCoords(tileX, tileY);
             int     tileIndex = tileY * m_dimensions.x + tileX;
             float   value     = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
-            
+
             std::vector<Vertex_PCU> textVerts;
             g_testFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
             g_theRenderer->BindTexture(&g_testFont->GetTexture());
@@ -144,6 +144,12 @@ Vec2 const Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
 int Map::GetNumTiles() const
 {
     return m_dimensions.x * m_dimensions.y;
+}
+
+//----------------------------------------------------------------------------------------------------
+AABB2 Map::GetMapBound() const
+{
+    return AABB2(IntVec2::ZERO, m_dimensions);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -262,10 +268,10 @@ void Map::RenderEntities() const
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTileHeatMap() const
 {
-    AABB2 const totalBounds(Vec2::ZERO, Vec2(24.f, 30.f));
-    
+    AABB2 const totalBounds = GetMapBound();
+
     VertexList verts;
-    
+
     m_tileHeatMap->AddVertsForDebugDraw(verts, totalBounds);
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());

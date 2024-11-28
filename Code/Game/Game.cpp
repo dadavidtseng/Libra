@@ -176,11 +176,10 @@ void Game::InitializeMaps()
     
     m_maps.reserve(3);
     
-    // for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
-    // {
-    //     m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
-    // }
-    m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[0]));
+    for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
+    {
+        m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
+    }
 
     m_currentMap = m_maps[0];
 

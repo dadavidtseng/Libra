@@ -42,24 +42,25 @@ public:
     IntVec2 const GetMapExitPosition() const { return m_exitPosition; }
     int           GetMapIndex() const { return m_mapDef->GetIndex(); }
     int           GetNumTiles() const;
+    AABB2         GetMapBound() const;
 
-    // Mutators (non-const methods)
+// Mutators (non-const methods)
     Entity* SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
     void    AddEntityToMap(Entity* entity, Vec2 const& position, float orientationDegrees);
     void    RemoveEntityFromMap(Entity* entity);
 
-    // Helpers
+// Helpers
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
     bool            HasLineOfSight(Vec2 const& startPos, Vec2 const& endPos, float sightRange) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
 
 private:
-    void UpdateEntities(float deltaSeconds) const;
-    void RenderTiles() const;
-    void RenderEntities() const;
-    void RenderTileHeatMap() const;
-    void DebugRenderEntities() const;
+    void  UpdateEntities(float deltaSeconds) const;
+    void  RenderTiles() const;
+    void  RenderEntities() const;
+    void  RenderTileHeatMap() const;
+    void  DebugRenderEntities() const;
 
 
     // Map-related
