@@ -102,15 +102,15 @@ void DebugDrawRing(Vec2 const& center, float const radius, float const thickness
 //-----------------------------------------------------------------------------------------------
 void DebugDrawLine(Vec2 const& start, Vec2 const& end, float thickness, Rgba8 const& color)
 {
-    Vec2 forward = end - start;
-    Vec2 normal  = forward.GetNormalized().GetRotated90Degrees();
+    Vec2 const forward = end - start;
+    Vec2 const normal  = forward.GetNormalized().GetRotated90Degrees();
 
-    Vec2 halfThicknessOffset = normal * (0.5f * thickness);
+    Vec2 const halfThicknessOffset = normal * (0.5f * thickness);
 
-    Vec3 vertIndexA = Vec3(start.x - halfThicknessOffset.x, start.y - halfThicknessOffset.y, 0.f);
-    Vec3 vertIndexB = Vec3(start.x + halfThicknessOffset.x, start.y + halfThicknessOffset.y, 0.f);
-    Vec3 vertIndexC = Vec3(end.x + halfThicknessOffset.x, end.y + halfThicknessOffset.y, 0.f);
-    Vec3 vertIndexD = Vec3(end.x - halfThicknessOffset.x, end.y - halfThicknessOffset.y, 0.f);
+    Vec3 const vertIndexA = Vec3(start.x - halfThicknessOffset.x, start.y - halfThicknessOffset.y, 0.f);
+    Vec3 const vertIndexB = Vec3(start.x + halfThicknessOffset.x, start.y + halfThicknessOffset.y, 0.f);
+    Vec3 const vertIndexC = Vec3(end.x + halfThicknessOffset.x, end.y + halfThicknessOffset.y, 0.f);
+    Vec3 const vertIndexD = Vec3(end.x - halfThicknessOffset.x, end.y - halfThicknessOffset.y, 0.f);
 
     Vertex_PCU verts[6];
 
@@ -145,22 +145,22 @@ void DebugDrawGlowCircle(Vec2 const& center, float radius, Rgba8 const& color, f
     for (int sideNum = 0; sideNum < NUM_SIDES; ++sideNum)
     {
         // Calculate the start and end angles
-        float startDegrees = DEGREES_PER_SIDE * static_cast<float>(sideNum);
-        float endDegrees   = DEGREES_PER_SIDE * static_cast<float>(sideNum + 1);
-        float cosStart     = CosDegrees(startDegrees);
-        float sinStart     = SinDegrees(startDegrees);
-        float cosEnd       = CosDegrees(endDegrees);
-        float sinEnd       = SinDegrees(endDegrees);
+        float const startDegrees = DEGREES_PER_SIDE * static_cast<float>(sideNum);
+        float const endDegrees   = DEGREES_PER_SIDE * static_cast<float>(sideNum + 1);
+        float const cosStart     = CosDegrees(startDegrees);
+        float const sinStart     = SinDegrees(startDegrees);
+        float const cosEnd       = CosDegrees(endDegrees);
+        float const sinEnd       = SinDegrees(endDegrees);
 
         // Calculate the positions of the center and the edge vertices of the circle
-        Vec3 centerPos(center.x, center.y, 0.f);                                        // Center of the circle
-        Vec3 startPos(center.x + radius * cosStart, center.y + radius * sinStart, 0.f); // Starting point
-        Vec3 endPos(center.x + radius * cosEnd, center.y + radius * sinEnd, 0.f);       // End point
+        Vec3 const centerPos(center.x, center.y, 0.f);                                        // Center of the circle
+        Vec3 const startPos(center.x + radius * cosStart, center.y + radius * sinStart, 0.f); // Starting point
+        Vec3 const endPos(center.x + radius * cosEnd, center.y + radius * sinEnd, 0.f);       // End point
 
         // The triangle is formed by (centerPos, startPos, endPos)
-        int vertIndexA = 3 * sideNum + 0;
-        int vertIndexB = 3 * sideNum + 1;
-        int vertIndexC = 3 * sideNum + 2;
+        int const vertIndexA = 3 * sideNum + 0;
+        int const vertIndexB = 3 * sideNum + 1;
+        int const vertIndexC = 3 * sideNum + 2;
 
         verts[vertIndexA].m_position = centerPos;
         verts[vertIndexB].m_position = startPos;
@@ -185,13 +185,13 @@ void DebugDrawGlowCircle(Vec2 const& center, float radius, Rgba8 const& color, f
 void DebugDrawGlowBox(Vec2 const& center, Vec2 const& dimensions, Rgba8 const& color, float glowIntensity)
 {
     // Calculate the four corners of the rectangle
-    float halfWidth  = dimensions.x * 0.5f;
-    float halfHeight = dimensions.y * 0.5f;
+    float const halfWidth  = dimensions.x * 0.5f;
+    float const halfHeight = dimensions.y * 0.5f;
 
-    Vec3 topLeft(center.x - halfWidth, center.y + halfHeight, 0.f);
-    Vec3 topRight(center.x + halfWidth, center.y + halfHeight, 0.f);
-    Vec3 bottomLeft(center.x - halfWidth, center.y - halfHeight, 0.f);
-    Vec3 bottomRight(center.x + halfWidth, center.y - halfHeight, 0.f);
+    Vec3 const topLeft(center.x - halfWidth, center.y + halfHeight, 0.f);
+    Vec3 const topRight(center.x + halfWidth, center.y + halfHeight, 0.f);
+    Vec3 const bottomLeft(center.x - halfWidth, center.y - halfHeight, 0.f);
+    Vec3 const bottomRight(center.x + halfWidth, center.y - halfHeight, 0.f);
 
     // A rectangle is made of two triangles, each having 3 vertices, total of 6 vertices
     constexpr int NUM_VERTS = 6;
@@ -232,20 +232,20 @@ void DebugDrawGlowBox(Vec2 const& center, Vec2 const& dimensions, Rgba8 const& c
 
 void DebugDrawBoxRing(Vec2 const& center, float radius, float thickness, Rgba8 const& color)
 {
-    float halfThickness = 0.5f * thickness;
-    float innerRadius   = radius - halfThickness;
-    float outerRadius   = radius + halfThickness;
+    float const halfThickness = 0.5f * thickness;
+    float const innerRadius   = radius - halfThickness;
+    float const outerRadius   = radius + halfThickness;
 
     // Define the inner and outer box corners
-    Vec3 innerBottomLeft(center.x - innerRadius, center.y - innerRadius, 0.f);
-    Vec3 innerBottomRight(center.x + innerRadius, center.y - innerRadius, 0.f);
-    Vec3 innerTopLeft(center.x - innerRadius, center.y + innerRadius, 0.f);
-    Vec3 innerTopRight(center.x + innerRadius, center.y + innerRadius, 0.f);
+    Vec3 const innerBottomLeft(center.x - innerRadius, center.y - innerRadius, 0.f);
+    Vec3 const innerBottomRight(center.x + innerRadius, center.y - innerRadius, 0.f);
+    Vec3 const innerTopLeft(center.x - innerRadius, center.y + innerRadius, 0.f);
+    Vec3 const innerTopRight(center.x + innerRadius, center.y + innerRadius, 0.f);
 
-    Vec3 outerBottomLeft(center.x - outerRadius, center.y - outerRadius, 0.f);
-    Vec3 outerBottomRight(center.x + outerRadius, center.y - outerRadius, 0.f);
-    Vec3 outerTopLeft(center.x - outerRadius, center.y + outerRadius, 0.f);
-    Vec3 outerTopRight(center.x + outerRadius, center.y + outerRadius, 0.f);
+    Vec3 const outerBottomLeft(center.x - outerRadius, center.y - outerRadius, 0.f);
+    Vec3 const outerBottomRight(center.x + outerRadius, center.y - outerRadius, 0.f);
+    Vec3 const outerTopLeft(center.x - outerRadius, center.y + outerRadius, 0.f);
+    Vec3 const outerTopRight(center.x + outerRadius, center.y + outerRadius, 0.f);
 
     // Define 8 triangles to form the ring (each side of the square gets 2 triangles)
     Vertex_PCU verts[24]; // 8 triangles * 3 vertices = 24
@@ -287,7 +287,10 @@ void DebugDrawBoxRing(Vec2 const& center, float radius, float thickness, Rgba8 c
     verts[23].m_position = outerTopRight;
 
     // Set color for all vertices
-    for (int i = 0; i < 24; ++i) { verts[i].m_color = color; }
+    for (int i = 0; i < 24; ++i)
+    {
+        verts[i].m_color = color;
+    }
 
     g_theRenderer->DrawVertexArray(24, &verts[0]);
 }

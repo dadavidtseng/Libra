@@ -42,8 +42,8 @@ void MapDefinition::InitializeMapDefs()
     {
         for (XmlElement* element = root->FirstChildElement("MapDefinition"); element != nullptr; element = element->NextSiblingElement("MapDefinition"))
         {
-            MapDefinition* tileDef = new MapDefinition(*element);
-            s_mapDefinitions.push_back(tileDef);
+            MapDefinition* mapDef = new MapDefinition(*element);
+            s_mapDefinitions.push_back(mapDef);
         }
     }
 }

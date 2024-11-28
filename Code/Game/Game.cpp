@@ -5,8 +5,6 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Game.hpp"
 
-#include <iostream>
-
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/HeatMaps.hpp"
@@ -22,14 +20,8 @@
 #include "Game/PlayerTank.hpp"
 
 //----------------------------------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------------------------------
 Game::Game()
 {
-
-
     InitializeTiles();
     InitializeMaps();
     InitializeAudio();
@@ -58,8 +50,6 @@ Game::Game()
 
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
-
-
 
 //----------------------------------------------------------------------------------------------------
 Game::~Game()
@@ -138,15 +128,16 @@ void Game::TestBitfontMap() const
     if (!m_isAttractMode)
         return;
 
-// ...and then, each frame; draw two text strings on screen
+    // ...and then, each frame; draw two text strings on screen
     BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
 
     std::vector<Vertex_PCU> textVerts;
     g_testFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
     g_testFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
     g_theRenderer->BindTexture(&g_testFont->GetTexture());
-    g_theRenderer->DrawVertexArray(textVerts.size(), textVerts.data());
+    g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
 }
+
 //-----------------------------------------------------------------------------------------------
 void Game::Render()
 {
@@ -171,11 +162,11 @@ void Game::Render()
 void Game::InitializeMaps()
 {
     printf("( Game ) Start  | InitializeMaps\n");
-    
+
     MapDefinition::InitializeMapDefs();
-    
+
     m_maps.reserve(3);
-    
+
     for (int mapIndex = 0; mapIndex < 3; ++mapIndex)
     {
         m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));

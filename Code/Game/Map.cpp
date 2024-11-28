@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-#include "MapDefinition.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/HeatMaps.hpp"
@@ -141,12 +141,6 @@ Vec2 const Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
 }
 
 //----------------------------------------------------------------------------------------------------
-int Map::GetNumTiles() const
-{
-    return m_dimensions.x * m_dimensions.y;
-}
-
-//----------------------------------------------------------------------------------------------------
 AABB2 Map::GetMapBound() const
 {
     return AABB2(IntVec2::ZERO, m_dimensions);
@@ -196,7 +190,7 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
     {
         Tile const& tile = m_tiles[tileIndex];
 
-        return tile.m_tileName == "Stone";
+        return tile.m_isSolid == true;
     }
 
     return false;
@@ -297,38 +291,38 @@ void Map::GenerateAllTiles()
     {
         for (int x = 0; x < m_dimensions.x; ++x)
         {
-            String tileName  = "Grass";
-            int    tileIndex = 0;
+            String tileName    = "Grass";
+            bool   tileIsSolid = false;
 
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.1f)
             {
                 tileName  = "Sparkle_01";
-                tileIndex = 2;
+                tileIsSolid = false;
             }
 
             if (g_theRNG->RollRandomFloatZeroToOne() < 0.2f)
             {
                 tileName  = "Sparkle_02";
-                tileIndex = 3;
+                tileIsSolid = false;
             }
 
             if (IsTileCoordsInLShape(x, y))
             {
                 tileName  = "Floor";
-                tileIndex = 4;
+                tileIsSolid = false;
             }
 
             if (IsEdgeTile(x, y) ||
                 (!IsTileCoordsInLShape(x, y) && g_theRNG->RollRandomFloatZeroToOne() < 0.1f))
             {
                 tileName  = "Stone";
-                tileIndex = 1;
+                tileIsSolid = true;
             }
 
             m_tiles.emplace_back();
-            m_tiles.back().m_tileCoords   = IntVec2(x, y);
-            m_tiles.back().m_tileName     = tileName;
-            m_tiles.back().m_tileDefIndex = tileIndex;
+            m_tiles.back().m_tileCoords = IntVec2(x, y);
+            m_tiles.back().m_tileName   = tileName;
+            m_tiles.back().m_isSolid = tileIsSolid;
         }
     }
 
@@ -356,16 +350,16 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
             {
                 if (y == 0 || x == 0)
                 {
-                    m_tiles[tileIndex].m_tileName     = "Stone";
-                    m_tiles[tileIndex].m_tileDefIndex = 1;
+                    m_tiles[tileIndex].m_tileName = "Stone";
+                    m_tiles[tileIndex].m_isSolid = true;
                 }
             }
             else
             {
                 if (y == height - 1 || x == width - 1)
                 {
-                    m_tiles[tileIndex].m_tileName     = "Stone";
-                    m_tiles[tileIndex].m_tileDefIndex = 1;
+                    m_tiles[tileIndex].m_tileName = "Stone";
+                    m_tiles[tileIndex].m_isSolid = true;
                 }
             }
         }
@@ -376,9 +370,9 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
 void Map::GenerateExitPosTile()
 {
     m_tiles.emplace_back();
-    m_tiles.back().m_tileCoords   = m_exitPosition;
-    m_tiles.back().m_tileName     = "Exit";
-    m_tiles.back().m_tileDefIndex = 5;
+    m_tiles.back().m_tileCoords = m_exitPosition;
+    m_tiles.back().m_tileName   = "Exit";
+    m_tiles.back().m_isSolid = false;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -464,10 +458,9 @@ void Map::GenerateHeatMaps() const
 {
     printf("( Map%d ) Start  | GenerateHeatMaps\n", m_mapDef->GetIndex());
 
-    int const numTiles = m_tileHeatMap->GetTileNums();
-    for (int i = 0; i < numTiles; i++)
+    for (int i = 0; i < GetTileNums(); i++)
     {
-        if (TileDefinition::s_tileDefinitions[m_tiles[i].m_tileDefIndex]->IsSolid())
+        if (m_tiles[i].m_isSolid)
         {
             m_tileHeatMap->SetValueAtIndex(i, 999.f);
         }

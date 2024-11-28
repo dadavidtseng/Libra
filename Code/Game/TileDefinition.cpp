@@ -14,15 +14,16 @@ std::vector<TileDefinition*> TileDefinition::s_tileDefinitions;
 //----------------------------------------------------------------------------------------------------
 TileDefinition::TileDefinition(XmlElement const& tileDefElement, SpriteSheet const& spriteSheet)
 {
-    m_name                = ParseXmlAttribute(tileDefElement, "name", "Unnamed");
-    int const spriteIndex = ParseXmlAttribute(tileDefElement, "spriteIndex", -1);
+    m_name                     = ParseXmlAttribute(tileDefElement, "name", "Unnamed");
+    m_isSolid                  = ParseXmlAttribute(tileDefElement, "isSolid", false);
+    IntVec2 const spriteCoords = ParseXmlAttribute(tileDefElement, "spriteCoords", IntVec2(-1, -1));
+    int const     spriteIndex  = spriteCoords.x + spriteCoords.y * 8;
 
     if (spriteIndex != -1)
     {
         m_spriteDef = spriteSheet.GetSpriteDef(spriteIndex);
     }
 
-    m_isSolid   = ParseXmlAttribute(tileDefElement, "isSolid", false);
     m_tintColor = ParseXmlAttribute(tileDefElement, "tintColor", Rgba8::WHITE);
 }
 
@@ -41,10 +42,9 @@ TileDefinition::~TileDefinition()
 void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
 {
     XmlDocument tileDefXml;
+
     if (tileDefXml.LoadFile("Data/Definitions/TileDefinitions.xml") != XmlResult::XML_SUCCESS)
-    {
         return;
-    }
 
     if (XmlElement* root = tileDefXml.FirstChildElement("TileDefinitions"))
     {

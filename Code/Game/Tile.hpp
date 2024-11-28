@@ -4,13 +4,9 @@
 
 //----------------------------------------------------------------------------------------------------
 #pragma once
-#include <string>
 
+#include "Engine/Core/StringUtils.hpp"
 #include "Engine/Math/IntVec2.hpp"
-#include "Game/TileDefinition.hpp"
-
-//----------------------------------------------------------------------------------------------------
-// enum TileType;
 
 //----------------------------------------------------------------------------------------------------
 // "Flyweight" design pattern ( each tile only knows its type )
@@ -21,11 +17,9 @@ struct Tile
     // Tile();
     // ~Tile();
     // void SetType(std::string const& tileDefName);
-    
 
-    IntVec2  m_tileCoords = IntVec2(-1, -1);
-    // TileType m_type       = TILE_TYPE_INVALID;
-    // TileDefinition* m_tileDefinition = nullptr;
-    String m_tileName;
-    int m_tileDefIndex = -1;
+    IntVec2 m_tileCoords = IntVec2(-1, -1);
+    String  m_tileName;
+    bool    m_isSolid = false;
+    // int     m_tileDefIndex = -1;
 };

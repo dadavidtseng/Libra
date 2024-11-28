@@ -3,42 +3,42 @@
     <TileDefinition
             name="Grass"
             isSolid="false"
-            spriteIndex="0"
+            spriteCoords="0,0"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Stone"
             isSolid="true"
-            spriteIndex="28"
+            spriteCoords="4,3"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Sparkle_01"
             isSolid="false"
-            spriteIndex="20"
+            spriteCoords="4,2"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Sparkle_02"
             isSolid="false"
-            spriteIndex="21"
+            spriteCoords="5,2"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Floor"
             isSolid="false"
-            spriteIndex="52"
+            spriteCoords="4,6"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Exit"
             isSolid="false"
-            spriteIndex="57"
+            spriteCoords="1,7"
             tintColor="255, 255, 255"
     />
     
