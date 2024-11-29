@@ -21,7 +21,7 @@ struct TileDefinition
     static TileDefinition const*        GetTileDefByName(String const& name);
     static Strings                      GetTileNames();
     static std::vector<TileDefinition*> s_tileDefinitions;
-
+    
     String           GetName() const { return m_name; }
     SpriteDefinition GetSpriteDef() const { return m_spriteDef; }
     bool             IsSolid() const { return m_isSolid; }

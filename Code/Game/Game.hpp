@@ -23,7 +23,7 @@ public:
 
     void Update(float deltaSeconds);
     void TestBitfontMap() const;
-    void Render();
+    void Render() const;
 
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
     SpriteSheet const* GetTileSpriteSheet() const { return m_tileSpriteSheet; }

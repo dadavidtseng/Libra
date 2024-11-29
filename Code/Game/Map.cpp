@@ -58,8 +58,8 @@ Map::Map(MapDefinition const& mapDef)
 
     GenerateAllTiles();
     SpawnNewNPCs();
-    GenerateHeatMaps();
-    GenerateDistanceField(IntVec2::ONE, 999.f);
+    GenerateHeatMaps(*m_tileHeatMap);
+    GenerateDistanceField(*m_tileHeatMap, IntVec2::ONE, 999.f);
 
     // while (!wasSuccessful)
     // {
@@ -94,7 +94,7 @@ void Map::Render() const
         return;
 
     RenderTiles();
-    RenderTileHeatMap();
+    // RenderTileHeatMap();
     DebugRenderTileIndex();
 
     RenderEntities();
@@ -120,7 +120,6 @@ IntVec2 const Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
 
     if (IsTileCoordsOutOfBounds(IntVec2(tileX, tileY)))
     {
-        printf("%d, %d", tileX, tileY);
         ERROR_AND_DIE("tileCoords is out of bound")
     }
 
@@ -291,46 +290,89 @@ void Map::GenerateAllTiles()
     {
         for (int x = 0; x < m_dimensions.x; ++x)
         {
-            String tileName    = "Grass";
-            bool   tileIsSolid = false;
-
-            if (g_theRNG->RollRandomFloatZeroToOne() < 0.1f)
-            {
-                tileName  = "Sparkle_01";
-                tileIsSolid = false;
-            }
-
-            if (g_theRNG->RollRandomFloatZeroToOne() < 0.2f)
-            {
-                tileName  = "Sparkle_02";
-                tileIsSolid = false;
-            }
-
-            if (IsTileCoordsInLShape(x, y))
-            {
-                tileName  = "Floor";
-                tileIsSolid = false;
-            }
-
-            if (IsEdgeTile(x, y) ||
-                (!IsTileCoordsInLShape(x, y) && g_theRNG->RollRandomFloatZeroToOne() < 0.1f))
-            {
-                tileName  = "Stone";
-                tileIsSolid = true;
-            }
-
             m_tiles.emplace_back();
-            m_tiles.back().m_tileCoords = IntVec2(x, y);
-            m_tiles.back().m_tileName   = tileName;
-            m_tiles.back().m_isSolid = tileIsSolid;
         }
     }
+
+    MapDefinition const* mapDef = MapDefinition::s_mapDefinitions[GetMapIndex()];
+
+    GenerateTilesByType("Stone", true);
+    GenerateWormTiles(mapDef->GetWorm01TileName(), mapDef->GetWorm01Num(), mapDef->GetWorm01Length());
+    GenerateWormTiles(mapDef->GetWorm02TileName(), mapDef->GetWorm02Num(), mapDef->GetWorm02Length());
+    GenerateWormTiles(mapDef->GetWorm03TileName(), mapDef->GetWorm03Num(), mapDef->GetWorm03Length());
+
+    GenerateTilesByType("Floor", false);
 
     GenerateLShapeTiles(2, 2, 5, 5, false);
     GenerateLShapeTiles(m_dimensions.x - 9, m_dimensions.y - 9, 7, 7, true);
     GenerateExitPosTile();
 
+    if (!IsValidMap(IntVec2::ONE, m_exitPosition, 100))
+    {
+        ERROR_AND_DIE("Failed to generate a valid map!")
+    }
+
+    // 3. 將不可到達的 tile 轉換為固態
+    TileHeatMap const heatMap(m_dimensions, 999.f);
+    GenerateDistanceField(heatMap, IntVec2::ONE, 999.f);
+    ConvertUnreachableTilesToSolid(heatMap, "Stone");
+
     printf("( Map%d ) Finish | GenerateAllTiles\n", m_mapDef->GetIndex());
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateTilesByType(String const& tileName, bool const isSolid)
+{
+    for (int y = 0; y < m_dimensions.y; ++y)
+    {
+        for (int x = 0; x < m_dimensions.x; ++x)
+        {
+            if (tileName == "Floor")
+            {
+                if (!IsEdgeTile(x, y) &&
+                    IsTileCoordsInLShape(x, y))
+                {
+                    SetTileAtCoords(tileName, isSolid, x, y);
+                }
+            }
+
+            if (tileName == "Stone")
+            {
+                if (IsEdgeTile(x, y) ||
+                    !IsTileCoordsInLShape(x, y))
+                {
+                    SetTileAtCoords(tileName, isSolid, x, y);
+                }
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateWormTiles(String const& wormTileName, int const numWorms, int const wormLength)
+{
+    for (int i = 0; i < numWorms; ++i)
+    {
+        IntVec2 wormPosition = RollRandomTileCoords();
+
+        if (!IsEdgeTile(wormPosition.x, wormPosition.y))
+        {
+            SetTileAtCoords(wormTileName, false, wormPosition.x, wormPosition.y);
+        }
+
+        for (int j = 0; j < wormLength; ++j)
+        {
+            IntVec2 const direction   = RollRandomCardinalDirection();
+            IntVec2 const newPosition = wormPosition + direction;
+
+            if (!IsTileCoordsOutOfBounds(newPosition) &&
+                !IsEdgeTile(newPosition.x, newPosition.y))
+            {
+                wormPosition = newPosition;
+                SetTileAtCoords(wormTileName, false, wormPosition.x, wormPosition.y);
+            }
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -344,22 +386,18 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
     {
         for (int x = 0; x < width; ++x)
         {
-            int const tileIndex = (tileCoordY + y) * m_dimensions.x + (tileCoordX + x);
-
             if (isBottomLeft)
             {
                 if (y == 0 || x == 0)
                 {
-                    m_tiles[tileIndex].m_tileName = "Stone";
-                    m_tiles[tileIndex].m_isSolid = true;
+                    SetTileAtCoords("Stone", true, tileCoordX + x, tileCoordY + y);
                 }
             }
             else
             {
                 if (y == height - 1 || x == width - 1)
                 {
-                    m_tiles[tileIndex].m_tileName = "Stone";
-                    m_tiles[tileIndex].m_isSolid = true;
+                    SetTileAtCoords("Stone", true, tileCoordX + x, tileCoordY + y);
                 }
             }
         }
@@ -369,10 +407,36 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
 //----------------------------------------------------------------------------------------------------
 void Map::GenerateExitPosTile()
 {
-    m_tiles.emplace_back();
-    m_tiles.back().m_tileCoords = m_exitPosition;
-    m_tiles.back().m_tileName   = "Exit";
-    m_tiles.back().m_isSolid = false;
+    SetTileAtCoords("Exit", false, m_exitPosition.x, m_exitPosition.y);
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::SetTileAtCoords(String const& tileName, bool const tileIsSolid, int const tileX, int const tileY)
+{
+    int const tileIndex = tileY * m_dimensions.x + tileX;
+
+    m_tiles[tileIndex].m_tileCoords = IntVec2(tileX, tileY);
+    m_tiles[tileIndex].m_tileName   = tileName;
+    m_tiles[tileIndex].m_isSolid    = tileIsSolid;
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName)
+{
+    for (int y = 0; y < m_dimensions.y; ++y)
+    {
+        for (int x = 0; x < m_dimensions.x; ++x)
+        {
+            IntVec2 tileCoords(x, y);
+
+            // 如果 tile 是非固態，且未被洪水填充標記
+            if (!IsTileSolid(tileCoords) && heatMap.GetValueAtCoords(tileCoords) == 999.f)
+            {
+                printf("( %d, %d )\n", x, y);
+                SetTileAtCoords(tileName, true, tileCoords.x, tileCoords.y);
+            }
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -417,6 +481,28 @@ bool Map::IsWorldPosOccupied(Vec2 const& position) const
     return false;
 }
 
+bool Map::IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int const maxAttempts)
+{
+    for (int attempt = 0; attempt < maxAttempts; ++attempt)
+    {
+        // 初始化 heat map 並執行洪水填充
+        TileHeatMap heatMap(m_dimensions, 999.f);
+        GenerateDistanceField(heatMap, startCoords, 999.f);
+
+        // 檢查出口是否可達
+        if (heatMap.GetValueAtCoords(exitCoords) != 999.f)
+        {
+            return true; // 地圖有效
+        }
+        printf("ISMAPVALID\n");
+        // 如果無效，重新生成地圖
+        GenerateAllTiles();
+    }
+
+    // 超出最大嘗試次數，報錯
+    ERROR_AND_DIE("Failed to generate a valid map after maximum attempts!");
+}
+
 //----------------------------------------------------------------------------------------------------
 AABB2 const Map::GetTileBounds(IntVec2 const& tileCoords) const
 {
@@ -454,7 +540,24 @@ IntVec2 Map::RollRandomTileCoords() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::GenerateHeatMaps() const
+IntVec2 Map::RollRandomCardinalDirection() const
+{
+    switch (g_theRNG->RollRandomIntInRange(0, 3))
+    {
+        case 0:
+            return IntVec2(0, 1);
+        case 1:
+            return IntVec2(1, 0);
+        case 2:
+            return IntVec2(0, -1);
+        case 3:
+            return IntVec2(-1, 0);
+    }
+    return IntVec2::ZERO;
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateHeatMaps(TileHeatMap const& heatMap) const
 {
     printf("( Map%d ) Start  | GenerateHeatMaps\n", m_mapDef->GetIndex());
 
@@ -462,7 +565,7 @@ void Map::GenerateHeatMaps() const
     {
         if (m_tiles[i].m_isSolid)
         {
-            m_tileHeatMap->SetValueAtIndex(i, 999.f);
+            heatMap.SetValueAtIndex(i, 999.f);
         }
     }
 
@@ -470,12 +573,12 @@ void Map::GenerateHeatMaps() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::GenerateDistanceField(IntVec2 const& startCoords, float const specialValue) const
+void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float const specialValue) const
 {
     printf("( Map%d ) Start  | GenerateDistanceField\n", m_mapDef->GetIndex());
 
-    m_tileHeatMap->SetValueAtAllTiles(specialValue);
-    m_tileHeatMap->SetValueAtCoords(startCoords, 0.f);
+    heatMap.SetValueAtAllTiles(specialValue);
+    heatMap.SetValueAtCoords(startCoords, 0.f);
 
     float currentSearchValue = 0.f;
     bool  isStillGoing       = true;
@@ -489,7 +592,7 @@ void Map::GenerateDistanceField(IntVec2 const& startCoords, float const specialV
             for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
             {
                 IntVec2     tileCoords(tileX, tileY);
-                float const value = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
+                float const value = heatMap.GetValueAtCoords(tileX, tileY);
 
                 if (std::fabs(value - currentSearchValue) < EPSILON)
                 {
@@ -500,27 +603,27 @@ void Map::GenerateDistanceField(IntVec2 const& startCoords, float const specialV
                     IntVec2     s               = tileCoords + IntVec2(0, -1);
                     float const nextSearchValue = currentSearchValue + 1.f;
 
-                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && m_tileHeatMap->GetValueAtCoords(e) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
                     {
-                        m_tileHeatMap->SetValueAtCoords(e, nextSearchValue);
+                        heatMap.SetValueAtCoords(e, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && m_tileHeatMap->GetValueAtCoords(n) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
                     {
-                        m_tileHeatMap->SetValueAtCoords(n, nextSearchValue);
+                        heatMap.SetValueAtCoords(n, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && m_tileHeatMap->GetValueAtCoords(s) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
                     {
-                        m_tileHeatMap->SetValueAtCoords(s, nextSearchValue);
+                        heatMap.SetValueAtCoords(s, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && m_tileHeatMap->GetValueAtCoords(w) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
                     {
-                        m_tileHeatMap->SetValueAtCoords(w, nextSearchValue);
+                        heatMap.SetValueAtCoords(w, nextSearchValue);
                         isStillGoing = true;
                     }
                 }

@@ -27,8 +27,6 @@ public:
     ~Map();
 
     // TODO:
-// SetTileType(int tileX, int tileY, TileType tileType);
-// SetTileTypeInTriangle();
 // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
 
     void Update(float deltaSeconds);
@@ -65,19 +63,25 @@ private:
 
     // Map-related
     void        GenerateAllTiles();
+    void        GenerateTilesByType(String const& tileName, bool isSolid);
+    void        GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
     void        GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
     void        GenerateExitPosTile();
+    void        SetTileAtCoords(String const& tileName, bool tileIsSolid, int tileX, int tileY);
+    void        ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
     bool        IsEdgeTile(int x, int y) const;
     bool        IsTileCoordsInLShape(int x, int y) const;
     bool        IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
     bool        IsWorldPosOccupied(Vec2 const& position) const;
+    bool        IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) ;
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2 const GetTileBounds(int tileIndex) const;
     IntVec2     RollRandomTileCoords() const;
+    IntVec2     RollRandomCardinalDirection() const;
 
     // Heatmap-related
-    void GenerateHeatMaps() const;
-    void GenerateDistanceField(IntVec2 const& startCoords, float specialValue) const;
+    void GenerateHeatMaps(TileHeatMap const& heatMap) const;
+    void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
 
     // Entity-lifetime-related
     Entity* CreateNewEntity(EntityType type, EntityFaction faction);

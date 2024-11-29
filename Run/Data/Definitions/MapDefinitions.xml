@@ -3,6 +3,9 @@
     <MapDefinition
             name="Map01"
             index="0"
+            worm01TileName="Grass" worm01Num="15" worm01Length="50"
+            worm02TileName="Sparkle_01" worm02Num="5" worm02Length="30"
+            worm03TileName="Sparkle_02" worm03Num="5" worm03Length="30"
             scorpioSpawnPercentage="0"
             leoSpawnPercentage="0"
             ariesSpawnPercentage="0"
@@ -12,6 +15,9 @@
     <MapDefinition
             name="Map02"
             index="1"
+            worm01TileName="Grass" worm01Num="30" worm01Length="50"
+            worm02TileName="Sparkle_01" worm02Num="15" worm02Length="30"
+            worm03TileName="Sparkle_02" worm03Num="15" worm03Length="30"
             scorpioSpawnPercentage="0.3"
             leoSpawnPercentage="0.3"
             ariesSpawnPercentage="0.3"
@@ -21,6 +27,9 @@
     <MapDefinition
             name="Map03"
             index="2"
+            worm01TileName="Grass" worm01Num="5" worm01Length="30"
+            worm02TileName="Sparkle_01" worm02Num="2" worm02Length="10"
+            worm03TileName="Sparkle_02" worm03Num="2" worm03Length="10"
             scorpioSpawnPercentage="0.1"
             leoSpawnPercentage="0.1"
             ariesSpawnPercentage="0.1"
