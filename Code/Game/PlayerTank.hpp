@@ -28,13 +28,11 @@ private:
     void RenderBody() const;
     void RenderTurret() const;
 
-    AABB2    m_bodyBounds;
     AABB2    m_turretBounds;
-    Texture* m_bodyTexture                  = nullptr;
     Texture* m_turretTexture                = nullptr;
     float    m_turretRelativeOrientation    = 0.f;
     float    m_turretGoalOrientationDegrees = 0.f;
     float    m_turretRotateSpeed            = g_gameConfigBlackboard.GetValue("playerTankTurretRotateSpeed", 360.f);
     float    m_shootCoolDown                = 0.f;
-    Vec2     m_bodyInput                    = Vec2();
+    Vec2     m_bodyInput                    = Vec2::ZERO;
 };

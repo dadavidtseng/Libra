@@ -23,7 +23,7 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
     m_doesPushEntities            = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
     m_health                      = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
-    m_playerTankLastKnownPosition = m_position;
+    m_targetLastKnownPosition = m_position;
     
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
@@ -98,7 +98,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange) && !playerTank->m_isDead)
     {
         // Turn toward player
-        float const targetOrientationDegrees = (m_playerTankLastKnownPosition - m_position).GetOrientationDegrees();
+        float const targetOrientationDegrees = (m_targetLastKnownPosition - m_position).GetOrientationDegrees();
 
         TurnToward(m_turretOrientationDegrees, targetOrientationDegrees, deltaSeconds, m_turretRotateSpeed);
 
@@ -115,7 +115,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
             g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
         }
 
-        m_playerTankLastKnownPosition = playerTank->m_position;
+        m_targetLastKnownPosition = playerTank->m_position;
     }
     else
     {

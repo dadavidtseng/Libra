@@ -4,11 +4,7 @@
 
 //----------------------------------------------------------------------------------------------------
 #pragma once
-#include "Engine/Math/AABB2.hpp"
 #include "Game/Entity.hpp"
-
-//----------------------------------------------------------------------------------------------------
-class Texture;
 
 //----------------------------------------------------------------------------------------------------
 class Aries : public Entity
@@ -23,8 +19,4 @@ public:
 private:
     void UpdateBody(float deltaSeconds);
     void RenderBody() const;
-
-    AABB2    m_bodyBounds;
-    Texture* m_bodyTexture                 = nullptr;
-    bool     m_hasTarget                   = false;
 };

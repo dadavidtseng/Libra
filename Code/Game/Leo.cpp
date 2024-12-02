@@ -28,8 +28,8 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     m_isPushedByEntities = g_gameConfigBlackboard.GetValue("leoIsPushedByEntities", true);
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
 
-    m_BodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
-    m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
+    m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
+    m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 
 void Leo::DebugRenderTileIndex() const
@@ -104,8 +104,6 @@ void Leo::DebugRender() const
                   0.05f,
                   Rgba8::GREEN);
 
-    // if (m_playerTankLastKnownPosition != Vec2::ZERO)
-    // {
     DebugDrawLine(m_position,
                   m_targetLastKnownPosition,
                   0.05f,
@@ -125,7 +123,6 @@ void Leo::DebugRender() const
                         0.1f,
                         Rgba8::WHITE,
                         1.f);
-    // }
 
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
@@ -186,12 +183,12 @@ void Leo::UpdateBody(float const deltaSeconds)
 void Leo::RenderBody() const
 {
     std::vector<Vertex_PCU> bodyVerts;
-    AddVertsForAABB2D(bodyVerts, m_BodyBounds, Rgba8::WHITE);
+    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.0f, m_orientationDegrees, m_position);
 
-    g_theRenderer->BindTexture(m_BodyTexture);
+    g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 }
 

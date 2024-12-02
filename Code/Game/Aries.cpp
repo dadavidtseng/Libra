@@ -17,15 +17,14 @@
 Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = g_gameConfigBlackboard.GetValue("ariesPhysicsRadius", 0.25f);
-    m_detectRange                 = g_gameConfigBlackboard.GetValue("ariesDetectRange", 10.f);
-    m_moveSpeed                   = g_gameConfigBlackboard.GetValue("ariesMoveSpeed", 0.5f);
-    m_rotateSpeed                 = g_gameConfigBlackboard.GetValue("ariesRotateSpeed", 90.f);
-    m_health                      = g_gameConfigBlackboard.GetValue("ariesInitHealth", 8);
-    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
-    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
-    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
-    m_targetLastKnownPosition = m_position;
+    m_physicsRadius           = g_gameConfigBlackboard.GetValue("ariesPhysicsRadius", 0.25f);
+    m_detectRange             = g_gameConfigBlackboard.GetValue("ariesDetectRange", 10.f);
+    m_moveSpeed               = g_gameConfigBlackboard.GetValue("ariesMoveSpeed", 0.5f);
+    m_rotateSpeed             = g_gameConfigBlackboard.GetValue("ariesRotateSpeed", 90.f);
+    m_health                  = g_gameConfigBlackboard.GetValue("ariesInitHealth", 8);
+    m_isPushedByWalls         = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
+    m_isPushedByEntities      = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
+    m_doesPushEntities        = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
 
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
@@ -82,18 +81,25 @@ void Aries::DebugRender() const
                   0.05f,
                   Rgba8::GREEN);
 
-    if (m_targetLastKnownPosition != Vec2::ZERO)
-    {
-        DebugDrawLine(m_position,
-                      m_targetLastKnownPosition,
-                      0.05f,
-                      Rgba8::GREY);
+    DebugDrawLine(m_position,
+                  m_targetLastKnownPosition,
+                  0.05f,
+                  Rgba8::GREY);
 
-        DebugDrawGlowCircle(m_targetLastKnownPosition,
-                            0.1f,
-                            Rgba8::GREY,
-                            1.f);
-    }
+    DebugDrawGlowCircle(m_targetLastKnownPosition,
+                        0.1f,
+                        Rgba8::GREY,
+                        1.f);
+
+    DebugDrawLine(m_position,
+                  m_nextWayPosition,
+                  0.05f,
+                  Rgba8::WHITE);
+
+    DebugDrawGlowCircle(m_nextWayPosition,
+                        0.1f,
+                        Rgba8::WHITE,
+                        1.f);
 
     DebugDrawLine(m_position,
                   m_position + m_velocity,
@@ -108,45 +114,39 @@ void Aries::UpdateBody(const float deltaSeconds)
 
     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
 
-    if (IsPointInsideDisc2D(m_targetLastKnownPosition, m_position, m_physicsRadius) ||
-        playerTank->m_isDead)
-    {
-        m_targetLastKnownPosition = Vec2::ZERO;
-        m_hasTarget                   = false;
-    }
+    if (!playerTank)
+        return;
 
-    Vec2 const  dispToTarget    = m_targetLastKnownPosition - m_position;
+    Vec2 const  dispToTarget    = m_nextWayPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 
-    if (degreesToTarget < 45.f && m_hasTarget)
+    if (degreesToTarget < 45.f &&
+        m_hasTarget)
     {
         m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
 
-        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
+        TurnToward(m_orientationDegrees,
+                   m_targetOrientationDegrees,
+                   deltaSeconds,
+                   m_rotateSpeed);
 
-        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * m_moveSpeed * deltaSeconds;
-        m_position += m_velocity;
+        // m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * m_moveSpeed * deltaSeconds;
+        // m_position += m_velocity;
 
     }
 
+    // TurnToward if entity sees target
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange))
     {
         m_hasTarget = true;
 
-        m_targetLastKnownPosition = playerTank->m_position;
-
-        float const targetOrientationDegrees = (playerTank->m_position - m_position).GetOrientationDegrees();
-
-        TurnToward(
-            m_orientationDegrees,
-            targetOrientationDegrees,
-            deltaSeconds,
-            m_rotateSpeed);
+        UpdateBehavior(deltaSeconds, true);
     }
     else
     {
-        WanderAround(deltaSeconds, m_moveSpeed, m_rotateSpeed);
+        // if not, wander around
+        UpdateBehavior(deltaSeconds, false);
     }
 }
 

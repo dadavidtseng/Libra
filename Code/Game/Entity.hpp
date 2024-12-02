@@ -6,8 +6,10 @@
 #pragma once
 #include <vector>
 
+#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 
+class Texture;
 class TileHeatMap;
 //----------------------------------------------------------------------------------------------------
 class Map;
@@ -67,6 +69,8 @@ public:
     Vec2          m_targetLastKnownPosition  = Vec2::ZERO;
     Vec2          m_nextWayPosition          = Vec2::ZERO;
     TileHeatMap*  m_heatMap                  = nullptr;
+    AABB2          m_bodyBounds;
+    Texture const* m_bodyTexture = nullptr;
     float         m_moveSpeed                = 0.f;
     float         m_rotateSpeed              = 0.f;
     float         m_orientationDegrees       = 0.f;
