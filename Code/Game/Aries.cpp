@@ -25,7 +25,7 @@ Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
     m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
     m_doesPushEntities            = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
-    m_playerTankLastKnownPosition = m_position;
+    m_targetLastKnownPosition = m_position;
 
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
@@ -82,14 +82,14 @@ void Aries::DebugRender() const
                   0.05f,
                   Rgba8::GREEN);
 
-    if (m_playerTankLastKnownPosition != Vec2::ZERO)
+    if (m_targetLastKnownPosition != Vec2::ZERO)
     {
         DebugDrawLine(m_position,
-                      m_playerTankLastKnownPosition,
+                      m_targetLastKnownPosition,
                       0.05f,
                       Rgba8::GREY);
 
-        DebugDrawGlowCircle(m_playerTankLastKnownPosition,
+        DebugDrawGlowCircle(m_targetLastKnownPosition,
                             0.1f,
                             Rgba8::GREY,
                             1.f);
@@ -106,16 +106,16 @@ void Aries::UpdateBody(const float deltaSeconds)
 {
     m_timeSinceLastRoll += deltaSeconds;
 
-    const PlayerTank* playerTank = g_theGame->GetPlayerTank();
+    PlayerTank const* playerTank = g_theGame->GetPlayerTank();
 
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius) ||
+    if (IsPointInsideDisc2D(m_targetLastKnownPosition, m_position, m_physicsRadius) ||
         playerTank->m_isDead)
     {
-        m_playerTankLastKnownPosition = Vec2::ZERO;
+        m_targetLastKnownPosition = Vec2::ZERO;
         m_hasTarget                   = false;
     }
 
-    Vec2 const  dispToTarget    = m_playerTankLastKnownPosition - m_position;
+    Vec2 const  dispToTarget    = m_targetLastKnownPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 
@@ -134,7 +134,7 @@ void Aries::UpdateBody(const float deltaSeconds)
     {
         m_hasTarget = true;
 
-        m_playerTankLastKnownPosition = playerTank->m_position;
+        m_targetLastKnownPosition = playerTank->m_position;
 
         float const targetOrientationDegrees = (playerTank->m_position - m_position).GetOrientationDegrees();
 

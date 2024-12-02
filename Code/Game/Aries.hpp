@@ -26,6 +26,5 @@ private:
 
     AABB2    m_bodyBounds;
     Texture* m_bodyTexture                 = nullptr;
-    Vec2     m_playerTankLastKnownPosition = Vec2::ZERO;
     bool     m_hasTarget                   = false;
 };

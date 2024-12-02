@@ -5,8 +5,10 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/Leo.hpp"
 
+#include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -17,18 +19,38 @@
 Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = g_gameConfigBlackboard.GetValue("leoPhysicsRadius", 0.25f);
-    m_detectRange                 = g_gameConfigBlackboard.GetValue("leoDetectRange", 10.f);
-    m_moveSpeed                   = g_gameConfigBlackboard.GetValue("leoMoveSpeed", 0.5f);
-    m_rotateSpeed                 = g_gameConfigBlackboard.GetValue("leoRotateSpeed", 90.f);
-    m_health                      = g_gameConfigBlackboard.GetValue("leoInitHealth", 3);
-    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("leoIsPushedByWalls", true);
-    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("leoIsPushedByEntities", true);
-    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
-    m_playerTankLastKnownPosition = m_position;
+    m_physicsRadius      = g_gameConfigBlackboard.GetValue("leoPhysicsRadius", 0.25f);
+    m_detectRange        = g_gameConfigBlackboard.GetValue("leoDetectRange", 10.f);
+    m_moveSpeed          = g_gameConfigBlackboard.GetValue("leoMoveSpeed", 0.5f);
+    m_rotateSpeed        = g_gameConfigBlackboard.GetValue("leoRotateSpeed", 90.f);
+    m_health             = g_gameConfigBlackboard.GetValue("leoInitHealth", 3);
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("leoIsPushedByWalls", true);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("leoIsPushedByEntities", true);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
 
     m_BodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_BodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
+}
+
+void Leo::DebugRenderTileIndex() const
+{
+    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
+
+    IntVec2 dimensions = m_map->GetMapDimension();
+
+    for (int tileY = 0; tileY < dimensions.y; ++tileY)
+    {
+        for (int tileX = 0; tileX < dimensions.x; ++tileX)
+        {
+
+            float value = m_heatMap->GetValueAtCoords(tileX, tileY);
+
+            std::vector<Vertex_PCU> textVerts;
+            g_testFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theRenderer->BindTexture(&g_testFont->GetTexture());
+            g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -82,18 +104,28 @@ void Leo::DebugRender() const
                   0.05f,
                   Rgba8::GREEN);
 
-    if (m_playerTankLastKnownPosition != Vec2::ZERO)
-    {
-        DebugDrawLine(m_position,
-                      m_playerTankLastKnownPosition,
-                      0.05f,
-                      Rgba8::GREY);
+    // if (m_playerTankLastKnownPosition != Vec2::ZERO)
+    // {
+    DebugDrawLine(m_position,
+                  m_targetLastKnownPosition,
+                  0.05f,
+                  Rgba8::GREY);
 
-        DebugDrawGlowCircle(m_playerTankLastKnownPosition,
-                            0.1f,
-                            Rgba8::GREY,
-                            1.f);
-    }
+    DebugDrawGlowCircle(m_targetLastKnownPosition,
+                        0.1f,
+                        Rgba8::GREY,
+                        1.f);
+
+    DebugDrawLine(m_position,
+                  m_nextWayPosition,
+                  0.05f,
+                  Rgba8::WHITE);
+
+    DebugDrawGlowCircle(m_nextWayPosition,
+                        0.1f,
+                        Rgba8::WHITE,
+                        1.f);
+    // }
 
     DebugDrawLine(m_position,
                   m_position + fwdNormal,
@@ -113,16 +145,7 @@ void Leo::UpdateBody(float const deltaSeconds)
     if (!playerTank)
         return;
 
-    //Check if target is reached, but not seen; go back wander
-    if (IsPointInsideDisc2D(m_playerTankLastKnownPosition, m_position, m_physicsRadius) ||
-        playerTank->m_isDead)
-    {
-        // Clear my target; the player is nowhere to be seen from last known position
-        m_playerTankLastKnownPosition = Vec2::ZERO;
-        m_hasTarget                   = false;
-    }
-
-    Vec2 const  dispToTarget    = m_playerTankLastKnownPosition - m_position;
+    Vec2 const  dispToTarget    = m_nextWayPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 
@@ -131,10 +154,10 @@ void Leo::UpdateBody(float const deltaSeconds)
     {
         m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
 
-        TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
-
-        m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees) * m_moveSpeed * deltaSeconds;
-        m_position += m_velocity;
+        TurnToward(m_orientationDegrees,
+                   m_targetOrientationDegrees,
+                   deltaSeconds,
+                   m_rotateSpeed);
 
         if (degreesToTarget < m_shootDegreesThreshold &&
             m_shootCoolDown <= 0.0f)
@@ -150,20 +173,12 @@ void Leo::UpdateBody(float const deltaSeconds)
     {
         m_hasTarget = true;
 
-        m_playerTankLastKnownPosition = playerTank->m_position;
-
-        m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
-
-        TurnToward(
-            m_orientationDegrees,
-            m_targetOrientationDegrees,
-            deltaSeconds,
-            m_rotateSpeed);
+        UpdateBehavior(deltaSeconds, true);
     }
     else
     {
         // if not, wander around
-        WanderAround(deltaSeconds, m_moveSpeed, m_rotateSpeed);
+        UpdateBehavior(deltaSeconds, false);
     }
 }
 

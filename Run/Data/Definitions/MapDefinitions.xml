@@ -7,7 +7,7 @@
             worm02TileName="Sparkle_01" worm02Num="5" worm02Length="30"
             worm03TileName="Sparkle_02" worm03Num="5" worm03Length="30"
             scorpioSpawnPercentage="0"
-            leoSpawnPercentage="0"
+            leoSpawnPercentage="0.1"
             ariesSpawnPercentage="0"
             dimensions="24,30"
     />

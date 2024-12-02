@@ -6,6 +6,7 @@
 #include "Game/Map.hpp"
 
 #include <cmath>
+#include <queue>
 
 #include "Game/MapDefinition.hpp"
 #include "Engine/Core/EngineCommon.hpp"
@@ -95,7 +96,7 @@ void Map::Render() const
 
     RenderTiles();
     // RenderTileHeatMap();
-    DebugRenderTileIndex();
+    // DebugRenderTileIndex();
 
     RenderEntities();
 }
@@ -432,7 +433,6 @@ void Map::ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String cons
             // 如果 tile 是非固態，且未被洪水填充標記
             if (!IsTileSolid(tileCoords) && heatMap.GetValueAtCoords(tileCoords) == 999.f)
             {
-                printf("( %d, %d )\n", x, y);
                 SetTileAtCoords(tileName, true, tileCoords.x, tileCoords.y);
             }
         }
@@ -538,6 +538,16 @@ IntVec2 Map::RollRandomTileCoords() const
 
     return IntVec2(randomX, randomY);
 }
+IntVec2 Map::RollRandomTraversableTileCoords() const
+{
+    int const randomX = g_theRNG->RollRandomIntInRange(0, m_dimensions.x - 1);
+    int const randomY = g_theRNG->RollRandomIntInRange(0, m_dimensions.y - 1);
+
+    if (IsTileSolid(IntVec2(randomX, randomY)))
+        return RollRandomTraversableTileCoords();
+
+    return IntVec2(randomX, randomY);
+}
 
 //----------------------------------------------------------------------------------------------------
 IntVec2 Map::RollRandomCardinalDirection() const
@@ -634,6 +644,55 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
 
     printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
 }
+
+void Map::GenerateDistanceFieldToPosition(TileHeatMap& heatMap, IntVec2 const& playerCoords) const
+{
+    printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
+
+    // 初始化距離場：將所有 tile 的值設置為無限大（或特殊值）
+    heatMap.SetValueAtAllTiles(999.f);
+    heatMap.SetValueAtCoords(playerCoords, 0.f); // 玩家所在位置的距離為 0
+
+    // 使用 BFS 進行距離場生成
+    std::queue<IntVec2> openList;
+    openList.push(playerCoords);
+
+    while (!openList.empty())
+    {
+        IntVec2 currentTile = openList.front();
+        openList.pop();
+
+        float currentDistance = heatMap.GetValueAtCoords(currentTile);
+
+        // 遍歷當前 tile 的四個鄰近方向 (N, E, S, W)
+        IntVec2 neighbors[] = {
+            currentTile + IntVec2(0, 1),  // 北 (N)
+            currentTile + IntVec2(1, 0),  // 東 (E)
+            currentTile + IntVec2(0, -1), // 南 (S)
+            currentTile + IntVec2(-1, 0)  // 西 (W)
+        };
+
+        for (IntVec2 const& neighbor : neighbors)
+        {
+            if (IsTileCoordsOutOfBounds(neighbor) || IsTileSolid(neighbor))
+            {
+                continue; // 如果座標越界或是障礙物，跳過
+            }
+
+            float neighborDistance = heatMap.GetValueAtCoords(neighbor);
+            float newDistance      = currentDistance + 1.f; // 與當前 tile 的距離 +1
+
+            if (newDistance < neighborDistance) // 如果找到更短的距離
+            {
+                heatMap.SetValueAtCoords(neighbor, newDistance);
+                openList.push(neighbor); // 將鄰近座標加入隊列以繼續擴展
+            }
+        }
+    }
+
+    printf("( Map%d ) Finish | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
+}
+
 
 //----------------------------------------------------------------------------------------------------
 Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)

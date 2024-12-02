@@ -8,6 +8,7 @@
 
 #include "Engine/Math/Vec2.hpp"
 
+class TileHeatMap;
 //----------------------------------------------------------------------------------------------------
 class Map;
 class Entity;
@@ -52,6 +53,8 @@ public:
     virtual void TurnToward(float& orientationDegrees, float targetOrientationDegrees, float deltaSeconds, float rotationSpeed);
     void         MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float moveSpeed, float deltaSeconds);
     void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
+    void         FindNextWayPosition();
+    void         UpdateBehavior(float deltaSeconds, bool isChasing);
 
 // TODO: MAKE THIS
 // virtual  void TurnTowardPosition(Vec2 const& targetPos, float maxTurnDegrees); 
@@ -61,6 +64,9 @@ public:
     EntityFaction m_faction                  = ENTITY_FACTION_UNKNOWN;
     Vec2          m_position                 = Vec2::ZERO;
     Vec2          m_velocity                 = Vec2::ZERO;
+    Vec2          m_targetLastKnownPosition  = Vec2::ZERO;
+    Vec2          m_nextWayPosition          = Vec2::ZERO;
+    TileHeatMap*  m_heatMap                  = nullptr;
     float         m_moveSpeed                = 0.f;
     float         m_rotateSpeed              = 0.f;
     float         m_orientationDegrees       = 0.f;
@@ -74,4 +80,6 @@ public:
     bool          m_isPushedByEntities       = false;
     bool          m_doesPushEntities         = false;
     bool          m_isPushedByWalls          = false;
+    bool          m_hasTarget                = false;
+
 };
