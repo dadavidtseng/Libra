@@ -10,6 +10,7 @@ struct Vec2;
 struct Rgba8;
 class App;
 class AudioSystem;
+class BitmapFont;
 class Game;
 class InputSystem;
 class Renderer;
@@ -19,6 +20,7 @@ class Window;
 // one-time declaration
 extern App*                   g_theApp;
 extern AudioSystem*           g_theAudio;
+extern BitmapFont*            g_theBitmapFont;
 extern Game*                  g_theGame;
 extern InputSystem*           g_theInput;
 extern Renderer*              g_theRenderer;

@@ -58,7 +58,7 @@ public:
     // Heatmap-related
     void GenerateHeatMaps(TileHeatMap const& heatMap) const;
     void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldToPosition(TileHeatMap& heatMap, IntVec2 const& playerCoords) const;
+    void GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
 
 private:
     void UpdateEntities(float deltaSeconds) const;
@@ -95,9 +95,9 @@ private:
     bool    IsAgent(Entity const* entity) const;
 
     // Entity-physic-related
-    void PushEntitiesOutOfWalls();
-    void PushEntityOutOfSolidTiles(Entity* entity);
-    void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords);
+    void PushEntitiesOutOfWalls() const;
+    void PushEntityOutOfSolidTiles(Entity* entity) const;
+    void PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords) const;
     void PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList const& entityListB) const;
     void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB);
 

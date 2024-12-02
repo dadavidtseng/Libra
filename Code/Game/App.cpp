@@ -17,13 +17,14 @@
 #include "Engine/Core/NamedStrings.hpp"
 
 //-----------------------------------------------------------------------------------------------
-App*                   g_theApp      = nullptr; // Created and owned by Main_Windows.cpp
-AudioSystem*           g_theAudio    = nullptr; // Created and owned by the App
-InputSystem*           g_theInput    = nullptr; // Created and owned by the App
-Game*                  g_theGame     = nullptr; // Created and owned by the App
-Renderer*              g_theRenderer = nullptr; // Created and owned by the App
-RandomNumberGenerator* g_theRNG      = nullptr; // Created and owned by the App
-Window*                g_theWindow   = nullptr; // Created and owned by the App
+App*                   g_theApp        = nullptr; // Created and owned by Main_Windows.cpp
+AudioSystem*           g_theAudio      = nullptr; // Created and owned by the App
+BitmapFont*            g_theBitmapFont = nullptr; // Created and owned by the App
+InputSystem*           g_theInput      = nullptr; // Created and owned by the App
+Game*                  g_theGame       = nullptr; // Created and owned by the App
+Renderer*              g_theRenderer   = nullptr; // Created and owned by the App
+RandomNumberGenerator* g_theRNG        = nullptr; // Created and owned by the App
+Window*                g_theWindow     = nullptr; // Created and owned by the App
 
 //-----------------------------------------------------------------------------------------------
 App::App() = default;
@@ -71,8 +72,9 @@ void App::Startup()
     g_theRenderer->Startup();
     g_theAudio->Startup();
 
-    g_theRNG  = new RandomNumberGenerator();
-    g_theGame = new Game();
+    g_theBitmapFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
+    g_theRNG        = new RandomNumberGenerator();
+    g_theGame       = new Game();
 }
 
 //-----------------------------------------------------------------------------------------------

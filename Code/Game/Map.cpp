@@ -30,19 +30,15 @@
 
 void Map::DebugRenderTileIndex() const
 {
-    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
-
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
-            IntVec2 tileCoords(tileX, tileY);
-            int     tileIndex = tileY * m_dimensions.x + tileX;
-            float   value     = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
+            float const value = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
 
             std::vector<Vertex_PCU> textVerts;
-            g_testFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
-            g_theRenderer->BindTexture(&g_testFont->GetTexture());
+            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
     }
@@ -96,7 +92,7 @@ void Map::Render() const
 
     RenderTiles();
     // RenderTileHeatMap();
-    // DebugRenderTileIndex();
+    DebugRenderTileIndex();
 
     RenderEntities();
 }
@@ -485,22 +481,18 @@ bool Map::IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int 
 {
     for (int attempt = 0; attempt < maxAttempts; ++attempt)
     {
-        // 初始化 heat map 並執行洪水填充
         TileHeatMap heatMap(m_dimensions, 999.f);
         GenerateDistanceField(heatMap, startCoords, 999.f);
 
-        // 檢查出口是否可達
         if (heatMap.GetValueAtCoords(exitCoords) != 999.f)
         {
-            return true; // 地圖有效
+            return true;
         }
-        printf("ISMAPVALID\n");
-        // 如果無效，重新生成地圖
+
         GenerateAllTiles();
     }
 
-    // 超出最大嘗試次數，報錯
-    ERROR_AND_DIE("Failed to generate a valid map after maximum attempts!");
+    ERROR_AND_DIE("Failed to generate a valid map after maximum attempts!")
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -645,7 +637,7 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
     printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
 }
 
-void Map::GenerateDistanceFieldToPosition(TileHeatMap& heatMap, IntVec2 const& playerCoords) const
+void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const
 {
     printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 
@@ -841,7 +833,7 @@ bool Map::IsAgent(Entity const* entity) const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::PushEntitiesOutOfWalls()
+void Map::PushEntitiesOutOfWalls() const
 {
     for (Entity* entity : m_allEntities)
     {
@@ -856,7 +848,7 @@ void Map::PushEntitiesOutOfWalls()
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::PushEntityOutOfSolidTiles(Entity* entity)
+void Map::PushEntityOutOfSolidTiles(Entity* entity) const
 {
     IntVec2 const myTileCoords = GetTileCoordsFromWorldPos(entity->m_position);
 
@@ -874,7 +866,7 @@ void Map::PushEntityOutOfSolidTiles(Entity* entity)
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords)
+void Map::PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords) const
 {
     if (!IsTileSolid(tileCoords))
         return;
