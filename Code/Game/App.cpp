@@ -28,6 +28,14 @@ Renderer*              g_theRenderer   = nullptr; // Created and owned by the Ap
 RandomNumberGenerator* g_theRNG        = nullptr; // Created and owned by the App
 Window*                g_theWindow     = nullptr; // Created and owned by the App
 
+
+bool App::OnBulletSpawned(EventArgs&  args)
+{
+    String playerName = args.GetValue("playerName", "Unknown");
+    printf("Player joined: %s\n", playerName.c_str());
+    return false;
+}
+
 //-----------------------------------------------------------------------------------------------
 App::App() = default;
 
@@ -42,6 +50,7 @@ void App::Startup()
     // Create All Engine Subsystems
     EventSystemConfig eventSystemConfig;
     g_theEventSystem = new EventSystem(eventSystemConfig);
+    g_theEventSystem->SubscribeEventCallbackFunction("OnBulletSpawned", OnBulletSpawned);
 
     InputSystemConfig inputConfig;
     g_theInput = new InputSystem(inputConfig);

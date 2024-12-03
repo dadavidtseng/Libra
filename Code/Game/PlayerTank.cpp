@@ -6,6 +6,7 @@
 #include "Game/PlayerTank.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -63,6 +64,10 @@ void PlayerTank::Update(const float deltaSeconds)
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("playerTankShootCoolDown", 0.1f);
 
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
+
+            EventArgs args;
+            args.SetValue("playerName", "Alice");
+            g_theEventSystem->FireEvent("OnBulletSpawned", args);
         }
     }
 }
