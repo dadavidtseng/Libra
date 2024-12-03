@@ -34,7 +34,7 @@ void Map::DebugRenderTileIndex() const
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
-            float const value = m_tileHeatMap->GetValueAtCoords(tileX, tileY);
+            float const value = m_currentTileHeatMap[m_currentTileHeatMapIndex].GetValueAtCoords(tileX, tileY);
 
             std::vector<Vertex_PCU> textVerts;
             g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
@@ -51,12 +51,13 @@ Map::Map(MapDefinition const& mapDef)
     m_dimensions = mapDef.GetDimensions();
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
     m_exitPosition = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
-    m_tileHeatMap  = new TileHeatMap(m_dimensions, 0.f);
+    // m_tileHeatMap  = new TileHeatMap(m_dimensions, 0.f);
 
+    InitializeTileHeatMaps();
     GenerateAllTiles();
     SpawnNewNPCs();
-    GenerateHeatMaps(*m_tileHeatMap);
-    GenerateDistanceField(*m_tileHeatMap, IntVec2::ONE, 999.f);
+    GenerateHeatMaps(m_currentTileHeatMap[m_currentTileHeatMapIndex]);
+    GenerateDistanceField(m_currentTileHeatMap[m_currentTileHeatMapIndex], IntVec2::ONE, 999.f);
 
     // while (!wasSuccessful)
     // {
@@ -262,7 +263,7 @@ void Map::RenderTileHeatMap() const
 
     VertexList verts;
 
-    m_tileHeatMap->AddVertsForDebugDraw(verts, totalBounds);
+    m_currentTileHeatMap[m_currentTileHeatMapIndex].AddVertsForDebugDraw(verts, totalBounds);
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
@@ -276,6 +277,25 @@ void Map::DebugRenderEntities() const
 
             entity->DebugRender();
     }
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::InitializeTileHeatMaps()
+{
+    m_tileHeatMaps.reserve(3);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        m_tileHeatMaps.push_back(new TileHeatMap(m_dimensions, 999.f));
+    }
+
+    m_currentTileHeatMap = m_tileHeatMaps[0];
+}
+
+//----------------------------------------------------------------------------------------------------
+void Map::UpdateCurrentMap()
+{
+    m_currentTileHeatMap = m_tileHeatMaps[m_currentTileHeatMapIndex + 1];
 }
 
 //----------------------------------------------------------------------------------------------------

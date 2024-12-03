@@ -172,10 +172,12 @@ void Game::InitializeMaps()
         m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
     }
     // m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[0]));
+    
     m_currentMap = m_maps[0];
 
     printf("( Game ) Finish | InitializeMaps\n");
 }
+
 
 //----------------------------------------------------------------------------------------------------
 void Game::InitializeTiles()

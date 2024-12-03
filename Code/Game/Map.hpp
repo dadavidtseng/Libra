@@ -67,6 +67,8 @@ private:
     void RenderTileHeatMap() const;
     void DebugRenderEntities() const;
 
+    void InitializeTileHeatMaps();
+    void UpdateCurrentMap();
 
     // Map-related
     void        GenerateAllTiles();
@@ -111,5 +113,7 @@ private:
     MapDefinition const* m_mapDef = nullptr;
 
     // MetaData management
-    TileHeatMap* m_tileHeatMap = nullptr;
+    std::vector<TileHeatMap*> m_tileHeatMaps;
+    TileHeatMap*              m_currentTileHeatMap    = nullptr;
+    int                       m_currentTileHeatMapIndex = 0;
 };

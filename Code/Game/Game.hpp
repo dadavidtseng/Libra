@@ -8,6 +8,7 @@
 #include "Engine/Math/Vec2.hpp"
 #include "Game/TileDefinition.hpp"
 
+class TileHeatMap;
 //-----------------------------------------------------------------------------------------------
 class Camera;
 class Map;
@@ -64,6 +65,7 @@ private:
     bool    m_isGameLoseMode    = false;
     bool    m_isDebugRendering  = false;
     bool    m_isDebugCamera     = false;
+    bool    m_isDebugHeatmap    = false;
     bool    m_isPaused          = false;
     bool    m_isSlowMo          = false;
     bool    m_isFastMo          = false;

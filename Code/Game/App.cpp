@@ -7,6 +7,7 @@
 
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
@@ -15,6 +16,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Engine/Core/NamedStrings.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 
 //-----------------------------------------------------------------------------------------------
 App*                   g_theApp        = nullptr; // Created and owned by Main_Windows.cpp
@@ -38,6 +40,9 @@ void App::Startup()
     LoadGameConfig("Data/GameConfig.xml");
 
     // Create All Engine Subsystems
+    EventSystemConfig eventSystemConfig;
+    g_theEventSystem = new EventSystem(eventSystemConfig);
+
     InputSystemConfig inputConfig;
     g_theInput = new InputSystem(inputConfig);
 
@@ -64,9 +69,12 @@ void App::Startup()
     renderConfig.m_window = g_theWindow;
     g_theRenderer         = new Renderer(renderConfig); // Create render
 
+// DevConsole
+
     AudioSystemConfig audioConfig;
     g_theAudio = new AudioSystem(audioConfig);
 
+    g_theEventSystem->Startup();
     g_theInput->Startup();
     g_theWindow->Startup();
     g_theRenderer->Startup();
@@ -85,10 +93,17 @@ void App::Shutdown()
     delete g_theGame;
     g_theGame = nullptr;
 
+    delete g_theRNG;
+    g_theRNG = nullptr;
+
+    delete g_theBitmapFont;
+    g_theBitmapFont = nullptr;
+
     g_theAudio->Shutdown();
     g_theRenderer->Shutdown();
     g_theWindow->Shutdown();
     g_theInput->Shutdown();
+    g_theEventSystem->Shutdown();
 
     // Destroy all Engine Subsystem
     delete g_theAudio;
@@ -102,6 +117,9 @@ void App::Shutdown()
 
     delete g_theInput;
     g_theInput = nullptr;
+
+    delete g_theEventSystem;
+    g_theEventSystem = nullptr;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -135,14 +153,14 @@ void App::RunMainLoop()
 //-----------------------------------------------------------------------------------------------
 void App::BeginFrame() const
 {
+    g_theEventSystem->BeginFrame();
     g_theInput->BeginFrame();
     g_theWindow->BeginFrame();
     g_theRenderer->BeginFrame();
     g_theAudio->BeginFrame();
-    // g_theNetwork->BeginFrame();
-    // g_theWindow->BeginFrame();
-    // g_theDevConsole->BeginFrame();
-    // g_theEventSystem->BeginFrame();
+// g_theNetwork->BeginFrame();
+// g_theWindow->BeginFrame();
+// g_theDevConsole->BeginFrame();
     // g_theNetwork->BeginFrame();
 }
 
@@ -172,9 +190,10 @@ void App::Render() const
 //-----------------------------------------------------------------------------------------------
 void App::EndFrame() const
 {
+    g_theEventSystem->EndFrame();
+    g_theInput->EndFrame();
     g_theWindow->EndFrame();
     g_theRenderer->EndFrame();
-    g_theInput->EndFrame();
     g_theAudio->EndFrame();
 }
 
