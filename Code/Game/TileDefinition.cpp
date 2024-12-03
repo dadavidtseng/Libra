@@ -16,6 +16,7 @@ TileDefinition::TileDefinition(XmlElement const& tileDefElement, SpriteSheet con
 {
     m_name                     = ParseXmlAttribute(tileDefElement, "name", "Unnamed");
     m_isSolid                  = ParseXmlAttribute(tileDefElement, "isSolid", false);
+    m_isWater                  = ParseXmlAttribute(tileDefElement, "isWater", false);
     IntVec2 const spriteCoords = ParseXmlAttribute(tileDefElement, "spriteCoords", IntVec2(-1, -1));
     int const     spriteIndex  = spriteCoords.x + spriteCoords.y * 8;
 

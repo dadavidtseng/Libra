@@ -17,14 +17,15 @@
 Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius               = g_gameConfigBlackboard.GetValue("scorpioPhysicsRadius", 0.35f);
-    m_detectRange                 = g_gameConfigBlackboard.GetValue("scorpioDetectRange", 10.f);
-    m_isPushedByWalls             = g_gameConfigBlackboard.GetValue("scorpioIsPushedByWalls", true);
-    m_isPushedByEntities          = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
-    m_doesPushEntities            = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
-    m_health                      = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
+    m_physicsRadius           = g_gameConfigBlackboard.GetValue("scorpioPhysicsRadius", 0.35f);
+    m_detectRange             = g_gameConfigBlackboard.GetValue("scorpioDetectRange", 10.f);
+    m_isPushedByWalls         = g_gameConfigBlackboard.GetValue("scorpioIsPushedByWalls", true);
+    m_isPushedByEntities      = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
+    m_doesPushEntities        = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
+    m_canSwim                 = g_gameConfigBlackboard.GetValue("scorpioCanSwim", false);
     m_targetLastKnownPosition = m_position;
-    
+    m_health                  = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
+
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);

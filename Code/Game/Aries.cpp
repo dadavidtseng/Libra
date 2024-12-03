@@ -17,14 +17,15 @@
 Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius           = g_gameConfigBlackboard.GetValue("ariesPhysicsRadius", 0.25f);
-    m_detectRange             = g_gameConfigBlackboard.GetValue("ariesDetectRange", 10.f);
-    m_moveSpeed               = g_gameConfigBlackboard.GetValue("ariesMoveSpeed", 0.5f);
-    m_rotateSpeed             = g_gameConfigBlackboard.GetValue("ariesRotateSpeed", 90.f);
-    m_health                  = g_gameConfigBlackboard.GetValue("ariesInitHealth", 8);
-    m_isPushedByWalls         = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
-    m_isPushedByEntities      = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
-    m_doesPushEntities        = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
+    m_physicsRadius      = g_gameConfigBlackboard.GetValue("ariesPhysicsRadius", 0.25f);
+    m_detectRange        = g_gameConfigBlackboard.GetValue("ariesDetectRange", 10.f);
+    m_moveSpeed          = g_gameConfigBlackboard.GetValue("ariesMoveSpeed", 0.5f);
+    m_rotateSpeed        = g_gameConfigBlackboard.GetValue("ariesRotateSpeed", 90.f);
+    m_health             = g_gameConfigBlackboard.GetValue("ariesInitHealth", 8);
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("ariesIsPushedByWalls", true);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("ariesIsPushedByEntities", true);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("ariesDoesPushEntities", true);
+    m_canSwim            = g_gameConfigBlackboard.GetValue("ariesCanSwim", false);
 
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);

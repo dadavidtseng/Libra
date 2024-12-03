@@ -23,6 +23,7 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
     m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("playerTankIsPushedByWalls", true);
     m_isPushedByEntities = g_gameConfigBlackboard.GetValue("playerTankIsPushedByEntities", true);
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("playerTankDoesPushEntities", true);
+    m_canSwim            = g_gameConfigBlackboard.GetValue("playerTankCanSwim", false);
 
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));

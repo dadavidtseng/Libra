@@ -10,7 +10,7 @@
     <worldSizeY>8</worldSizeY>
     <worldCenterX>8</worldCenterX>
     <worldCenterY>4</worldCenterY>
-    
+
     <!-- Audio-related -->
     <attractModeBgm>Data/Audios/AttractModeBgm.mp3</attractModeBgm>
 
@@ -25,6 +25,7 @@
     <playerTankIsPushedByWalls>true</playerTankIsPushedByWalls>
     <playerTankIsPushedByEntities>true</playerTankIsPushedByEntities>
     <playerTankDoesPushEntities>true</playerTankDoesPushEntities>
+    <playerTankCanSwim>false</playerTankCanSwim>
 
     <!-- Scorpio-related -->
     <scorpioPhysicsRadius>0.35</scorpioPhysicsRadius>
@@ -36,6 +37,7 @@
     <scorpioIsPushedByWalls>true</scorpioIsPushedByWalls>
     <scorpioIsPushedByEntities>false</scorpioIsPushedByEntities>
     <scorpioDoesPushEntities>true</scorpioDoesPushEntities>
+    <scorpioCanSwim>false</scorpioCanSwim>
 
     <!-- Leo-related -->
     <leoPhysicsRadius>0.25</leoPhysicsRadius>
@@ -48,6 +50,7 @@
     <leoIsPushedByWalls>true</leoIsPushedByWalls>
     <leoIsPushedByEntities>true</leoIsPushedByEntities>
     <leoDoesPushEntities>true</leoDoesPushEntities>
+    <leoCanSwim>false</leoCanSwim>
 
     <!-- Aries-related -->
     <ariesPhysicsRadius>0.25</ariesPhysicsRadius>
@@ -58,6 +61,7 @@
     <ariesIsPushedByWalls>true</ariesIsPushedByWalls>
     <ariesIsPushedByEntities>true</ariesIsPushedByEntities>
     <ariesDoesPushEntities>true</ariesDoesPushEntities>
+    <ariesCanSwim>false</ariesCanSwim>
 
     <!-- Bullet-related -->
     <bulletGoodMoveSpeed>5</bulletGoodMoveSpeed>
@@ -67,5 +71,6 @@
     <bulletIsPushedByWalls>false</bulletIsPushedByWalls>
     <bulletIsPushedByEntities>false</bulletIsPushedByEntities>
     <bulletDoesPushEntities>false</bulletDoesPushEntities>
-    
+    <bulletCanSwim>true</bulletCanSwim>
+
 </GameConfig>

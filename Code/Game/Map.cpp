@@ -34,10 +34,10 @@ void Map::DebugRenderTileIndex() const
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
-            float const value = m_currentTileHeatMap[m_currentTileHeatMapIndex].GetValueAtCoords(tileX, tileY);
+            float const value = m_tileHeatMaps[0]->GetValueAtCoords(tileX, tileY);
 
             std::vector<Vertex_PCU> textVerts;
-            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::WHITE);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
@@ -50,15 +50,18 @@ Map::Map(MapDefinition const& mapDef)
 {
     m_dimensions = mapDef.GetDimensions();
     m_tiles.reserve(static_cast<size_t>(m_dimensions.x) * static_cast<size_t>(m_dimensions.y));
-    m_exitPosition = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
+    m_startPosition = IntVec2::ONE;
+    m_exitPosition  = IntVec2(m_dimensions.x - 2, m_dimensions.y - 2);
     // m_tileHeatMap  = new TileHeatMap(m_dimensions, 0.f);
 
     InitializeTileHeatMaps();
     GenerateAllTiles();
     SpawnNewNPCs();
-    GenerateHeatMaps(m_currentTileHeatMap[m_currentTileHeatMapIndex]);
-    GenerateDistanceField(m_currentTileHeatMap[m_currentTileHeatMapIndex], IntVec2::ONE, 999.f);
-
+    GenerateHeatMaps(*m_tileHeatMaps[0]);
+    GenerateHeatMaps(*m_tileHeatMaps[1]);
+    GenerateDistanceField(*m_tileHeatMaps[0], m_startPosition, 999.f);
+    GenerateDistanceFieldForLandBased(*m_tileHeatMaps[1], m_startPosition, 999.f);
+    m_tileHeatMaps[0];
     // while (!wasSuccessful)
     // {
     //     PopulateTiles();
@@ -93,7 +96,7 @@ void Map::Render() const
 
     RenderTiles();
     // RenderTileHeatMap();
-    DebugRenderTileIndex();
+    // DebugRenderTileIndex();
 
     RenderEntities();
 }
@@ -263,7 +266,7 @@ void Map::RenderTileHeatMap() const
 
     VertexList verts;
 
-    m_currentTileHeatMap[m_currentTileHeatMapIndex].AddVertsForDebugDraw(verts, totalBounds);
+    m_tileHeatMaps[0]->AddVertsForDebugDraw(verts, totalBounds);
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
@@ -322,6 +325,7 @@ void Map::GenerateAllTiles()
 
     GenerateLShapeTiles(2, 2, 5, 5, false);
     GenerateLShapeTiles(m_dimensions.x - 9, m_dimensions.y - 9, 7, 7, true);
+    GenerateStartPosTile();
     GenerateExitPosTile();
 
     if (!IsValidMap(IntVec2::ONE, m_exitPosition, 100))
@@ -329,7 +333,6 @@ void Map::GenerateAllTiles()
         ERROR_AND_DIE("Failed to generate a valid map!")
     }
 
-    // 3. 將不可到達的 tile 轉換為固態
     TileHeatMap const heatMap(m_dimensions, 999.f);
     GenerateDistanceField(heatMap, IntVec2::ONE, 999.f);
     ConvertUnreachableTilesToSolid(heatMap, "Stone");
@@ -420,6 +423,10 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
         }
     }
 }
+void Map::GenerateStartPosTile()
+{
+    SetTileAtCoords("Start", false, m_startPosition.x, m_startPosition.y);
+}
 
 //----------------------------------------------------------------------------------------------------
 void Map::GenerateExitPosTile()
@@ -492,6 +499,22 @@ bool Map::IsWorldPosOccupied(Vec2 const& position) const
         if (entity->m_position == position)
         {
             return true;
+        }
+    }
+    return false;
+}
+bool Map::IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const
+{
+    for (Entity* entity : m_allEntities)
+    {
+        // Check if the position matches
+        if (entity->m_position == position)
+        {
+            // Optionally filter by entity type
+            if (entity->m_type == entityType)
+            {
+                return true;
+            }
         }
     }
     return false;
@@ -655,6 +678,28 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
     }
 
     printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
+}
+void Map::GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
+{
+    for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
+    {
+        for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+        {
+            Vec2 worldPos = Vec2((float) tileX + 0.5f, (float) tileY + 0.5f);
+            if (IsWorldPosOccupiedByEntity(worldPos, ENTITY_TYPE_SCORPIO))
+            {
+                continue;
+            }
+
+            IntVec2 tileCoords(tileX, tileY);
+            if (!IsTileCoordsOutOfBounds(tileCoords) && !IsTileSolid(tileCoords))
+            {
+                heatMap.SetValueAtCoords(tileCoords, 0.f);
+            }
+
+
+        }
+    }
 }
 
 void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const

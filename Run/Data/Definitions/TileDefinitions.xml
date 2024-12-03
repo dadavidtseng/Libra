@@ -3,6 +3,7 @@
     <TileDefinition
             name="Grass"
             isSolid="false"
+            isWater="false"
             spriteCoords="0,0"
             tintColor="255, 255, 255"
     />
@@ -10,6 +11,7 @@
     <TileDefinition
             name="Stone"
             isSolid="true"
+            isWater="false"
             spriteCoords="4,3"
             tintColor="255, 255, 255"
     />
@@ -17,6 +19,7 @@
     <TileDefinition
             name="Sparkle_01"
             isSolid="false"
+            isWater="false"
             spriteCoords="4,2"
             tintColor="255, 255, 255"
     />
@@ -24,6 +27,7 @@
     <TileDefinition
             name="Sparkle_02"
             isSolid="false"
+            isWater="false"
             spriteCoords="5,2"
             tintColor="255, 255, 255"
     />
@@ -31,15 +35,33 @@
     <TileDefinition
             name="Floor"
             isSolid="false"
+            isWater="false"
             spriteCoords="4,6"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Water"
+            isSolid="true"
+            isWater="true"
+            spriteCoords="3,7"
+            tintColor="255, 255, 255"
+    />
+
+    <TileDefinition
+            name="Start"
+            isSolid="false"
+            isWater="false"
+            spriteCoords="0,7"
             tintColor="255, 255, 255"
     />
 
     <TileDefinition
             name="Exit"
             isSolid="false"
+            isWater="false"
             spriteCoords="1,7"
             tintColor="255, 255, 255"
     />
-    
+
 </TileDefinitions>

@@ -58,6 +58,7 @@ public:
     // Heatmap-related
     void GenerateHeatMaps(TileHeatMap const& heatMap) const;
     void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
     void GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
 
 private:
@@ -75,6 +76,7 @@ private:
     void        GenerateTilesByType(String const& tileName, bool isSolid);
     void        GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
     void        GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
+    void        GenerateStartPosTile();
     void        GenerateExitPosTile();
     void        SetTileAtCoords(String const& tileName, bool tileIsSolid, int tileX, int tileY);
     void        ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
@@ -82,6 +84,7 @@ private:
     bool        IsTileCoordsInLShape(int x, int y) const;
     bool        IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
     bool        IsWorldPosOccupied(Vec2 const& position) const;
+    bool        IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const;
     bool        IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts);
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2 const GetTileBounds(int tileIndex) const;
@@ -108,12 +111,13 @@ private:
     EntityList           m_entitiesByType[NUM_ENTITY_TYPES];
     EntityList           m_agentsByFaction[NUM_ENTITY_FACTIONS];
     EntityList           m_bulletsByFaction[NUM_ENTITY_FACTIONS];
-    IntVec2              m_exitPosition = IntVec2::ZERO;
+    IntVec2              m_startPosition = IntVec2::ZERO;
+    IntVec2              m_exitPosition  = IntVec2::ZERO;
     IntVec2              m_dimensions;
     MapDefinition const* m_mapDef = nullptr;
 
     // MetaData management
     std::vector<TileHeatMap*> m_tileHeatMaps;
-    TileHeatMap*              m_currentTileHeatMap    = nullptr;
+    TileHeatMap*              m_currentTileHeatMap      = nullptr;
     int                       m_currentTileHeatMapIndex = 0;
 };
