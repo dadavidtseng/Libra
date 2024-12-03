@@ -25,6 +25,7 @@ struct TileDefinition
     String           GetName() const { return m_name; }
     SpriteDefinition GetSpriteDef() const { return m_spriteDef; }
     bool             IsSolid() const { return m_isSolid; }
+    bool             IsWater() const { return m_isWater; }
     Rgba8            GetTintColor() const { return m_tintColor; }
     AABB2            GetUVs() const { return m_spriteDef.GetUVs(); }
 

@@ -51,6 +51,7 @@ public:
     RaycastResult2D RaycastVsTiles(Ray2 const& ray) const;
     bool            HasLineOfSight(Vec2 const& startPos, Vec2 const& endPos, float sightRange) const;
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
+    bool            IsTileWater(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
     IntVec2         RollRandomTileCoords() const;
     IntVec2         RollRandomTraversableTileCoords() const;
@@ -78,7 +79,7 @@ private:
     void        GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
     void        GenerateStartPosTile();
     void        GenerateExitPosTile();
-    void        SetTileAtCoords(String const& tileName, bool tileIsSolid, int tileX, int tileY);
+    void        SetTileAtCoords(String const& tileName, int tileX, int tileY);
     void        ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
     bool        IsEdgeTile(int x, int y) const;
     bool        IsTileCoordsInLShape(int x, int y) const;

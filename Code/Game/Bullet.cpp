@@ -84,7 +84,8 @@ void Bullet::UpdateBody(float const deltaSeconds)
 
     Vec2 const nextPosition = m_position + m_velocity * deltaSeconds;
 
-    if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition)))
+    if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition))&&
+        !m_map->IsTileWater(m_map->GetTileCoordsFromWorldPos(nextPosition)))
     {
         m_health--;
 

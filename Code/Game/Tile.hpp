@@ -15,4 +15,5 @@ struct Tile
     IntVec2 m_tileCoords = IntVec2(-1, -1);
     String  m_tileName;
     bool    m_isSolid = false;
+    bool    m_isWater = false;
 };

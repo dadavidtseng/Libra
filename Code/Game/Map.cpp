@@ -195,6 +195,23 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
 
     return false;
 }
+bool Map::IsTileWater(IntVec2 const& tileCoords) const
+{
+    if (IsTileCoordsOutOfBounds(tileCoords))
+        return true;
+
+    int const tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
+
+    if (tileIndex >= 0 &&
+        tileIndex < static_cast<int>(m_tiles.size()))
+    {
+        Tile const& tile = m_tiles[tileIndex];
+
+        return tile.m_isWater == true;
+    }
+
+    return false;
+}
 
 //----------------------------------------------------------------------------------------------------
 bool Map::IsPointInSolid(Vec2 const& point) const
@@ -352,7 +369,7 @@ void Map::GenerateTilesByType(String const& tileName, bool const isSolid)
                 if (!IsEdgeTile(x, y) &&
                     IsTileCoordsInLShape(x, y))
                 {
-                    SetTileAtCoords(tileName, isSolid, x, y);
+                    SetTileAtCoords(tileName, x, y);
                 }
             }
 
@@ -361,7 +378,7 @@ void Map::GenerateTilesByType(String const& tileName, bool const isSolid)
                 if (IsEdgeTile(x, y) ||
                     !IsTileCoordsInLShape(x, y))
                 {
-                    SetTileAtCoords(tileName, isSolid, x, y);
+                    SetTileAtCoords(tileName, x, y);
                 }
             }
         }
@@ -377,7 +394,7 @@ void Map::GenerateWormTiles(String const& wormTileName, int const numWorms, int 
 
         if (!IsEdgeTile(wormPosition.x, wormPosition.y))
         {
-            SetTileAtCoords(wormTileName, false, wormPosition.x, wormPosition.y);
+            SetTileAtCoords(wormTileName, wormPosition.x, wormPosition.y);
         }
 
         for (int j = 0; j < wormLength; ++j)
@@ -389,7 +406,7 @@ void Map::GenerateWormTiles(String const& wormTileName, int const numWorms, int 
                 !IsEdgeTile(newPosition.x, newPosition.y))
             {
                 wormPosition = newPosition;
-                SetTileAtCoords(wormTileName, false, wormPosition.x, wormPosition.y);
+                SetTileAtCoords(wormTileName, wormPosition.x, wormPosition.y);
             }
         }
     }
@@ -410,14 +427,14 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
             {
                 if (y == 0 || x == 0)
                 {
-                    SetTileAtCoords("Stone", true, tileCoordX + x, tileCoordY + y);
+                    SetTileAtCoords("Stone", tileCoordX + x, tileCoordY + y);
                 }
             }
             else
             {
                 if (y == height - 1 || x == width - 1)
                 {
-                    SetTileAtCoords("Stone", true, tileCoordX + x, tileCoordY + y);
+                    SetTileAtCoords("Stone", tileCoordX + x, tileCoordY + y);
                 }
             }
         }
@@ -425,23 +442,24 @@ void Map::GenerateLShapeTiles(int const  tileCoordX,
 }
 void Map::GenerateStartPosTile()
 {
-    SetTileAtCoords("Start", false, m_startPosition.x, m_startPosition.y);
+    SetTileAtCoords("Start", m_startPosition.x, m_startPosition.y);
 }
 
 //----------------------------------------------------------------------------------------------------
 void Map::GenerateExitPosTile()
 {
-    SetTileAtCoords("Exit", false, m_exitPosition.x, m_exitPosition.y);
+    SetTileAtCoords("Exit", m_exitPosition.x, m_exitPosition.y);
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::SetTileAtCoords(String const& tileName, bool const tileIsSolid, int const tileX, int const tileY)
+void Map::SetTileAtCoords(String const& tileName, int const tileX, int const tileY)
 {
     int const tileIndex = tileY * m_dimensions.x + tileX;
 
     m_tiles[tileIndex].m_tileCoords = IntVec2(tileX, tileY);
     m_tiles[tileIndex].m_tileName   = tileName;
-    m_tiles[tileIndex].m_isSolid    = tileIsSolid;
+    m_tiles[tileIndex].m_isSolid    = TileDefinition::GetTileDefByName(tileName)->IsSolid();
+    m_tiles[tileIndex].m_isWater    = TileDefinition::GetTileDefByName(tileName)->IsWater();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -456,7 +474,7 @@ void Map::ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String cons
             // 如果 tile 是非固態，且未被洪水填充標記
             if (!IsTileSolid(tileCoords) && heatMap.GetValueAtCoords(tileCoords) == 999.f)
             {
-                SetTileAtCoords(tileName, true, tileCoords.x, tileCoords.y);
+                SetTileAtCoords(tileName, tileCoords.x, tileCoords.y);
             }
         }
     }
