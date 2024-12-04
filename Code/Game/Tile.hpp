@@ -12,8 +12,6 @@
 // "Flyweight" design pattern ( each tile only knows its type )
 struct Tile
 {
-    IntVec2 m_tileCoords = IntVec2(-1, -1);
-    String  m_tileName;
-    bool    m_isSolid = false;
-    bool    m_isWater = false;
+    IntVec2 m_coords = IntVec2(-1, -1);
+    String  m_name;
 };

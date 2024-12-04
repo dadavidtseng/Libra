@@ -97,10 +97,10 @@ void Map::Update(float const deltaSeconds)
     {
         if (entity->m_type == ENTITY_TYPE_LEO)
         {
-    GenerateDistanceFieldForEntity(*m_tileHeatMaps[3], m_startPosition, 999.f);
+            GenerateDistanceFieldForEntity(*m_tileHeatMaps[3], m_startPosition, 999.f);
         }
     }
-    
+
     UpdateEntities(deltaSeconds);
     PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
     CheckEntityVsEntityCollision(m_entitiesByType[ENTITY_TYPE_BULLET], m_allEntities);
@@ -198,7 +198,7 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
     {
         Tile const& tile = m_tiles[tileIndex];
 
-        return tile.m_isSolid == true;
+        return TileDefinition::GetTileDefByName(tile.m_name)->IsSolid() == true;
     }
 
     return false;
@@ -215,7 +215,7 @@ bool Map::IsTileWater(IntVec2 const& tileCoords) const
     {
         Tile const& tile = m_tiles[tileIndex];
 
-        return tile.m_isWater == true;
+        return TileDefinition::GetTileDefByName(tile.m_name)->IsWater() == true;
     }
 
     return false;
@@ -258,9 +258,9 @@ void Map::RenderTiles() const
 
         for (Tile const& tile : m_tiles)
         {
-            if (tile.m_tileName == tileName)
+            if (tile.m_name == tileName)
             {
-                Vec2 const mins(static_cast<float>(tile.m_tileCoords.x), static_cast<float>(tile.m_tileCoords.y));
+                Vec2 const mins(static_cast<float>(tile.m_coords.x), static_cast<float>(tile.m_coords.y));
                 Vec2 const maxs = mins + Vec2::ONE;
 
                 AddVertsForAABB2D(tileVertices, AABB2(mins, maxs), tileDef->GetTintColor(), uvAtMins, uvAtMaxs);
@@ -464,10 +464,8 @@ void Map::SetTileAtCoords(String const& tileName, int const tileX, int const til
 {
     int const tileIndex = tileY * m_dimensions.x + tileX;
 
-    m_tiles[tileIndex].m_tileCoords = IntVec2(tileX, tileY);
-    m_tiles[tileIndex].m_tileName   = tileName;
-    m_tiles[tileIndex].m_isSolid    = TileDefinition::GetTileDefByName(tileName)->IsSolid();
-    m_tiles[tileIndex].m_isWater    = TileDefinition::GetTileDefByName(tileName)->IsWater();
+    m_tiles[tileIndex].m_coords = IntVec2(tileX, tileY);
+    m_tiles[tileIndex].m_name   = tileName;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -647,15 +645,20 @@ IntVec2 Map::RollRandomCardinalDirection() const
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::GenerateHeatMaps(TileHeatMap const& heatMap) const
+void Map::GenerateHeatMaps(TileHeatMap const& heatMap)
 {
     printf("( Map%d ) Start  | GenerateHeatMaps\n", m_mapDef->GetIndex());
 
-    for (int i = 0; i < GetTileNums(); i++)
+    for (int y = 0; y < m_dimensions.y; ++y)
     {
-        if (m_tiles[i].m_isSolid)
+        for (int x = 0; x < m_dimensions.x; ++x)
         {
-            heatMap.SetValueAtIndex(i, 999.f);
+            IntVec2 tileCoords(x, y);
+
+            if (IsTileSolid(tileCoords))
+            {
+                heatMap.SetValueAtCoords(tileCoords, 999.f);
+            }
         }
     }
 
@@ -693,7 +696,7 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
                     IntVec2     s               = tileCoords + IntVec2(0, -1);
                     float const nextSearchValue = currentSearchValue + 1.f;
 
-                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && !IsTileWater(e)&& heatMap.GetValueAtCoords(e) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && !IsTileWater(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
                     {
                         heatMap.SetValueAtCoords(e, nextSearchValue);
                         isStillGoing = true;
@@ -732,7 +735,7 @@ void Map::GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 con
 
     heatMap.SetValueAtAllTiles(specialValue);
 
-    
+
     for (Entity const* entity : m_allEntities)
     {
         if (entity->m_type == ENTITY_TYPE_LEO)
@@ -743,7 +746,7 @@ void Map::GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 con
         }
     }
 
-    
+
 
     float currentSearchValue = 0.f;
     bool  isStillGoing       = true;
@@ -851,7 +854,7 @@ void Map::GenerateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 
     }
 }
 
-void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap,IntVec2 const& startCoords, IntVec2 const& playerCoords) const
+void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords, IntVec2 const& playerCoords) const
 {
     printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 
@@ -880,7 +883,7 @@ void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap,IntVec2 con
 
         for (IntVec2 const& neighbor : neighbors)
         {
-            if (IsTileCoordsOutOfBounds(neighbor) || IsTileSolid(neighbor)||IsWorldPosOccupiedByEntity(Vec2(neighbor)+Vec2(0.5f,0.5f), ENTITY_TYPE_SCORPIO))
+            if (IsTileCoordsOutOfBounds(neighbor) || IsTileSolid(neighbor) || IsWorldPosOccupiedByEntity(Vec2(neighbor) + Vec2(0.5f, 0.5f), ENTITY_TYPE_SCORPIO))
             {
                 continue; // 如果座標越界或是障礙物，跳過
             }
@@ -1239,7 +1242,7 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
         {
             Tile const& tile = m_tiles[tileIndex];
 
-            if (tile.m_tileName == "Stone")
+            if (tile.m_name == "Stone")
             {
                 raycastResult.m_didImpact    = true;
                 raycastResult.m_impactDist   = t;

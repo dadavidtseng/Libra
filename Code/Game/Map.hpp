@@ -57,7 +57,7 @@ public:
     IntVec2         RollRandomTraversableTileCoords() const;
 
     // Heatmap-related
-    void GenerateHeatMaps(TileHeatMap const& heatMap) const;
+    void GenerateHeatMaps(TileHeatMap const& heatMap) ;
     void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
     void GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
     void GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
