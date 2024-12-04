@@ -39,9 +39,6 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
 }
 
 //----------------------------------------------------------------------------------------------------
-Bullet::~Bullet() = default;
-
-//----------------------------------------------------------------------------------------------------
 void Bullet::Update(float const deltaSeconds)
 {
     if (m_isDead)
@@ -103,7 +100,7 @@ void Bullet::UpdateBody(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Bullet::RenderBody() const
 {
-    std::vector<Vertex_PCU> bodyVerts;
+    VertexList bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_BodyBounds, Rgba8(255, 255, 255));
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),

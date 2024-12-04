@@ -9,11 +9,12 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 
-class Texture;
-class TileHeatMap;
+
 //----------------------------------------------------------------------------------------------------
 class Map;
 class Entity;
+class Texture;
+class TileHeatMap;
 typedef std::vector<Entity*> EntityList;
 
 //----------------------------------------------------------------------------------------------------

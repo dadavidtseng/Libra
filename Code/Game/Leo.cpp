@@ -35,7 +35,6 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
 
 void Leo::DebugRenderTileIndex() const
 {
-    BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
 
     IntVec2 dimensions = m_map->GetMapDimension();
 
@@ -43,12 +42,11 @@ void Leo::DebugRenderTileIndex() const
     {
         for (int tileX = 0; tileX < dimensions.x; ++tileX)
         {
+            float const value = m_heatMap->GetValueAtCoords(tileX, tileY);
 
-            float value = m_heatMap->GetValueAtCoords(tileX, tileY);
-
-            std::vector<Vertex_PCU> textVerts;
-            g_testFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
-            g_theRenderer->BindTexture(&g_testFont->GetTexture());
+            VertexList textVerts;
+            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
     }
@@ -183,7 +181,7 @@ void Leo::UpdateBody(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Leo::RenderBody() const
 {
-    std::vector<Vertex_PCU> bodyVerts;
+    VertexList bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),

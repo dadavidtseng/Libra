@@ -6,7 +6,6 @@
 #include "Game/PlayerTank.hpp"
 
 #include "Engine/Core/EngineCommon.hpp"
-#include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -64,10 +63,6 @@ void PlayerTank::Update(const float deltaSeconds)
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("playerTankShootCoolDown", 0.1f);
 
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
-
-            EventArgs args;
-            args.SetValue("playerName", "Alice");
-            g_theEventSystem->FireEvent("OnBulletSpawned", args);
         }
     }
 }
@@ -82,15 +77,14 @@ void PlayerTank::Render() const
     RenderTurret();
 }
 
-// #TODO: right now is readable, but should adjust it to match the demo
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::DebugRender() const
 {
     if (m_isDead)
         return;
 
-    const Vec2 fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
-    const Vec2 leftNormal = fwdNormal.GetRotated90Degrees();
+    Vec2 const fwdNormal  = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    Vec2 const leftNormal = fwdNormal.GetRotated90Degrees();
 
     // Outer and inner rings
     DebugDrawRing(m_position,
@@ -109,8 +103,8 @@ void PlayerTank::DebugRender() const
                   Rgba8::GREEN); // j vector (green)
 
     // Player tank's target and current orientations
-    const Vec2 goalOrientationVec    = Vec2::MakeFromPolarDegrees(m_targetOrientationDegrees);
-    const Vec2 currentOrientationVec = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
+    Vec2 const goalOrientationVec    = Vec2::MakeFromPolarDegrees(m_targetOrientationDegrees);
+    Vec2 const currentOrientationVec = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
 
     // Draw target orientation line (short blue line segment outside the circle)
     DebugDrawLine(m_position + goalOrientationVec,
@@ -124,10 +118,9 @@ void PlayerTank::DebugRender() const
                   0.1f,
                   Rgba8::BLUE);
 
-    // TODO: ASK IF THIS IS OKAY!!!
     // Draw turret's current and goal orientations
-    const Vec2 turretGoalVec    = Vec2::MakeFromPolarDegrees(m_turretGoalOrientationDegrees);
-    const Vec2 turretCurrentVec = Vec2::MakeFromPolarDegrees(m_turretRelativeOrientation + m_orientationDegrees);
+    Vec2 const turretGoalVec    = Vec2::MakeFromPolarDegrees(m_turretGoalOrientationDegrees);
+    Vec2 const turretCurrentVec = Vec2::MakeFromPolarDegrees(m_turretRelativeOrientation + m_orientationDegrees);
 
     DebugDrawLine(m_position + turretGoalVec,
                   m_position + turretGoalVec * 1.5f,
@@ -161,7 +154,7 @@ void PlayerTank::UpdateBody(const float deltaSeconds)
 
     m_bodyInput.ClampLength(1.f);   // if it's over 100%, clamp it
 
-    const Vec2 moveDelta       = m_bodyInput * deltaSeconds;
+    Vec2 const moveDelta       = m_bodyInput * deltaSeconds;
     m_targetOrientationDegrees = m_bodyInput.GetOrientationDegrees();
 
     TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
@@ -187,7 +180,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
 
     m_turretGoalOrientationDegrees = turretInput.GetOrientationDegrees();
 
-    float turretGoalRelativeOrientation = m_turretGoalOrientationDegrees - m_orientationDegrees;
+    float const turretGoalRelativeOrientation = m_turretGoalOrientationDegrees - m_orientationDegrees;
 
     TurnToward(m_turretRelativeOrientation, turretGoalRelativeOrientation, deltaSeconds,
                m_turretRotateSpeed);
@@ -196,7 +189,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::RenderBody() const
 {
-    std::vector<Vertex_PCU> bodyVerts;
+    VertexList bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
@@ -209,7 +202,7 @@ void PlayerTank::RenderBody() const
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::RenderTurret() const
 {
-    std::vector<Vertex_PCU> turretVerts;
+    VertexList turretVerts;
     AddVertsForAABB2D(turretVerts, m_turretBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),

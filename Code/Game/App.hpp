@@ -4,14 +4,11 @@
 
 //-----------------------------------------------------------------------------------------------
 #pragma once
-#include "Engine/Core/EventSystem.hpp"
-#include "Engine/Core/NamedStrings.hpp"
 
 //-----------------------------------------------------------------------------------------------
 class App
 {
 public:
-    static bool OnBulletSpawned(EventArgs&  args);
     App();
     ~App();
     void Startup();

@@ -139,7 +139,7 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 
         // Generate heat maps and distance fields for pathfinding
         m_map->GenerateHeatMaps(*m_heatMap);
-        m_map->GenerateDistanceFieldToPosition(*m_heatMap, targetCoords);
+        m_map->GenerateDistanceFieldToPosition(*m_heatMap, IntVec2(m_position)-IntVec2::ONE,targetCoords);
     }
 
     // Check if the target position has been reached

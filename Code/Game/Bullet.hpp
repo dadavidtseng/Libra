@@ -15,7 +15,6 @@ class Bullet : public Entity
 {
 public:
     Bullet(Map* map, EntityType type, EntityFaction faction);
-    ~Bullet() override;
     void Update(float deltaSeconds) override;
     void Render() const override;
     void DebugRender() const override;

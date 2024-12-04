@@ -6,25 +6,24 @@
 #pragma once
 #include <vector>
 
-#include "MapDefinition.hpp"
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
 #include "Game/Entity.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Game/Tile.hpp"
 
 //----------------------------------------------------------------------------------------------------
 class TileHeatMap;
-struct MapDefinition;
-struct Vertex_PCU;
 
 //-----------------------------------------------------------------------------------------------
 class Map
 {
 public:
-    void     DebugRenderTileIndex() const;
     explicit Map(MapDefinition const& mapDef);
-
     ~Map();
+
+    void DebugRenderTileIndex() const;
+
 
     // TODO:
 // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
@@ -34,13 +33,13 @@ public:
     void DebugRender() const;
 
     // Accessors (const methods)
-    IntVec2 const GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     Vec2 const    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
+    IntVec2 const GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     IntVec2 const GetMapDimension() const { return m_dimensions; }
     IntVec2 const GetMapExitPosition() const { return m_exitPosition; }
+    AABB2         GetMapBound() const { return AABB2(IntVec2::ZERO, m_dimensions); }
     int           GetMapIndex() const { return m_mapDef->GetIndex(); }
     int           GetTileNums() const { return m_dimensions.x * m_dimensions.y; }
-    AABB2         GetMapBound() const;
 
     // Mutators (non-const methods)
     Entity* SpawnNewEntity(EntityType type, EntityFaction faction, Vec2 const& position, float orientationDegrees);
@@ -53,14 +52,17 @@ public:
     bool            IsTileSolid(IntVec2 const& tileCoords) const;
     bool            IsTileWater(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
+    bool            IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
     IntVec2         RollRandomTileCoords() const;
     IntVec2         RollRandomTraversableTileCoords() const;
 
     // Heatmap-related
     void GenerateHeatMaps(TileHeatMap const& heatMap) const;
     void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
     void GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
+    void GenerateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords,IntVec2 const& playerCoords) const;
 
 private:
     void UpdateEntities(float deltaSeconds) const;
@@ -72,7 +74,7 @@ private:
     void InitializeTileHeatMaps();
     void UpdateCurrentMap();
 
-    // Map-related
+// Map-related
     void        GenerateAllTiles();
     void        GenerateTilesByType(String const& tileName, bool isSolid);
     void        GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
@@ -83,10 +85,10 @@ private:
     void        ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
     bool        IsEdgeTile(int x, int y) const;
     bool        IsTileCoordsInLShape(int x, int y) const;
-    bool        IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
     bool        IsWorldPosOccupied(Vec2 const& position) const;
     bool        IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const;
     bool        IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts);
+    bool        IsValidDistanceFieldToPosition(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) const;
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2 const GetTileBounds(int tileIndex) const;
     IntVec2     RollRandomCardinalDirection() const;

@@ -8,12 +8,12 @@
 #include <cmath>
 #include <queue>
 
-#include "Game/MapDefinition.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/StringUtils.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Math/RaycastUtils.hpp"
@@ -25,6 +25,7 @@
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Leo.hpp"
+#include "Game/MapDefinition.hpp"
 #include "Game/PlayerTank.hpp"
 #include "Game/Scorpio.hpp"
 
@@ -34,10 +35,11 @@ void Map::DebugRenderTileIndex() const
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
-            float const value = m_tileHeatMaps[0]->GetValueAtCoords(tileX, tileY);
+            float const value = m_currentTileHeatMap->GetValueAtCoords(tileX, tileY);
 
-            std::vector<Vertex_PCU> textVerts;
-            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::WHITE);
+            VertexList textVerts;
+
+            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(tileX, tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::WHITE);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
@@ -59,9 +61,13 @@ Map::Map(MapDefinition const& mapDef)
     SpawnNewNPCs();
     GenerateHeatMaps(*m_tileHeatMaps[0]);
     GenerateHeatMaps(*m_tileHeatMaps[1]);
+    GenerateHeatMaps(*m_tileHeatMaps[2]);
+    GenerateHeatMaps(*m_tileHeatMaps[3]);
     GenerateDistanceField(*m_tileHeatMaps[0], m_startPosition, 999.f);
     GenerateDistanceFieldForLandBased(*m_tileHeatMaps[1], m_startPosition, 999.f);
-    m_tileHeatMaps[0];
+    GenerateDistanceFieldForAmphibian(*m_tileHeatMaps[2], m_startPosition, 999.f);
+    GenerateDistanceFieldForEntity(*m_tileHeatMaps[3], m_startPosition, 999.f);
+
     // while (!wasSuccessful)
     // {
     //     PopulateTiles();
@@ -81,11 +87,27 @@ void Map::Update(float const deltaSeconds)
     if (g_theGame->IsAttractMode())
         return;
 
+    if (g_theInput->WasKeyJustPressed(KEYCODE_F6))
+    {
+        m_currentTileHeatMapIndex = (m_currentTileHeatMapIndex + 1) % static_cast<int>(m_tileHeatMaps.size());
+        m_currentTileHeatMap      = m_tileHeatMaps[m_currentTileHeatMapIndex];
+    }
+
+    for (Entity const* entity : m_allEntities)
+    {
+        if (entity->m_type == ENTITY_TYPE_LEO)
+        {
+    GenerateDistanceFieldForEntity(*m_tileHeatMaps[3], m_startPosition, 999.f);
+        }
+    }
+    
     UpdateEntities(deltaSeconds);
     PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
     CheckEntityVsEntityCollision(m_entitiesByType[ENTITY_TYPE_BULLET], m_allEntities);
     PushEntitiesOutOfWalls();
     DeleteGarbageEntities();
+
+
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -95,8 +117,8 @@ void Map::Render() const
         return;
 
     RenderTiles();
-    // RenderTileHeatMap();
-    // DebugRenderTileIndex();
+    RenderTileHeatMap();
+    DebugRenderTileIndex();
 
     RenderEntities();
 }
@@ -119,31 +141,17 @@ IntVec2 const Map::GetTileCoordsFromWorldPos(Vec2 const& worldPos) const
     int const tileX = RoundDownToInt(worldPos.x);
     int const tileY = RoundDownToInt(worldPos.y);
 
-    if (IsTileCoordsOutOfBounds(IntVec2(tileX, tileY)))
-    {
-        ERROR_AND_DIE("tileCoords is out of bound")
-    }
-
     return IntVec2(tileX, tileY);
 }
 
 //----------------------------------------------------------------------------------------------------
 Vec2 const Map::GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const
 {
-    if (IsTileCoordsOutOfBounds(tileCoords))
-        ERROR_AND_DIE("tileCoords is out of bound")
-
     constexpr float halfTileWidth = 0.5f;
     float const     worldX        = static_cast<float>(tileCoords.x) + halfTileWidth;
     float const     worldY        = static_cast<float>(tileCoords.y) + halfTileWidth;
 
     return Vec2(worldX, worldY);
-}
-
-//----------------------------------------------------------------------------------------------------
-AABB2 Map::GetMapBound() const
-{
-    return AABB2(IntVec2::ZERO, m_dimensions);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -283,7 +291,7 @@ void Map::RenderTileHeatMap() const
 
     VertexList verts;
 
-    m_tileHeatMaps[0]->AddVertsForDebugDraw(verts, totalBounds);
+    m_currentTileHeatMap->AddVertsForDebugDraw(verts, totalBounds);
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
@@ -302,9 +310,9 @@ void Map::DebugRenderEntities() const
 //----------------------------------------------------------------------------------------------------
 void Map::InitializeTileHeatMaps()
 {
-    m_tileHeatMaps.reserve(3);
+    m_tileHeatMaps.reserve(4);
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         m_tileHeatMaps.push_back(new TileHeatMap(m_dimensions, 999.f));
     }
@@ -521,9 +529,10 @@ bool Map::IsWorldPosOccupied(Vec2 const& position) const
     }
     return false;
 }
+
 bool Map::IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const
 {
-    for (Entity* entity : m_allEntities)
+    for (Entity const* entity : m_allEntities)
     {
         // Check if the position matches
         if (entity->m_position == position)
@@ -551,6 +560,23 @@ bool Map::IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int 
         }
 
         GenerateAllTiles();
+    }
+
+    ERROR_AND_DIE("Failed to generate a valid map after maximum attempts!")
+}
+bool Map::IsValidDistanceFieldToPosition(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) const
+{
+    for (int attempt = 0; attempt < maxAttempts; ++attempt)
+    {
+        TileHeatMap heatMap(m_dimensions, 999.f);
+        GenerateDistanceField(heatMap, startCoords, 999.f);
+
+        if (heatMap.GetValueAtCoords(exitCoords) != 999.f)
+        {
+            return true;
+        }
+
+        GenerateDistanceFieldToPosition(heatMap, startCoords, exitCoords);
     }
 
     ERROR_AND_DIE("Failed to generate a valid map after maximum attempts!")
@@ -591,6 +617,7 @@ IntVec2 Map::RollRandomTileCoords() const
 
     return IntVec2(randomX, randomY);
 }
+
 IntVec2 Map::RollRandomTraversableTileCoords() const
 {
     int const randomX = g_theRNG->RollRandomIntInRange(0, m_dimensions.x - 1);
@@ -646,7 +673,7 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
     float currentSearchValue = 0.f;
     bool  isStillGoing       = true;
 
-    while (isStillGoing)// For each pass, assume we're done UNLESS something changes
+    while (isStillGoing)    // For each pass, assume we're done UNLESS something changes
     {
         isStillGoing = false;
 
@@ -666,25 +693,25 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
                     IntVec2     s               = tileCoords + IntVec2(0, -1);
                     float const nextSearchValue = currentSearchValue + 1.f;
 
-                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && !IsTileWater(e)&& heatMap.GetValueAtCoords(e) > nextSearchValue)
                     {
                         heatMap.SetValueAtCoords(e, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && !IsTileWater(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
                     {
                         heatMap.SetValueAtCoords(n, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && !IsTileWater(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
                     {
                         heatMap.SetValueAtCoords(s, nextSearchValue);
                         isStillGoing = true;
                     }
 
-                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
+                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && !IsTileWater(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
                     {
                         heatMap.SetValueAtCoords(w, nextSearchValue);
                         isStillGoing = true;
@@ -697,30 +724,134 @@ void Map::GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
 
     printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
 }
+void Map::GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
+{
+    printf("( Map%d ) Start  | GenerateDistanceField\n", m_mapDef->GetIndex());
+
+    IntVec2 startCoord;
+
+    heatMap.SetValueAtAllTiles(specialValue);
+
+    
+    for (Entity const* entity : m_allEntities)
+    {
+        if (entity->m_type == ENTITY_TYPE_LEO)
+        {
+            startCoord = IntVec2(entity->m_position);
+            heatMap.SetValueAtCoords(startCoord, 0.f);
+            break;
+        }
+    }
+
+    
+
+    float currentSearchValue = 0.f;
+    bool  isStillGoing       = true;
+
+    while (isStillGoing)    // For each pass, assume we're done UNLESS something changes
+    {
+        isStillGoing = false;
+
+        for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
+        {
+            for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+            {
+                IntVec2     tileCoords(tileX, tileY);
+                float const value = heatMap.GetValueAtCoords(tileX, tileY);
+
+                if (std::fabs(value - currentSearchValue) < EPSILON)
+                {
+                    // Found a search value ! Spread to cardinal neighbors...
+                    IntVec2     n               = tileCoords + IntVec2(0, 1);
+                    IntVec2     e               = tileCoords + IntVec2(1, 0);
+                    IntVec2     w               = tileCoords + IntVec2(-1, 0);
+                    IntVec2     s               = tileCoords + IntVec2(0, -1);
+                    float const nextSearchValue = currentSearchValue + 1.f;
+
+                    if (!IsTileCoordsOutOfBounds(e) && !IsTileSolid(e) && !IsTileWater(e) && heatMap.GetValueAtCoords(e) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(e, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(n) && !IsTileSolid(n) && !IsTileWater(n) && heatMap.GetValueAtCoords(n) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(n, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(s) && !IsTileSolid(s) && !IsTileWater(s) && heatMap.GetValueAtCoords(s) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(s, nextSearchValue);
+                        isStillGoing = true;
+                    }
+
+                    if (!IsTileCoordsOutOfBounds(w) && !IsTileSolid(w) && !IsTileWater(w) && heatMap.GetValueAtCoords(w) > nextSearchValue)
+                    {
+                        heatMap.SetValueAtCoords(w, nextSearchValue);
+                        isStillGoing = true;
+                    }
+                }
+            }
+        }
+        currentSearchValue++;
+    }
+
+    printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
+}
+
+
+//----------------------------------------------------------------------------------------------------
 void Map::GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
 {
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
         for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
         {
-            Vec2 worldPos = Vec2((float) tileX + 0.5f, (float) tileY + 0.5f);
+            Vec2 worldPos = Vec2(tileX, tileY) + Vec2(0.5f, 0.5f);
+
             if (IsWorldPosOccupiedByEntity(worldPos, ENTITY_TYPE_SCORPIO))
             {
                 continue;
             }
 
             IntVec2 tileCoords(tileX, tileY);
+
             if (!IsTileCoordsOutOfBounds(tileCoords) && !IsTileSolid(tileCoords))
             {
                 heatMap.SetValueAtCoords(tileCoords, 0.f);
             }
-
-
         }
     }
 }
 
-void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const
+//----------------------------------------------------------------------------------------------------
+void Map::GenerateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
+{
+    for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
+    {
+        for (int tileX = 0; tileX < m_dimensions.x; ++tileX)
+        {
+            Vec2 worldPos = Vec2(tileX, tileY) + Vec2(0.5f, 0.5f);
+
+            if (IsWorldPosOccupiedByEntity(worldPos, ENTITY_TYPE_SCORPIO))
+            {
+                continue;
+            }
+
+            IntVec2 tileCoords(tileX, tileY);
+
+            if (!IsTileCoordsOutOfBounds(tileCoords) &&
+                !IsTileSolid(tileCoords) ||
+                IsTileWater(tileCoords))
+            {
+                heatMap.SetValueAtCoords(tileCoords, 0.f);
+            }
+        }
+    }
+}
+
+void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap,IntVec2 const& startCoords, IntVec2 const& playerCoords) const
 {
     printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 
@@ -737,7 +868,7 @@ void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
         IntVec2 currentTile = openList.front();
         openList.pop();
 
-        float currentDistance = heatMap.GetValueAtCoords(currentTile);
+        float const currentDistance = heatMap.GetValueAtCoords(currentTile);
 
         // 遍歷當前 tile 的四個鄰近方向 (N, E, S, W)
         IntVec2 neighbors[] = {
@@ -749,13 +880,13 @@ void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
 
         for (IntVec2 const& neighbor : neighbors)
         {
-            if (IsTileCoordsOutOfBounds(neighbor) || IsTileSolid(neighbor))
+            if (IsTileCoordsOutOfBounds(neighbor) || IsTileSolid(neighbor)||IsWorldPosOccupiedByEntity(Vec2(neighbor)+Vec2(0.5f,0.5f), ENTITY_TYPE_SCORPIO))
             {
                 continue; // 如果座標越界或是障礙物，跳過
             }
 
-            float neighborDistance = heatMap.GetValueAtCoords(neighbor);
-            float newDistance      = currentDistance + 1.f; // 與當前 tile 的距離 +1
+            float const neighborDistance = heatMap.GetValueAtCoords(neighbor);
+            float const newDistance      = currentDistance + 1.f; // 與當前 tile 的距離 +1
 
             if (newDistance < neighborDistance) // 如果找到更短的距離
             {
@@ -764,6 +895,11 @@ void Map::GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
             }
         }
     }
+
+    // if (!IsValidDistanceFieldToPosition(startCoords, playerCoords, 100))
+    // {
+    //     ERROR_AND_DIE("Failed to generate a valid DistanceFieldToPosition!")
+    // }
 
     printf("( Map%d ) Finish | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 }
