@@ -5,6 +5,8 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/TileDefinition.hpp"
 
+#include "Engine/Core/EngineCommon.hpp"
+
 //----------------------------------------------------------------------------------------------------
 class SpriteSheet;
 
@@ -40,7 +42,7 @@ TileDefinition::~TileDefinition()
 }
 
 //----------------------------------------------------------------------------------------------------
-void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
+STATIC void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
 {
     XmlDocument tileDefXml;
 
@@ -58,7 +60,7 @@ void TileDefinition::InitializeTileDefs(SpriteSheet const& spriteSheet)
 }
 
 //----------------------------------------------------------------------------------------------------
-TileDefinition const* TileDefinition::GetTileDefByName(String const& name)
+STATIC TileDefinition const* TileDefinition::GetTileDefByName(String const& name)
 {
     for (TileDefinition const* tileDef : s_tileDefinitions)
     {
@@ -72,7 +74,7 @@ TileDefinition const* TileDefinition::GetTileDefByName(String const& name)
 }
 
 //----------------------------------------------------------------------------------------------------
-Strings TileDefinition::GetTileNames()
+STATIC Strings TileDefinition::GetTileNames()
 {
     Strings tileNames;
 

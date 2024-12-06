@@ -5,6 +5,8 @@
 //----------------------------------------------------------------------------------------------------
 #include "Game/MapDefinition.hpp"
 
+#include "Engine/Core/EngineCommon.hpp"
+
 //----------------------------------------------------------------------------------------------------
 std::vector<MapDefinition*> MapDefinition::s_mapDefinitions;
 
@@ -40,7 +42,7 @@ MapDefinition::~MapDefinition()
 }
 
 //----------------------------------------------------------------------------------------------------
-void MapDefinition::InitializeMapDefs()
+STATIC void MapDefinition::InitializeMapDefs()
 {
     XmlDocument mapDefXml;
     if (mapDefXml.LoadFile("Data/Definitions/MapDefinitions.xml") != XmlResult::XML_SUCCESS)
@@ -59,7 +61,7 @@ void MapDefinition::InitializeMapDefs()
 }
 
 //----------------------------------------------------------------------------------------------------
-MapDefinition const* MapDefinition::GetTileDefByName(String const& name)
+STATIC MapDefinition const* MapDefinition::GetTileDefByName(String const& name)
 {
     for (MapDefinition const* mapDef : s_mapDefinitions)
     {
