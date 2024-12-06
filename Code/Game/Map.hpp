@@ -53,16 +53,17 @@ public:
     bool            IsTileWater(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
     bool            IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
+    bool            IsValidDistanceFieldToPosition(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) const;
     IntVec2         RollRandomTileCoords() const;
-    IntVec2         RollRandomTraversableTileCoords() const;
+    IntVec2         RollRandomTraversableTileCoords(TileHeatMap const& heatMap, IntVec2 const& startCoords) const;
 
     // Heatmap-related
-    void GenerateHeatMaps(TileHeatMap const& heatMap) ;
-    void GenerateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void GenerateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords,IntVec2 const& playerCoords) const;
+    void GenerateHeatMaps(TileHeatMap const& heatMap) const;
+    void PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords, IntVec2 const& playerCoords) const;
 
 private:
     void UpdateEntities(float deltaSeconds) const;
@@ -75,20 +76,20 @@ private:
     void UpdateCurrentMap();
 
 // Map-related
-    void        GenerateAllTiles();
-    void        GenerateTilesByType(String const& tileName, bool isSolid);
-    void        GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
-    void        GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
-    void        GenerateStartPosTile();
-    void        GenerateExitPosTile();
-    void        SetTileAtCoords(String const& tileName, int tileX, int tileY);
-    void        ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
-    bool        IsEdgeTile(int x, int y) const;
-    bool        IsTileCoordsInLShape(int x, int y) const;
-    bool        IsWorldPosOccupied(Vec2 const& position) const;
-    bool        IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const;
-    bool        IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts);
-    bool        IsValidDistanceFieldToPosition(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) const;
+    void GenerateAllTiles();
+    void GenerateTilesByType(String const& tileName, bool isSolid);
+    void GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
+    void GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
+    void GenerateStartPosTile();
+    void GenerateExitPosTile();
+    void SetTileAtCoords(String const& tileName, int tileX, int tileY);
+    void ConvertUnreachableTilesToSolid(TileHeatMap const& heatMap, String const& tileName);
+    bool IsEdgeTile(int x, int y) const;
+    bool IsTileCoordsInLShape(int x, int y) const;
+    bool IsWorldPosOccupied(Vec2 const& position) const;
+    bool IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const;
+    bool IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts);
+
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
     AABB2 const GetTileBounds(int tileIndex) const;
     IntVec2     RollRandomCardinalDirection() const;
@@ -110,6 +111,7 @@ private:
     void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB);
 
     std::vector<Tile>    m_tiles;
+    Entity*              m_currentEntity = nullptr;
     EntityList           m_allEntities;
     EntityList           m_entitiesByType[NUM_ENTITY_TYPES];
     EntityList           m_agentsByFaction[NUM_ENTITY_FACTIONS];

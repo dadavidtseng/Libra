@@ -22,7 +22,7 @@ private:
     void UpdateBody(float deltaSeconds);
     void RenderBody() const;
     void UpdateShootCoolDown(float deltaSeconds);
-    
-    float    m_shootCoolDown         = 0.f;
-    float    m_shootDegreesThreshold = g_gameConfigBlackboard.GetValue("leoShootDegreesThreshold", 5.f);
+
+    float m_shootCoolDown         = 0.f;
+    float m_shootDegreesThreshold = g_gameConfigBlackboard.GetValue("leoShootDegreesThreshold", 5.f);
 };

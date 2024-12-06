@@ -8,6 +8,8 @@
 #include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
+#include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
@@ -108,6 +110,7 @@ void Entity::FindNextWayPosition()
     m_nextWayPosition = m_map->GetWorldPosFromTileCoords(bestNeighbor);
 }
 
+//----------------------------------------------------------------------------------------------------
 void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 {
     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
@@ -122,6 +125,7 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
 
         IntVec2 targetCoords;
+        // m_map->GenerateDistanceFieldForEntity(*m_heatMap, IntVec2(m_position)-IntVec2::ONE, 999.f);
 
         if (isChasing)
         {
@@ -132,14 +136,15 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         else
         {
             // Wandering mode: Set a random traversable tile as the target
-            IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords();
+            IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
             targetCoords               = randomCoords;
             m_targetLastKnownPosition  = m_map->GetWorldPosFromTileCoords(randomCoords);
         }
 
         // Generate heat maps and distance fields for pathfinding
         m_map->GenerateHeatMaps(*m_heatMap);
-        m_map->GenerateDistanceFieldToPosition(*m_heatMap, IntVec2(m_position)-IntVec2::ONE,targetCoords);
+        m_map->PopulateDistanceFieldToPosition(*m_heatMap, IntVec2(m_position) - IntVec2::ONE, targetCoords);
+        // m_map->GenerateDistanceFieldForEntity(*m_heatMap, IntVec2(m_position)-IntVec2::ONE,999.f);
     }
 
     // Check if the target position has been reached

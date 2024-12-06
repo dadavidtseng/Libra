@@ -58,6 +58,7 @@ public:
     void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
     void         FindNextWayPosition();
     void         UpdateBehavior(float deltaSeconds, bool isChasing);
+    TileHeatMap* GetTileHeatMap() const { return m_heatMap; }
 
 // TODO: MAKE THIS
 // virtual  void TurnTowardPosition(Vec2 const& targetPos, float maxTurnDegrees); 
@@ -87,5 +88,5 @@ public:
     bool           m_isPushedByWalls          = false;
     bool           m_canSwim                  = false;
     bool           m_hasTarget                = false;
-
+    bool           m_isChasing                = false;
 };

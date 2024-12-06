@@ -127,10 +127,7 @@ void Game::TestBitfontMap() const
 {
     if (!m_isAttractMode)
         return;
-
-    // ...and then, each frame; draw two text strings on screen
-    // BitmapFont const* g_testFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
-
+    
     std::vector<Vertex_PCU> textVerts;
     g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
     g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
@@ -171,7 +168,6 @@ void Game::InitializeMaps()
     {
         m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[mapIndex]));
     }
-    // m_maps.push_back(new Map(*MapDefinition::s_mapDefinitions[0]));
 
     m_currentMap = m_maps[0];
 
@@ -184,9 +180,9 @@ void Game::InitializeTiles()
 {
     printf("( Game ) Start  | InitializeTiles\n");
 
-    Texture*      tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
-    IntVec2 const spriteCoords = IntVec2(8, 8);
-    m_tileSpriteSheet          = new SpriteSheet(*tileTexture, spriteCoords);
+    Texture const* const tileTexture  = g_theRenderer->CreateOrGetTextureFromFile(TILE_TEXTURE_IMG);
+    IntVec2 const        spriteCoords = IntVec2(8, 8);
+    m_tileSpriteSheet                 = new SpriteSheet(*tileTexture, spriteCoords);
 
     TileDefinition::InitializeTileDefs(*m_tileSpriteSheet);
 
