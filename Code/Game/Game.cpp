@@ -175,12 +175,13 @@ void Game::TestTextBox2D() const
         vertexArray,    // 頂點數據
         text,           // 文字內容
         box,            // 邊界框
-        cellHeight,     // 字元高度
+        m_glowIntensity*30,     // 字元高度
         Rgba8::WHITE,   // 字體顏色
-        1.f,            // 寬高比例
+        m_glowIntensity*2,            // 寬高比例
         alignment,      // 對齊方式
-        OVERRUN, // 繪製模式
-        99999999        // 最大字元數
+        SHRINK_TO_FIT // 繪製模式
+        
+        
     );
 
     g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
