@@ -21,9 +21,9 @@ class Game
 public:
     Game();
     ~Game();
-
     void Update(float deltaSeconds);
     void TestBitfontMap() const;
+    void TestTextBox2D() const;
     void Render() const;
 
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
@@ -57,24 +57,24 @@ private:
     void RenderAttractMode() const;
     void RenderUI() const;
 
-
-    Camera* m_worldCamera       = nullptr;
-    Camera* m_screenCamera      = nullptr;
-    bool    m_isAttractMode     = true;
-    bool    m_isGameWinMode     = false;
-    bool    m_isGameLoseMode    = false;
-    bool    m_isDebugRendering  = false;
-    bool    m_isDebugCamera     = false;
-    bool    m_isDebugHeatmap    = false;
-    bool    m_isPaused          = false;
-    bool    m_isSlowMo          = false;
-    bool    m_isFastMo          = false;
-    bool    m_isMarkedForDelete = false;
-    bool    m_isNoClip          = false;
-    float   m_glowIntensity     = 0.f;
-    float   m_gameOverCountDown = 3.f;
-    bool    m_glowIncreasing    = false;
-    Vec2    m_baseCameraPos     = Vec2(0.f, 0.f);
+    Camera* m_worldCamera             = nullptr;
+    Camera* m_screenCamera            = nullptr;
+    bool    m_isAttractMode           = true;
+    bool    m_isGameWinMode           = false;
+    bool    m_isGameLoseMode          = false;
+    bool    m_isDebugRendering        = false;
+    bool    m_isDebugCamera           = false;
+    bool    m_isPaused                = false;
+    bool    m_isSlowMo                = false;
+    bool    m_isFastMo                = false;
+    bool    m_isMarkedForDelete       = false;
+    bool    m_isNoClip                = false;
+    bool    m_isUpdateMapCountingDown = false;
+    float   m_glowIntensity           = 0.f;
+    float   m_gameOverCountDown       = 3.f;
+    float   m_updateMapCountDown      = 3.f;
+    bool    m_glowIncreasing          = false;
+    Vec2    m_baseCameraPos           = Vec2::ZERO;
 
     std::vector<Map*> m_maps;
     Map*              m_currentMap      = nullptr;

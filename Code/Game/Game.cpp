@@ -19,6 +19,8 @@
 #include "Game/Map.hpp"
 #include "Game/PlayerTank.hpp"
 
+
+
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
@@ -72,7 +74,9 @@ Game::~Game()
     g_theAudio->StopSound(m_attractModePlayback);
     g_theAudio->StopSound(m_gameWinPlayback);
     g_theAudio->StopSound(m_gameLosePlayback);
-};
+}
+
+;
 
 //-----------------------------------------------------------------------------------------------
 void Game::Update(float deltaSeconds)
@@ -120,19 +124,67 @@ void Game::Update(float deltaSeconds)
         UpdateCurrentMap();
     }
 
-    m_currentMap->Update(deltaSeconds);
+    if (m_isUpdateMapCountingDown)
+    {
+        m_updateMapCountDown -= deltaSeconds;
+
+        if (m_updateMapCountDown <= 0)
+        {
+            UpdateCurrentMap();
+            m_updateMapCountDown      = 3.f;
+            m_isUpdateMapCountingDown = false;
+            return;
+        }
+    }
+
+
+    if (m_currentMap)
+        m_currentMap->Update(deltaSeconds);
 }
 
 void Game::TestBitfontMap() const
 {
     if (!m_isAttractMode)
         return;
-    
+
     std::vector<Vertex_PCU> textVerts;
     g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
     g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
     g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+}
+void Game::TestTextBox2D() const
+{
+    AABB2 box(Vec2(400.f, 400.f), Vec2(700.f, 700.f)); // 200x100 的邊界框
+
+    VertexList boxVerts;
+    AddVertsForAABB2D(boxVerts, box, Rgba8::BLUE);
+    g_theRenderer->BindTexture(nullptr);
+    g_theRenderer->DrawVertexArray(static_cast<int>(boxVerts.size()), boxVerts.data());
+
+    VertexList vertexArray;
+
+    // 設置文字與邊界框
+    String text = "Hello, World!\nThis is multi-line text.\nThis is the third line TEST\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX";
+
+    float cellHeight = 20.f; // 每個字元高度
+    Vec2  alignment(0.f, 0.f); // 中心對齊
+
+    // 呼叫 AddVertsForTextInBox2D
+    g_theBitmapFont->AddVertsForTextInBox2D(
+        vertexArray,    // 頂點數據
+        text,           // 文字內容
+        box,            // 邊界框
+        cellHeight,     // 字元高度
+        Rgba8::WHITE,   // 字體顏色
+        1.f,            // 寬高比例
+        alignment,      // 對齊方式
+        OVERRUN, // 繪製模式
+        99999999        // 最大字元數
+    );
+
+    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
+    g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -149,8 +201,8 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
-
-    TestBitfontMap();
+    // TestBitfontMap();
+    TestTextBox2D();
 
     g_theRenderer->EndCamera(*m_screenCamera);
 }
@@ -313,7 +365,8 @@ void Game::UpdateFromKeyBoard()
                 return;
             }
 
-            UpdateCurrentMap();
+            // UpdateCurrentMap();
+            m_isUpdateMapCountingDown = true;
         }
 
         if (g_theInput->WasKeyJustPressed(KEYCODE_P))
@@ -552,7 +605,6 @@ void Game::UpdateCurrentMap()
     int const   currentMapIndex                  = m_currentMap->GetMapIndex();
     Vec2 const  playerTankInitPosition           = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
     float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees", 30.f);
-
 
     m_currentMap->RemoveEntityFromMap(m_playerTank);
     m_currentMap = m_maps[currentMapIndex + 1];
