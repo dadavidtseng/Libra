@@ -73,7 +73,7 @@ private:
     bool    m_isUpdateMapCountingDown = false;
     float   m_glowIntensity           = 0.f;
     float   m_gameOverCountDown       = 3.f;
-    float   m_updateMapCountDown      = 3.f;
+    float   m_updateMapCountDown      = 1.f;
     bool    m_glowIncreasing          = false;
     Vec2    m_baseCameraPos           = Vec2::ZERO;
 

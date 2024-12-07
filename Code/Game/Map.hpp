@@ -10,10 +10,10 @@
 #include "Engine/Math/RaycastUtils.hpp"
 #include "Game/Entity.hpp"
 #include "Game/MapDefinition.hpp"
-#include "Game/Tile.hpp"
 
 //----------------------------------------------------------------------------------------------------
 class TileHeatMap;
+struct Tile;
 
 //-----------------------------------------------------------------------------------------------
 class Map
@@ -21,9 +21,6 @@ class Map
 public:
     explicit Map(MapDefinition const& mapDef);
     ~Map();
-
-    void DebugRenderTileIndex() const;
-
 
     // TODO:
 // RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
@@ -37,7 +34,7 @@ public:
     IntVec2 const GetTileCoordsFromWorldPos(Vec2 const& worldPos) const;
     IntVec2 const GetMapDimension() const { return m_dimensions; }
     IntVec2 const GetMapExitPosition() const { return m_exitPosition; }
-    AABB2         GetMapBound() const { return AABB2(IntVec2::ZERO, m_dimensions); }
+    AABB2 const   GetMapBound() const { return AABB2(IntVec2::ZERO, m_dimensions); }
     int           GetMapIndex() const { return m_mapDef->GetIndex(); }
     int           GetTileNums() const { return m_dimensions.x * m_dimensions.y; }
 
@@ -53,7 +50,6 @@ public:
     bool            IsTileWater(IntVec2 const& tileCoords) const;
     bool            IsPointInSolid(Vec2 const& point) const;
     bool            IsTileCoordsOutOfBounds(IntVec2 const& tileCoords) const;
-    bool            IsValidDistanceFieldToPosition(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts) const;
     IntVec2         RollRandomTileCoords() const;
     IntVec2         RollRandomTraversableTileCoords(TileHeatMap const& heatMap, IntVec2 const& startCoords) const;
 
@@ -71,9 +67,9 @@ private:
     void RenderEntities() const;
     void RenderTileHeatMap() const;
     void DebugRenderEntities() const;
+    void DebugRenderTileIndex() const;
 
     void InitializeTileHeatMaps();
-    void UpdateCurrentMap();
 
 // Map-related
     void GenerateAllTiles();
@@ -87,7 +83,7 @@ private:
     bool IsEdgeTile(int x, int y) const;
     bool IsTileCoordsInLShape(int x, int y) const;
     bool IsWorldPosOccupied(Vec2 const& position) const;
-    bool IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType entityType) const;
+    bool IsWorldPosOccupiedByEntity(Vec2 const& position, EntityType type) const;
     bool IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int maxAttempts);
 
     AABB2 const GetTileBounds(IntVec2 const& tileCoords) const;
@@ -111,7 +107,6 @@ private:
     void CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList const& entityListB);
 
     std::vector<Tile>    m_tiles;
-    Entity*              m_currentEntity = nullptr;
     EntityList           m_allEntities;
     EntityList           m_entitiesByType[NUM_ENTITY_TYPES];
     EntityList           m_agentsByFaction[NUM_ENTITY_FACTIONS];
@@ -123,6 +118,6 @@ private:
 
     // MetaData management
     std::vector<TileHeatMap*> m_tileHeatMaps;
-    TileHeatMap*              m_currentTileHeatMap      = nullptr;
-    int                       m_currentTileHeatMapIndex = 0;
+    Entity*                   m_currentSelectedEntity   = nullptr;
+    int                       m_currentTileHeatMapIndex = -1;
 };

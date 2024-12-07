@@ -8,7 +8,6 @@
 #include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
-#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -110,6 +109,7 @@ void Entity::FindNextWayPosition()
     m_nextWayPosition = m_map->GetWorldPosFromTileCoords(bestNeighbor);
 }
 
+// TODO: FIX if player's spawn position is at the bottom-left of tile
 //----------------------------------------------------------------------------------------------------
 void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 {
@@ -125,13 +125,12 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
 
         IntVec2 targetCoords;
-        // m_map->GenerateDistanceFieldForEntity(*m_heatMap, IntVec2(m_position)-IntVec2::ONE, 999.f);
 
         if (isChasing)
         {
             // Chasing mode: Set the target to the player's current position
             m_targetLastKnownPosition = playerTank->m_position;
-            targetCoords              = IntVec2(static_cast<int>(playerTank->m_position.x), static_cast<int>(playerTank->m_position.y));
+            targetCoords              = m_map->GetTileCoordsFromWorldPos(m_targetLastKnownPosition);
         }
         else
         {
@@ -142,9 +141,8 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         }
 
         // Generate heat maps and distance fields for pathfinding
-        m_map->GenerateHeatMaps(*m_heatMap);
-        m_map->PopulateDistanceFieldToPosition(*m_heatMap, IntVec2(m_position) - IntVec2::ONE, targetCoords);
-        // m_map->GenerateDistanceFieldForEntity(*m_heatMap, IntVec2(m_position)-IntVec2::ONE,999.f);
+        // m_map->GenerateHeatMaps(*m_heatMap);
+        m_map->PopulateDistanceFieldToPosition(*m_heatMap, IntVec2(m_position), targetCoords);
     }
 
     // Check if the target position has been reached
@@ -155,6 +153,14 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         m_heatMap = nullptr;
         return;
     }
+
+    // if (GetDistance2D(m_targetLastKnownPosition, m_position)<playerTank->m_physicsRadius+m_physicsRadius)
+    // {
+    //     m_hasTarget = false;
+    //     delete m_heatMap;
+    //     m_heatMap = nullptr;
+    //     return;
+    // }
 
     // Check if the next waypoint has been reached
     if (IsPointInsideDisc2D(m_nextWayPosition, m_position, m_physicsRadius))

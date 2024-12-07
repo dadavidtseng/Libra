@@ -32,7 +32,7 @@ Game::Game()
     Texture const* const tileTexture  = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
     IntVec2 const        spriteCoords = IntVec2(8, 2);
     m_testSpriteSheet                 = new SpriteSheet(*tileTexture, spriteCoords);
-    
+
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
 
@@ -94,8 +94,8 @@ void Game::Update(float deltaSeconds)
     UpdateAttractMode(deltaSeconds);
     AdjustForPauseAndTimeDistortion(deltaSeconds);
 
-    m_testSecond +=deltaSeconds;
-    
+    m_testSecond += deltaSeconds;
+
     if (m_playerTank->m_isDead)
     {
         m_gameOverCountDown -= deltaSeconds;
@@ -138,7 +138,7 @@ void Game::Update(float deltaSeconds)
         if (m_updateMapCountDown <= 0)
         {
             UpdateCurrentMap();
-            m_updateMapCountDown      = 3.f;
+            m_updateMapCountDown      = 1.f;
             m_isUpdateMapCountingDown = false;
             return;
         }
@@ -200,6 +200,9 @@ void Game::TestTextBox2D() const
 }
 void Game::TestSpriteAnim() const
 {
+    if (!m_isAttractMode)
+        return;
+
     VertexList vertexArray;
 
     // 創建動畫定義，從第0到第5幀，每秒10幀，循環播放
@@ -209,7 +212,7 @@ void Game::TestSpriteAnim() const
     float elapsedTime = 2.5f;  // 這裡可以改成動態的時間，依照遊戲運行的時間推進
 
     // 根據動畫時間取得對應的 SpriteDefinition
-    const SpriteDefinition& spriteDef = myAnim.GetSpriteDefAtTime(m_testSecond/10);
+    const SpriteDefinition& spriteDef = myAnim.GetSpriteDefAtTime(m_testSecond / 10);
 
     // 創建一個矩形範圍來渲染當前幀
     Vec2 mins(0.f, 0.f);  // 在這裡可以調整你的位置或大小
@@ -220,7 +223,7 @@ void Game::TestSpriteAnim() const
     // printf("( %f, %f ) ( %f, %f )\n", uvMins.x, uvMins.y, uvMaxs.x, uvMaxs.y);
     // 添加頂點
     AddVertsForAABB2D(vertexArray, AABB2(mins, maxs), Rgba8::WHITE, uvMins, uvMaxs);
-    
+
 
     // 綁定精靈紋理
     g_theRenderer->BindTexture(&spriteDef.GetTexture());

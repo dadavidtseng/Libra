@@ -9,7 +9,6 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/Vec2.hpp"
 
-
 //----------------------------------------------------------------------------------------------------
 class Map;
 class Entity;
@@ -38,8 +37,6 @@ enum EntityFaction: int
     ENTITY_FACTION_EVIL,
     NUM_ENTITY_FACTIONS
 };
-
-
 
 //-----------------------------------------------------------------------------------------------
 class Entity
