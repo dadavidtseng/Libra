@@ -25,6 +25,7 @@ public:
     void TestBitfontMap() const;
     void TestTextBox2D() const;
     void TestSpriteAnim() const;
+    void TestDevConsole() const;
     void Render() const;
 
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }

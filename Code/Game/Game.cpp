@@ -6,6 +6,7 @@
 #include "Game/Game.hpp"
 
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/DevConsole.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/HeatMaps.hpp"
 #include "Engine/Core/SimpleTriangleFont.hpp"
@@ -147,6 +148,20 @@ void Game::Update(float deltaSeconds)
 
     if (m_currentMap)
         m_currentMap->Update(deltaSeconds);
+
+if (g_theInput->WasKeyJustPressed(KEYCODE_F))
+{
+    g_theDevConsole->ToggleMode(OPEN_FULL);
+}
+    
+    if (g_theInput->WasKeyJustPressed(KEYCODE_ENTER))
+    {
+        g_theDevConsole->AddLine(Rgba8::WHITE, "SHOOT");
+        g_theDevConsole->Execute("SHOOT");
+        // EventArgs args;
+        // args.SetValue("SHOOT", "SHOOT");
+        // g_theEventSystem->FireEvent("SHOOT", args);
+    }
 }
 
 void Game::TestBitfontMap() const
@@ -231,6 +246,12 @@ void Game::TestSpriteAnim() const
     g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
 
 }
+void Game::TestDevConsole() const
+{
+AABB2 box = AABB2(Vec2(0.f,0.f), Vec2(1600.f, 100.f));
+    
+    g_theDevConsole->Render(box);
+}
 
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
@@ -239,7 +260,8 @@ void Game::Render() const
 
     m_currentMap->Render();
     m_currentMap->DebugRender();
-    TestSpriteAnim();
+    // TestSpriteAnim();
+    
 
     g_theRenderer->EndCamera(*m_worldCamera);
     //-----------------------------------------------------------------------------------------------
@@ -247,8 +269,10 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
-    TestBitfontMap();
-    TestTextBox2D();
+    // TestBitfontMap();
+    // TestTextBox2D();
+    TestDevConsole();
+    
 
 
     g_theRenderer->EndCamera(*m_screenCamera);

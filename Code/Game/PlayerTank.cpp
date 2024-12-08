@@ -14,6 +14,17 @@
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
+STATIC bool PlayerTank::SHOOT(EventArgs&  args)
+{
+    String playerName = args.GetValue("SHOOT", "Unknown");
+    printf("SHOOT: %s\n", playerName.c_str());
+
+    
+    
+    g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
+    return false;
+}
+
 //----------------------------------------------------------------------------------------------------
 PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
@@ -31,6 +42,7 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
 
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_BODY_IMG);
     m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_TURRET_IMG);
+    g_theEventSystem->SubscribeEventCallbackFunction("SHOOT", SHOOT);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -82,6 +94,8 @@ void PlayerTank::Update(const float deltaSeconds)
     {
         m_bodyScale -= deltaSeconds;
     }
+
+    
 }
 
 //----------------------------------------------------------------------------------------------------

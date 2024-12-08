@@ -22,7 +22,6 @@ public:
 private:
     void UpdateBody(float deltaSeconds);
     void RenderBody() const;
-
-    AABB2    m_BodyBounds;
+    
     Texture* m_BodyTexture = nullptr;
 };

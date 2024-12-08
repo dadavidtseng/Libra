@@ -6,6 +6,7 @@
 #include "Game/App.hpp"
 
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/DevConsole.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/EventSystem.hpp"
 #include "Engine/Core/Time.hpp"
@@ -27,9 +28,6 @@ Game*                  g_theGame       = nullptr; // Created and owned by the Ap
 Renderer*              g_theRenderer   = nullptr; // Created and owned by the App
 RandomNumberGenerator* g_theRNG        = nullptr; // Created and owned by the App
 Window*                g_theWindow     = nullptr; // Created and owned by the App
-
-
-
 
 //-----------------------------------------------------------------------------------------------
 App::App() = default;
@@ -72,7 +70,8 @@ void App::Startup()
     renderConfig.m_window = g_theWindow;
     g_theRenderer         = new Renderer(renderConfig); // Create render
 
-// DevConsole
+    DevConsoleConfig devConsoleConfig;
+    g_theDevConsole = new DevConsole(devConsoleConfig);
 
     AudioSystemConfig audioConfig;
     g_theAudio = new AudioSystem(audioConfig);
@@ -81,6 +80,7 @@ void App::Startup()
     g_theInput->Startup();
     g_theWindow->Startup();
     g_theRenderer->Startup();
+    g_theDevConsole->StartUp();
     g_theAudio->Startup();
 
     g_theBitmapFont = g_theRenderer->CreateOrGetBitmapFontFromFile("Data/Fonts/SquirrelFixedFont"); // DO NOT SPECIFY FILE .EXTENSION!!  (Important later on.)
@@ -103,6 +103,7 @@ void App::Shutdown()
     g_theBitmapFont = nullptr;
 
     g_theAudio->Shutdown();
+    g_theDevConsole->Shutdown();
     g_theRenderer->Shutdown();
     g_theWindow->Shutdown();
     g_theInput->Shutdown();
@@ -111,6 +112,9 @@ void App::Shutdown()
     // Destroy all Engine Subsystem
     delete g_theAudio;
     g_theAudio = nullptr;
+
+    delete g_theDevConsole;
+    g_theDevConsole = nullptr;
 
     delete g_theRenderer;
     g_theRenderer = nullptr;
@@ -130,8 +134,8 @@ void App::Shutdown()
 //
 void App::RunFrame()
 {
-    const float currentTime  = static_cast<float>(GetCurrentTimeSeconds());
-    const float deltaSeconds = currentTime - m_timeLastFrameStart;
+    float const currentTime  = static_cast<float>(GetCurrentTimeSeconds());
+    float const deltaSeconds = currentTime - m_timeLastFrameStart;
     m_timeLastFrameStart     = currentTime;
 
     // DebuggerPrintf("currentTime = %.06f\n", timeNow);
@@ -160,10 +164,10 @@ void App::BeginFrame() const
     g_theInput->BeginFrame();
     g_theWindow->BeginFrame();
     g_theRenderer->BeginFrame();
+    g_theDevConsole->BeginFrame();
     g_theAudio->BeginFrame();
-// g_theNetwork->BeginFrame();
-// g_theWindow->BeginFrame();
-// g_theDevConsole->BeginFrame();
+    // g_theNetwork->BeginFrame();
+    // g_theWindow->BeginFrame();
     // g_theNetwork->BeginFrame();
 }
 
@@ -197,6 +201,7 @@ void App::EndFrame() const
     g_theInput->EndFrame();
     g_theWindow->EndFrame();
     g_theRenderer->EndFrame();
+    g_theDevConsole->EndFrame();
     g_theAudio->EndFrame();
 }
 

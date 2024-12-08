@@ -34,8 +34,8 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
         m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletEvilMoveSpeed", 3.f);
     }
 
-    m_BodyBounds    = AABB2(Vec2(-0.1f, -0.05f), Vec2(0.1f, 0.05f));
-    m_physicsRadius = GetDistance2D(m_BodyBounds.m_mins, m_BodyBounds.m_maxs) * 0.5f;
+    m_bodyBounds    = AABB2(Vec2(-0.1f, -0.05f), Vec2(0.1f, 0.05f));
+    m_physicsRadius = GetDistance2D(m_bodyBounds.m_mins, m_bodyBounds.m_maxs) * 0.5f;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ RaycastResult2D raycastResult2D = m_map->RaycastVsTiles(ray);
 void Bullet::RenderBody() const
 {
     VertexList bodyVerts;
-    AddVertsForAABB2D(bodyVerts, m_BodyBounds, Rgba8(255, 255, 255));
+    AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
                              1.f, m_orientationDegrees, m_position);

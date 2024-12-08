@@ -17,6 +17,7 @@ class Texture;
 class PlayerTank : public Entity
 {
 public:
+    static bool SHOOT(EventArgs& args);
     PlayerTank(Map* map, EntityType type, EntityFaction faction);
 
     void Update(float deltaSeconds) override;
