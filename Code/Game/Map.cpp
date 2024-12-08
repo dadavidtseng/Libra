@@ -681,7 +681,7 @@ IntVec2 Map::RollRandomTraversableTileCoords(TileHeatMap const& heatMap, IntVec2
                 IsWorldPosOccupiedByEntity(Vec2(x, y) + Vec2(0.5f, 0.5f), ENTITY_TYPE_SCORPIO) ||
                 heatMap.GetValueAtCoords(currentCoords) == 999.f)
                 continue;
-            
+
             traversableCoords.push_back(currentCoords);
         }
     }
@@ -1262,52 +1262,43 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
     raycastResult.m_rayMaxLength = ray.m_maxDist;
     raycastResult.m_didImpact    = false;
 
-    Vec2 currentPos = ray.m_origin;
+    constexpr float stepSize   = 0.01f;
+    Vec2            currentPos = ray.m_origin;
 
-    constexpr float stepSize = 0.01f;
 
     // Calculate the number of steps needed
     const int numSteps = static_cast<int>(ray.m_maxDist / stepSize);
 
     for (int i = 0; i < numSteps; ++i)
     {
-        const float t = static_cast<float>(i) * stepSize;
-        currentPos    = ray.m_origin + ray.m_direction * t;
-
+        const float t            = static_cast<float>(i) * stepSize;
+        currentPos               = ray.m_origin + ray.m_direction * t;
+        Vec2          prePos     = currentPos - ray.m_direction * stepSize;
         IntVec2 const tileCoords = GetTileCoordsFromWorldPos(currentPos);
 
         // Check bounds
-        if (tileCoords.x < 0 || tileCoords.x >= m_dimensions.x ||
-            tileCoords.y < 0 || tileCoords.y >= m_dimensions.y)
+        if (IsTileCoordsOutOfBounds(tileCoords))
         {
             raycastResult.m_didImpact  = true;
             raycastResult.m_impactDist = t;
             raycastResult.m_impactPos  = currentPos;
-            // TODO: FIX m_impactNormal logic ( nextPos - currentPos )
-            // raycastResult.m_impactNormal =
 
             return raycastResult; // Out of bounds is considered blocking
         }
 
         // Check tile blocking
-        int const tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
 
-        if (tileIndex >= 0 && tileIndex < static_cast<int>(m_tiles.size()))
+        if (IsTileSolid(tileCoords))
         {
-            Tile const& tile = m_tiles[tileIndex];
+            raycastResult.m_didImpact     = true;
+            raycastResult.m_impactDist    = t;
+            raycastResult.m_impactPos     = currentPos;
+            IntVec2 const impactFwdNormal = GetTileCoordsFromWorldPos(currentPos) - GetTileCoordsFromWorldPos(prePos);
+            raycastResult.m_impactNormal  = Vec2(impactFwdNormal);
 
-            if (tile.m_name == "Stone")
-            {
-                raycastResult.m_didImpact    = true;
-                raycastResult.m_impactDist   = t;
-                raycastResult.m_impactPos    = currentPos;
-                AABB2 const tileBounds       = GetTileBounds(tileIndex);
-                Vec2 const  nearestPoint     = tileBounds.GetNearestPoint(currentPos);
-                raycastResult.m_impactNormal = (ray.m_origin - nearestPoint).GetNormalized();
-
-                return raycastResult;
-            }
+            return raycastResult;
         }
+
     }
 
     return raycastResult;

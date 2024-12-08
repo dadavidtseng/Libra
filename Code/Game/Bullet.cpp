@@ -79,14 +79,18 @@ void Bullet::UpdateBody(float const deltaSeconds)
 {
     m_velocity = Vec2::MakeFromPolarDegrees(m_orientationDegrees, m_moveSpeed);
 
+    Ray2 ray = Ray2(m_position, m_velocity,0.05f);
+RaycastResult2D raycastResult2D = m_map->RaycastVsTiles(ray);
+    
     Vec2 const nextPosition = m_position + m_velocity * deltaSeconds;
 
-    if (m_map->IsTileSolid(m_map->GetTileCoordsFromWorldPos(nextPosition))&&
-        !m_map->IsTileWater(m_map->GetTileCoordsFromWorldPos(nextPosition)))
+    if (raycastResult2D.m_didImpact)
     {
         m_health--;
 
-        IntVec2 const normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
+        // IntVec2 const normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
+        IntVec2 const normalOfSurfaceToReflectOffOf = IntVec2(raycastResult2D.m_impactNormal);
+        printf("(%f, %f)\n", raycastResult2D.m_impactNormal.x, raycastResult2D.m_impactNormal.y);
         Vec2 const    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
         Vec2 const    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());
         m_orientationDegrees            = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);

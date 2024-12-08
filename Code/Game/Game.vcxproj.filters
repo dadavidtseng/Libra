@@ -58,6 +58,9 @@
     <ClCompile Include="MapDefinition.cpp">
       <Filter>Gameplay</Filter>
     </ClCompile>
+    <ClCompile Include="Capricorn.cpp">
+      <Filter>Gameplay\Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -101,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="MapDefinition.hpp">
       <Filter>Gameplay</Filter>
+    </ClInclude>
+    <ClInclude Include="Capricorn.hpp">
+      <Filter>Gameplay\Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

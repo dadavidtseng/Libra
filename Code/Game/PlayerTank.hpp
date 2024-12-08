@@ -22,6 +22,7 @@ public:
     void Update(float deltaSeconds) override;
     void Render() const override;
     void DebugRender() const override;
+    void SetBodyScale(float scale) { m_bodyScale = scale; }
 
 private:
     void UpdateBody(float deltaSeconds);
@@ -35,5 +36,8 @@ private:
     float    m_turretGoalOrientationDegrees = 0.f;
     float    m_turretRotateSpeed            = g_gameConfigBlackboard.GetValue("playerTankTurretRotateSpeed", 360.f);
     float    m_shootCoolDown                = 0.f;
+    float    m_bodyScale                    = 0.f;
+    bool     m_isExiting                    = false;
+    bool     m_isEntering                   = false;
     Vec2     m_bodyInput                    = Vec2::ZERO;
 };

@@ -8,6 +8,7 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
@@ -43,6 +44,8 @@ void PlayerTank::Update(const float deltaSeconds)
         m_isDead = true;
     }
 
+
+
     UpdateBody(deltaSeconds);
     UpdateTurret(deltaSeconds);
 
@@ -64,6 +67,20 @@ void PlayerTank::Update(const float deltaSeconds)
 
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
         }
+    }
+
+    m_bodyScale += deltaSeconds;
+
+    m_bodyScale= GetClamped(m_bodyScale, 0.0f, 1.0f);
+
+    if (g_theInput->WasKeyJustPressed(KEYCODE_F2))
+    {
+        m_isExiting = true;
+    }
+
+    if (m_isExiting)
+    {
+        m_bodyScale -= deltaSeconds;
     }
 }
 
@@ -193,7 +210,7 @@ void PlayerTank::RenderBody() const
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
-                             1.0f, m_orientationDegrees, m_position);
+                             m_bodyScale, m_orientationDegrees, m_position);
 
     g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());

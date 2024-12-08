@@ -659,6 +659,7 @@ void Game::UpdateCurrentMap()
     m_currentMap->AddEntityToMap(m_playerTank,
                                  playerTankInitPosition,
                                  playerTankInitOrientationDegrees);
+    m_playerTank->SetBodyScale(0);
 
     g_theAudio->StartSound(m_exitMapSound);
 }
