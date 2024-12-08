@@ -57,9 +57,9 @@ public:
     void GenerateHeatMaps(TileHeatMap const& heatMap) const;
     void PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
     void PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords, IntVec2 const& playerCoords) const;
+    void PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap) const;
+    void PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap) const;
+    void PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
 
 private:
     void UpdateEntities(float deltaSeconds) const;
@@ -73,7 +73,7 @@ private:
 
 // Map-related
     void GenerateAllTiles();
-    void GenerateTilesByType(String const& tileName, bool isSolid);
+    void GenerateTilesByType(String const& tileName);
     void GenerateWormTiles(String const& wormTileName, int numWorms, int wormLength);
     void GenerateLShapeTiles(int tileCoordX, int tileCoordY, int width, int height, bool isBottomLeft);
     void GenerateStartPosTile();

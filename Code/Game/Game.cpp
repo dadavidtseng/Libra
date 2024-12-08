@@ -180,7 +180,7 @@ void Game::TestTextBox2D() const
 
     float cellHeight = 20.f; // 每個字元高度
     Vec2  alignment(0.f, 0.f); // 中心對齊
-
+    UNUSED(cellHeight)
     // 呼叫 AddVertsForTextInBox2D
     g_theBitmapFont->AddVertsForTextInBox2D(
         vertexArray,    // 頂點數據
@@ -209,7 +209,6 @@ void Game::TestSpriteAnim() const
     SpriteAnimDefinition myAnim(*m_testSpriteSheet, 0, 5, 10.f, SpriteAnimPlaybackType::PINGPONG);
 
     // 假設每次調用此函數的時候我們傳入的時間為 elapsedTime
-    float elapsedTime = 2.5f;  // 這裡可以改成動態的時間，依照遊戲運行的時間推進
 
     // 根據動畫時間取得對應的 SpriteDefinition
     const SpriteDefinition& spriteDef = myAnim.GetSpriteDefAtTime(m_testSecond / 10);

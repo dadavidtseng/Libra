@@ -1,4 +1,4 @@
-# SD1 Assignment 6: Libra Prototype
+# SD1 Assignment 7: Libra Playable
 
 ## C34 Yu-Wei Tseng
 
@@ -11,7 +11,9 @@ Implementation of Libra, a semi-procedural action-arcade-RPG shooter.
 - **F1:** Toggles the debug render for entities.
 - **F3:** Toggles noclip developer cheat, allowing the player to move through solid tiles.
 - **F4:** Toggles the debug camera, which shows the entire current Map onscreen.
+- **F6:** Toggles the debug heat maps, which shows different kind of heat maps (four in this version).
 - **F8:** Does a hard restart of the game, deleting and re-newing the Game instance.
+- **F9:** Switch to the next map in the game. If it is the last map, the player enters the game win scene and returns to attract mode.
 - **WASD:** To drive forward & turn toward direction.
 - **IJKL:** To aim turret toward direction.
 - **P:** To start new game, or toggle pause in-game.
@@ -36,13 +38,16 @@ Implementation of Libra, a semi-procedural action-arcade-RPG shooter.
 
 ## Known Issues
 
-- When in noclip mode, if the player tries to shoot while in a tile, an error window will pop up.
+- In the entity's heat map, it flashes when the heat map updates.
+- When the player spawns between four tiles, the enemy will stop chasing the player after reaching the target position.
 
 ## Deep Learning
 
-Just like the last assignment, I think the most important thing is to write code that readers can easily understand. 
-So, in this assignment, I started to ask myself if the code is easy to understand or not. 
-I also went back to the previous engine code and tried to write some comments on it, so that I don't have to go all the way back to the engine code and rewrite it. 
-Adding comments and renaming functions can actually help to avoid potential bugs. 
-Regarding the engine code, the thing that bothered me was deciding which functions should be moved to the entity class. 
-The game state, which we have to go back and forth with, definitely needs to be very clear to avoid unexpected bugs in the future.
+Compared to the StarShip project, the enemy AI in the Libra project was more complex than I initially thought. 
+It took me more time because it was hard to debug, and I had to print out some variables to ensure the functions were working correctly. 
+However, I gained a better understanding of when to use pointers and references, and what they represent in code, which is something I want to continue working on to make my code more readable.
+
+Additionally, while implementing the enemy AI, I found the process so interesting that I might want to start a side project or continue updating Libra to dive deeper into pathfinding algorithms. 
+For example, how to handle an enemy larger than a tile, tile slicing, or traffic in tiles, etc.
+
+

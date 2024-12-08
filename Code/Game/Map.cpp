@@ -42,13 +42,13 @@ Map::Map(MapDefinition const& mapDef)
     InitializeTileHeatMaps();
     GenerateAllTiles();
     SpawnNewNPCs();
-    GenerateHeatMaps(*m_tileHeatMaps[0]);
-    GenerateHeatMaps(*m_tileHeatMaps[1]);
-    GenerateHeatMaps(*m_tileHeatMaps[2]);
-    GenerateHeatMaps(*m_tileHeatMaps[3]);
+    // GenerateHeatMaps(*m_tileHeatMaps[0]);
+    // GenerateHeatMaps(*m_tileHeatMaps[1]);
+    // GenerateHeatMaps(*m_tileHeatMaps[2]);
+    // GenerateHeatMaps(*m_tileHeatMaps[3]);
     PopulateDistanceField(*m_tileHeatMaps[0], m_startPosition, 999.f);
-    PopulateDistanceFieldForLandBased(*m_tileHeatMaps[1], m_startPosition, 999.f);
-    PopulateDistanceFieldForAmphibian(*m_tileHeatMaps[2], m_startPosition, 999.f);
+    PopulateDistanceFieldForLandBased(*m_tileHeatMaps[1]);
+    PopulateDistanceFieldForAmphibian(*m_tileHeatMaps[2]);
     PopulateDistanceFieldForEntity(*m_tileHeatMaps[3], m_startPosition, 999.f);
 }
 
@@ -397,12 +397,12 @@ void Map::GenerateAllTiles()
 
     MapDefinition const* mapDef = MapDefinition::s_mapDefinitions[GetMapIndex()];
 
-    GenerateTilesByType("Stone", true);
+    GenerateTilesByType("Stone");
     GenerateWormTiles(mapDef->GetWorm01TileName(), mapDef->GetWorm01Num(), mapDef->GetWorm01Length());
     GenerateWormTiles(mapDef->GetWorm02TileName(), mapDef->GetWorm02Num(), mapDef->GetWorm02Length());
     GenerateWormTiles(mapDef->GetWorm03TileName(), mapDef->GetWorm03Num(), mapDef->GetWorm03Length());
 
-    GenerateTilesByType("Floor", false);
+    GenerateTilesByType("Floor");
 
     GenerateLShapeTiles(2, 2, 5, 5, false);
     GenerateLShapeTiles(m_dimensions.x - 9, m_dimensions.y - 9, 7, 7, true);
@@ -422,7 +422,7 @@ void Map::GenerateAllTiles()
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::GenerateTilesByType(String const& tileName, bool const isSolid)
+void Map::GenerateTilesByType(String const& tileName)
 {
     for (int y = 0; y < m_dimensions.y; ++y)
     {
@@ -861,7 +861,7 @@ void Map::PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 con
 
 
 //----------------------------------------------------------------------------------------------------
-void Map::PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
+void Map::PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap) const
 {
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
@@ -885,7 +885,7 @@ void Map::PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap, IntVec2 
 }
 
 //----------------------------------------------------------------------------------------------------
-void Map::PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
+void Map::PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap) const
 {
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
@@ -910,15 +910,13 @@ void Map::PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap, IntVec2 
     }
 }
 
-void Map::PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& startCoords, IntVec2 const& playerCoords) const
+void Map::PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const
 {
     // printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 
-    // ?????????? tile ??????????????
     heatMap.SetValueAtAllTiles(999.f);
-    heatMap.SetValueAtCoords(playerCoords, 0.f); // ?????????? 0
+    heatMap.SetValueAtCoords(playerCoords, 0.f); 
 
-    // ?? BFS ???????
     std::queue<IntVec2> openList;
     openList.push(playerCoords);
 
