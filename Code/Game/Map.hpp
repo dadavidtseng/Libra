@@ -28,6 +28,7 @@ public:
     void Update(float deltaSeconds);
     void Render() const;
     void DebugRender() const;
+    void RenderTileHeatMapText()const;
 
     // Accessors (const methods)
     Vec2 const    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;

@@ -322,6 +322,14 @@ void Map::RenderTileHeatMap() const
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
+void Map::RenderTileHeatMapText() const
+{
+    VertexList textVerts;
+    AABB2 box = AABB2(Vec2(0.f,750.f), Vec2(1600.f, 800.f));
+    g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "XXXXXXXXX", box, 1);
+    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
+    g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+}
 
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRenderEntities() const

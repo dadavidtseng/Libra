@@ -272,6 +272,7 @@ void Game::Render() const
     // TestBitfontMap();
     // TestTextBox2D();
     TestDevConsole();
+    m_currentMap->RenderTileHeatMapText();
     
 
 
