@@ -61,6 +61,12 @@
     <ClCompile Include="Capricorn.cpp">
       <Filter>Gameplay\Entities</Filter>
     </ClCompile>
+    <ClCompile Include="Explosion.cpp">
+      <Filter>Gameplay\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Debris.cpp">
+      <Filter>Gameplay\Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -106,6 +112,12 @@
       <Filter>Gameplay</Filter>
     </ClInclude>
     <ClInclude Include="Capricorn.hpp">
+      <Filter>Gameplay\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Explosion.hpp">
+      <Filter>Gameplay\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Debris.hpp">
       <Filter>Gameplay\Entities</Filter>
     </ClInclude>
   </ItemGroup>
