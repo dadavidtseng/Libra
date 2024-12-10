@@ -149,11 +149,11 @@ void Game::Update(float deltaSeconds)
     if (m_currentMap)
         m_currentMap->Update(deltaSeconds);
 
-if (g_theInput->WasKeyJustPressed(KEYCODE_F))
-{
-    g_theDevConsole->ToggleMode(OPEN_FULL);
-}
-    
+    if (g_theInput->WasKeyJustPressed(KEYCODE_F))
+    {
+        g_theDevConsole->ToggleMode(OPEN_FULL);
+    }
+
     if (g_theInput->WasKeyJustPressed(KEYCODE_ENTER))
     {
         g_theDevConsole->AddLine(Rgba8::WHITE, "SHOOT");
@@ -248,8 +248,8 @@ void Game::TestSpriteAnim() const
 }
 void Game::TestDevConsole() const
 {
-AABB2 box = AABB2(Vec2(0.f,0.f), Vec2(1600.f, 100.f));
-    
+    AABB2 box = AABB2(Vec2(0.f, 0.f), Vec2(1600.f, 100.f));
+
     g_theDevConsole->Render(box);
 }
 
@@ -261,7 +261,7 @@ void Game::Render() const
     m_currentMap->Render();
     m_currentMap->DebugRender();
     // TestSpriteAnim();
-    
+
 
     g_theRenderer->EndCamera(*m_worldCamera);
     //-----------------------------------------------------------------------------------------------
@@ -273,7 +273,7 @@ void Game::Render() const
     // TestTextBox2D();
     TestDevConsole();
     m_currentMap->RenderTileHeatMapText();
-    
+
 
 
     g_theRenderer->EndCamera(*m_screenCamera);

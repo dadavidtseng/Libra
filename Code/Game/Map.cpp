@@ -322,13 +322,49 @@ void Map::RenderTileHeatMap() const
     g_theRenderer->BindTexture(nullptr);
     g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
 }
+
+//----------------------------------------------------------------------------------------------------
 void Map::RenderTileHeatMapText() const
 {
+    if (g_theGame->IsAttractMode())
+        return;
+
+    if (m_currentTileHeatMapIndex == -1)
+        return;
+
     VertexList textVerts;
-    AABB2 box = AABB2(Vec2(0.f,750.f), Vec2(1600.f, 800.f));
-    g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "XXXXXXXXX", box, 1);
+    AABB2      box = AABB2(Vec2(0.f, 780.f), Vec2(1600.f, 800.f));
+
+    VertexList boxVerts;
+
+    AddVertsForAABB2D(boxVerts, box, Rgba8::BLACK);
+    g_theRenderer->BindTexture(nullptr);
+    g_theRenderer->DrawVertexArray(static_cast<int>(boxVerts.size()), boxVerts.data());
+
+    switch (m_currentTileHeatMapIndex)
+    {
+        case 0:
+            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map from start (F6 for next mode)", box, 1.f, Rgba8::WHITE, 1.f, Vec2(0, 1));
+            break;
+
+        case 1:
+            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for amphibians (F6 for next mode)", box, 0.5f);
+            break;
+
+        case 2:
+            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for land-based (F6 for next mode)", box, 0.5f);
+            break;
+
+        case 3:
+            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map to selected Entity's goal (F6 for next mode)", box, 0.5f);
+            break;
+    }
+
     g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
+
+
+
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -923,7 +959,7 @@ void Map::PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
     // printf("( Map%d ) Start  | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 
     heatMap.SetValueAtAllTiles(999.f);
-    heatMap.SetValueAtCoords(playerCoords, 0.f); 
+    heatMap.SetValueAtCoords(playerCoords, 0.f);
 
     std::queue<IntVec2> openList;
     openList.push(playerCoords);
