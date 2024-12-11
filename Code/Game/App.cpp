@@ -43,6 +43,7 @@ void App::Startup()
     // Create All Engine Subsystems
     EventSystemConfig eventSystemConfig;
     g_theEventSystem = new EventSystem(eventSystemConfig);
+    g_theEventSystem->SubscribeEventCallbackFunction("WindowClose", OnWindowClose);
 
     InputSystemConfig inputConfig;
     g_theInput = new InputSystem(inputConfig);
@@ -144,6 +145,8 @@ void App::RunFrame()
     Update(deltaSeconds); // Game updates / moves / spawns / hurts / kills stuff
     Render();             // Game draws current state of things
     EndFrame();           // Engine post-frame stuff
+
+    
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -244,12 +247,6 @@ void App::UpdateFromController()
 }
 
 //-----------------------------------------------------------------------------------------------
-void App::RequestQuit()
-{
-    m_isQuitting = true;
-}
-
-//-----------------------------------------------------------------------------------------------
 void App::DeleteAndCreateNewGame()
 {
     delete g_theGame;
@@ -279,4 +276,19 @@ void App::LoadGameConfig(char const* gameConfigXmlFilePath)
     {
         printf("WARNING: failed to load game config from file \"%s\"\n", gameConfigXmlFilePath);
     }
+}
+
+//-----------------------------------------------------------------------------------------------
+bool OnWindowClose(EventArgs& arg)
+{
+    UNUSED(arg)
+    
+    RequestQuit();
+    return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+void RequestQuit()
+{
+    m_isQuitting = true;
 }

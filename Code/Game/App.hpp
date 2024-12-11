@@ -27,10 +27,14 @@ private:
 
     void UpdateFromController();
     void UpdateFromKeyBoard();
-    void RequestQuit();
+
     void DeleteAndCreateNewGame();
     void LoadGameConfig(char const* gameConfigXmlFilePath);
 
-    bool  m_isQuitting         = false;
+
     float m_timeLastFrameStart = 0.f;
 };
+
+static bool OnWindowClose(EventArgs& arg);
+static void RequestQuit();
+static bool m_isQuitting;
