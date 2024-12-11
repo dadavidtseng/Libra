@@ -1,4 +1,4 @@
-# SD1 Assignment 7: Libra Playable
+# SD1 Assignment 8: Libra Epilogue
 
 ## C34 Yu-Wei Tseng
 
@@ -13,7 +13,8 @@ Implementation of Libra, a semi-procedural action-arcade-RPG shooter.
 - **F4:** Toggles the debug camera, which shows the entire current Map onscreen.
 - **F6:** Toggles the debug heat maps, which shows different kind of heat maps (four in this version).
 - **F8:** Does a hard restart of the game, deleting and re-newing the Game instance.
-- **F9:** Switch to the next map in the game. If it is the last map, the player enters the game win scene and returns to attract mode.
+- **F9:** Switch to the next map in the game. If it is the last map, the player enters the game win scene and returns to
+  attract mode.
 - **WASD:** To drive forward & turn toward direction.
 - **IJKL:** To aim turret toward direction.
 - **P:** To start new game, or toggle pause in-game.
@@ -21,6 +22,8 @@ Implementation of Libra, a semi-procedural action-arcade-RPG shooter.
 - **T:** Slows game simulation time to 1/10 the normal rate.
 - **Y:** Speeds game simulation time up to 4x the normal rate.
 - **O:** Step single update and pause.
+- **`:** Toggles the developer console
+- **ENTER:** Execute an event, right now only event "SHOOT".
 
 ### Xbox controller
 
@@ -38,16 +41,16 @@ Implementation of Libra, a semi-procedural action-arcade-RPG shooter.
 
 ## Known Issues
 
-- In the entity's heat map, it flashes when the heat map updates.
-- When the player spawns between four tiles, the enemy will stop chasing the player after reaching the target position.
+- N/A
 
 ## Deep Learning
 
-Compared to the StarShip project, the enemy AI in the Libra project was more complex than I initially thought. 
-It took me more time because it was hard to debug, and I had to print out some variables to ensure the functions were working correctly. 
-However, I gained a better understanding of when to use pointers and references, and what they represent in code, which is something I want to continue working on to make my code more readable.
+I really like how the XML data drives the entire project.
+I look forward to implementing a more advanced event system and developer console.
+Additionally, I am planning to implement various faster pathfinding algorithms,
+as well as address some of the extreme edge cases that might occur in this project.
+Finally, I am definitely going to create more diverse enemies to add depth to the project.
 
-Additionally, while implementing the enemy AI, I found the process so interesting that I might want to start a side project or continue updating Libra to dive deeper into pathfinding algorithms. 
-For example, how to handle an enemy larger than a tile, tile slicing, or traffic in tiles, etc.
+
 
 
