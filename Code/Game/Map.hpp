@@ -28,7 +28,7 @@ public:
     void Update(float deltaSeconds);
     void Render() const;
     void DebugRender() const;
-    void RenderTileHeatMapText()const;
+    void RenderTileHeatMapText() const;
 
     // Accessors (const methods)
     Vec2 const    GetWorldPosFromTileCoords(IntVec2 const& tileCoords) const;
@@ -55,12 +55,14 @@ public:
     IntVec2         RollRandomTraversableTileCoords(TileHeatMap const& heatMap, IntVec2 const& startCoords) const;
 
     // Heatmap-related
-    void GenerateHeatMaps(TileHeatMap const& heatMap) const;
-    void PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
-    void PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap) const;
-    void PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap) const;
-    void PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
+    void              GenerateHeatMaps(TileHeatMap const& heatMap) const;
+    void              PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void              PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const;
+    void              PopulateDistanceFieldForLandBased(TileHeatMap const& heatMap) const;
+    void              PopulateDistanceFieldForAmphibian(TileHeatMap const& heatMap) const;
+    void              PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 const& playerCoords) const;
+    std::vector<Vec2> GenerateEntityPathToGoal(TileHeatMap const& heatMap,Vec2 const& start, Vec2 const& goal) const;
+    bool              RaycastHitsImpassable(Vec2 const& currentPos, Vec2 const& nextNextPos);
 
 private:
     void UpdateEntities(float deltaSeconds) const;

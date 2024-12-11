@@ -1000,6 +1000,61 @@ void Map::PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
     // printf("( Map%d ) Finish | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 }
 
+std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap,Vec2 const& start, Vec2 const& goal) const
+{
+    // 初始化熱圖，設置高初始值
+    // TileHeatMap heatMap(GetMapDimension(), 999.f);
+
+    // 計算目標在地圖上的座標
+    IntVec2 goalCoords = GetTileCoordsFromWorldPos(goal);
+
+    // 填充距離場，用於計算路徑
+    PopulateDistanceFieldToPosition(heatMap, goalCoords);
+
+    // 設置當前位置
+    IntVec2           currentCoords = GetTileCoordsFromWorldPos(start);
+    std::vector<Vec2> path;
+
+    while (currentCoords != goalCoords)
+    {
+        path.push_back(GetWorldPosFromTileCoords(currentCoords));
+
+        // 找到熱值最低的相鄰 tile
+        IntVec2 bestNeighbor = currentCoords;
+        float   lowestHeat   = heatMap.GetValueAtCoords(currentCoords);
+
+        for (IntVec2 const& offset : { IntVec2(-1, 0), IntVec2(1, 0), IntVec2(0, -1), IntVec2(0, 1) })
+        {
+            IntVec2 neighbor = currentCoords + offset;
+            float   heat     = heatMap.GetValueAtCoords(neighbor);
+
+            if (heat < lowestHeat)
+            {
+                lowestHeat   = heat;
+                bestNeighbor = neighbor;
+            }
+        }
+
+        // 更新當前位置
+        currentCoords = bestNeighbor;
+    }
+
+    // 添加最終目標點
+    path.push_back(goal);
+std::reverse(path.begin(), path.end());
+    return path;
+}
+bool Map::RaycastHitsImpassable(Vec2 const& currentPos, Vec2 const& nextNextPos) 
+{
+    Vec2 direction = nextNextPos - currentPos;
+    Ray2 ray = Ray2(currentPos, direction.GetNormalized(), GetDistance2D(currentPos, nextNextPos));
+    RaycastResult2D raycastResult2D = RaycastVsTiles(ray);
+
+    if (raycastResult2D.m_didImpact)
+        return true;
+
+    return false;
+}
 
 //----------------------------------------------------------------------------------------------------
 Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)

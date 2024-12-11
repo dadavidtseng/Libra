@@ -114,12 +114,11 @@ void Entity::FindNextWayPosition()
 void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 {
     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
-
     // Update or initialize the heat map and target position
     if (!m_heatMap ||
-        (isChasing && m_targetLastKnownPosition != playerTank->m_position))
+        (isChasing && m_goalPosition != playerTank->m_position))
     {
-        m_nextWayPosition = m_position;
+        // m_nextWayPosition = m_position;
 
         // Create a new heat map with high initial values
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
@@ -129,56 +128,72 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         if (isChasing)
         {
             // Chasing mode: Set the target to the player's current position
-            m_targetLastKnownPosition = playerTank->m_position;
-            targetCoords              = m_map->GetTileCoordsFromWorldPos(m_targetLastKnownPosition);
+            m_goalPosition = playerTank->m_position;
+            targetCoords              = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
         }
         else
         {
             // Wandering mode: Set a random traversable tile as the target
             IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
             targetCoords               = randomCoords;
-            m_targetLastKnownPosition  = m_map->GetWorldPosFromTileCoords(randomCoords);
+            m_goalPosition  = m_map->GetWorldPosFromTileCoords(randomCoords);
         }
 
         // Generate heat maps and distance fields for pathfinding
         // m_map->GenerateHeatMaps(*m_heatMap);
-        m_map->PopulateDistanceFieldToPosition(*m_heatMap, targetCoords);
+        m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
+        // m_map->PopulateDistanceFieldToPosition(*m_heatMap, targetCoords);
+        for (Vec2 const& pathPoint : m_pathPoints)
+        {
+            printf("AAA (%f, %f)\n", pathPoint.x, pathPoint.y);
+        }
     }
 
-    // Check if the target position has been reached
-    if (IsPointInsideDisc2D(m_targetLastKnownPosition, m_position, m_physicsRadius))
-    {
-        m_hasTarget = false;
-        delete m_heatMap;
-        m_heatMap = nullptr;
-        return;
-    }
-
-    // if (GetDistance2D(m_targetLastKnownPosition, m_position)<playerTank->m_physicsRadius+m_physicsRadius)
+    // 如果路徑為空，重新生成路徑
+    // if (m_pathPoints.empty())
     // {
-    //     m_hasTarget = false;
-    //     delete m_heatMap;
-    //     m_heatMap = nullptr;
-    //     return;
+    //     m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
     // }
 
-    // Check if the next waypoint has been reached
-    if (IsPointInsideDisc2D(m_nextWayPosition, m_position, m_physicsRadius))
+    // // 路徑導航邏輯
+    if (m_pathPoints.size() >= 2)
     {
-        FindNextWayPosition();
+        // 對下一個次目標進行 raycast，檢查是否可以跳過
+        Vec2 nextNextPosition = m_pathPoints[m_pathPoints.size() - 2];
+        if (!m_map->RaycastHitsImpassable(m_position, nextNextPosition))
+        {
+            m_pathPoints.pop_back(); // 清除當前目標，直奔次目標
+        }
     }
 
-    Vec2 const dispToTarget = m_nextWayPosition - m_position;
+    // 如果達到當前目標，移除目標點
+    if (IsPointInsideDisc2D(m_pathPoints.back(), m_position, m_physicsRadius))
+    {
+        m_pathPoints.pop_back();
+        for (Vec2 const& pathPoint : m_pathPoints)
+        {
+            printf("BBB (%f, %f)\n", pathPoint.x, pathPoint.y);
+        }
+    }
 
+    // 如果路徑已空，選擇新目標
+    if (m_pathPoints.empty())
+    {
+        IntVec2 randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
+        m_goalPosition = m_map->GetWorldPosFromTileCoords(randomCoords);
+        m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap,m_position, m_goalPosition);
+        // m_hasTarget = false;
+        // delete m_heatMap;
+        // m_heatMap = nullptr;
+        // return;
+    }
+
+    // 將目標設置為當前路徑中的最後一個點
+    Vec2 nextPosition = m_pathPoints.back();
+    Vec2 dispToTarget = nextPosition - m_position;
+
+    // 旋轉與移動
     m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
-
-    TurnToward(m_orientationDegrees,
-               m_targetOrientationDegrees,
-               deltaSeconds,
-               m_rotateSpeed);
-
-    MoveToward(m_position,
-               m_nextWayPosition,
-               m_moveSpeed,
-               deltaSeconds);
+    TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
+    MoveToward(m_position, nextPosition, m_moveSpeed, deltaSeconds);
 }

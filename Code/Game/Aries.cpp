@@ -83,24 +83,25 @@ void Aries::DebugRender() const
                   Rgba8::GREEN);
 
     DebugDrawLine(m_position,
-                  m_targetLastKnownPosition,
+                  m_goalPosition,
                   0.05f,
                   Rgba8::GREY);
 
-    DebugDrawGlowCircle(m_targetLastKnownPosition,
+    DebugDrawGlowCircle(m_goalPosition,
                         0.1f,
                         Rgba8::GREY,
                         1.f);
 
     DebugDrawLine(m_position,
-                  m_nextWayPosition,
+                  m_pathPoints.back(),
                   0.05f,
                   Rgba8::WHITE);
 
-    DebugDrawGlowCircle(m_nextWayPosition,
+    DebugDrawGlowCircle(m_pathPoints.back(),
                         0.1f,
                         Rgba8::WHITE,
                         1.f);
+
 
     DebugDrawLine(m_position,
                   m_position + m_velocity,

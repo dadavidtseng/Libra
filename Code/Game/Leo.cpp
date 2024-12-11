@@ -105,21 +105,21 @@ void Leo::DebugRender() const
                   Rgba8::GREEN);
 
     DebugDrawLine(m_position,
-                  m_targetLastKnownPosition,
+                  m_goalPosition,
                   0.05f,
                   Rgba8::GREY);
 
-    DebugDrawGlowCircle(m_targetLastKnownPosition,
+    DebugDrawGlowCircle(m_goalPosition,
                         0.1f,
                         Rgba8::GREY,
                         1.f);
 
     DebugDrawLine(m_position,
-                  m_nextWayPosition,
+                  m_pathPoints.back(),
                   0.05f,
                   Rgba8::WHITE);
 
-    DebugDrawGlowCircle(m_nextWayPosition,
+    DebugDrawGlowCircle(m_pathPoints.back(),
                         0.1f,
                         Rgba8::WHITE,
                         1.f);
@@ -190,6 +190,16 @@ void Leo::RenderBody() const
 
     g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
+
+    VertexList   stateVerts;
+    String const stateStr   = m_hasTarget ? "Chase" : "Wander";
+    Rgba8 const  stateColor = m_hasTarget ? Rgba8::RED : Rgba8::WHITE;
+    
+    g_theBitmapFont->AddVertsForTextInBox2D(stateVerts, stateStr, m_bodyBounds, 1.f, stateColor);
+    TransformVertexArrayXY3D(static_cast<int>(stateVerts.size()), stateVerts.data(),
+                             1.0f, 0, m_position);
+    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
+    g_theRenderer->DrawVertexArray(static_cast<int>(stateVerts.size()), stateVerts.data());
 }
 
 //----------------------------------------------------------------------------------------------------
