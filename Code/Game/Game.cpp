@@ -149,7 +149,7 @@ void Game::Update(float deltaSeconds)
     if (m_currentMap)
         m_currentMap->Update(deltaSeconds);
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_F))
+    if (g_theInput->WasKeyJustPressed(KEYCODE_OEM_3))
     {
         g_theDevConsole->ToggleMode(OPEN_FULL);
     }
@@ -176,6 +176,7 @@ void Game::TestBitfontMap() const
     g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
 }
+
 void Game::TestTextBox2D() const
 {
     if (!m_isAttractMode)
