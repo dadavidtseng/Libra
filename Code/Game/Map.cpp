@@ -8,6 +8,8 @@
 #include <cmath>
 #include <queue>
 
+#include "Debris.hpp"
+#include "Explosion.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/HeatMaps.hpp"
@@ -1000,7 +1002,7 @@ void Map::PopulateDistanceFieldToPosition(TileHeatMap const& heatMap, IntVec2 co
     // printf("( Map%d ) Finish | GenerateDistanceFieldToPlayerPosition\n", m_mapDef->GetIndex());
 }
 
-std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap,Vec2 const& start, Vec2 const& goal) const
+std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap, Vec2 const& start, Vec2 const& goal) const
 {
     // 初始化熱圖，設置高初始值
     // TileHeatMap heatMap(GetMapDimension(), 999.f);
@@ -1041,13 +1043,13 @@ std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap,Vec2 
 
     // 添加最終目標點
     path.push_back(goal);
-std::reverse(path.begin(), path.end());
+    std::reverse(path.begin(), path.end());
     return path;
 }
-bool Map::RaycastHitsImpassable(Vec2 const& currentPos, Vec2 const& nextNextPos) 
+bool Map::RaycastHitsImpassable(Vec2 const& currentPos, Vec2 const& nextNextPos)
 {
-    Vec2 direction = nextNextPos - currentPos;
-    Ray2 ray = Ray2(currentPos, direction.GetNormalized(), GetDistance2D(currentPos, nextNextPos));
+    Vec2            direction       = nextNextPos - currentPos;
+    Ray2            ray             = Ray2(currentPos, direction.GetNormalized(), GetDistance2D(currentPos, nextNextPos));
     RaycastResult2D raycastResult2D = RaycastVsTiles(ray);
 
     if (raycastResult2D.m_didImpact)
@@ -1071,6 +1073,10 @@ Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)
             return new Aries(this, type, faction);
         case ENTITY_TYPE_BULLET:
             return new Bullet(this, type, faction);
+        case ENTITY_TYPE_EXPLOSION:
+            return new Explosion(this, type, faction);
+        case ENTITY_TYPE_DEBRIS:
+            return new Debris(this, type, faction);
         case ENTITY_TYPE_UNKNOWN:
             ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
         case NUM_ENTITY_TYPES:

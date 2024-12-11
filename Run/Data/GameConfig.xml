@@ -73,4 +73,10 @@
     <bulletDoesPushEntities>false</bulletDoesPushEntities>
     <bulletCanSwim>true</bulletCanSwim>
 
+    <!-- Explosion-related -->
+    <explosionInitHealth>2</explosionInitHealth>
+    <explosionIsPushedByWalls>false</explosionIsPushedByWalls>
+    <explosionIsPushedByEntities>false</explosionIsPushedByEntities>
+    <explosionDoesPushEntities>false</explosionDoesPushEntities>
+
 </GameConfig>

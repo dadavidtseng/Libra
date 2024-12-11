@@ -4,11 +4,10 @@
 
 //----------------------------------------------------------------------------------------------------
 #pragma once
-#include "Engine/Math/AABB2.hpp"
 #include "Game/Entity.hpp"
 
 //----------------------------------------------------------------------------------------------------
-class Texture;
+class SpriteSheet;
 
 //----------------------------------------------------------------------------------------------------
 class Explosion : public Entity
@@ -20,8 +19,8 @@ public:
     void DebugRender() const override;
 
 private:
-    void UpdateBody(float deltaSeconds);
     void RenderBody() const;
-    
-    Texture* m_BodyTexture = nullptr;
+
+    SpriteSheet* m_spriteSheet   = nullptr;
+    float        m_animationTime = 0.f;
 };

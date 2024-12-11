@@ -64,6 +64,7 @@ void Leo::Update(float const deltaSeconds)
     if (m_health <= 0)
     {
         g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         m_isGarbage = true;
         m_isDead    = true;
     }

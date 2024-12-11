@@ -44,6 +44,7 @@ void Scorpio::Update(float const deltaSeconds)
     if (m_health <= 0)
     {
         g_theAudio->StartSound(g_theGame->GetEnemyDiedSoundID());
+        m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         m_isGarbage = true;
         m_isDead    = true;
     }
@@ -114,6 +115,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_EVIL, m_position + myFwdNormal * 0.45f, m_turretOrientationDegrees);
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("scorpioShootCoolDown", 0.3f);
             g_theAudio->StartSound(g_theGame->GetEnemyShootSoundID());
+            m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         }
 
         m_targetLastKnownPosition = playerTank->m_position;

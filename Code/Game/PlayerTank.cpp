@@ -9,18 +9,19 @@
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/MathUtils.hpp"
+#include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
-STATIC bool PlayerTank::SHOOT(EventArgs&  args)
+STATIC bool PlayerTank::SHOOT(EventArgs& args)
 {
     String playerName = args.GetValue("SHOOT", "Unknown");
     printf("SHOOT: %s\n", playerName.c_str());
 
-    
-    
+
+
     g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
     return false;
 }
@@ -77,13 +78,19 @@ void PlayerTank::Update(const float deltaSeconds)
             m_map->SpawnNewEntity(ENTITY_TYPE_BULLET, ENTITY_FACTION_GOOD, m_position + fwdNormal * 0.2f, turretAbsoluteDegrees);
             m_shootCoolDown = g_gameConfigBlackboard.GetValue("playerTankShootCoolDown", 0.1f);
 
+
+
+
+            m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
+
+
             g_theAudio->StartSound(g_theGame->GetPlayerTankShootSoundID());
         }
     }
 
     m_bodyScale += deltaSeconds;
 
-    m_bodyScale= GetClamped(m_bodyScale, 0.0f, 1.0f);
+    m_bodyScale = GetClamped(m_bodyScale, 0.0f, 1.0f);
 
     if (g_theInput->WasKeyJustPressed(KEYCODE_F2))
     {
@@ -95,7 +102,7 @@ void PlayerTank::Update(const float deltaSeconds)
         m_bodyScale -= deltaSeconds;
     }
 
-    
+
 }
 
 //----------------------------------------------------------------------------------------------------
