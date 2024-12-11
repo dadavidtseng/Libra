@@ -17,17 +17,17 @@
 Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_physicsRadius           = g_gameConfigBlackboard.GetValue("scorpioPhysicsRadius", 0.35f);
-    m_detectRange             = g_gameConfigBlackboard.GetValue("scorpioDetectRange", 10.f);
-    m_isPushedByWalls         = g_gameConfigBlackboard.GetValue("scorpioIsPushedByWalls", true);
-    m_isPushedByEntities      = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
-    m_doesPushEntities        = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
-    m_canSwim                 = g_gameConfigBlackboard.GetValue("scorpioCanSwim", false);
-    m_targetLastKnownPosition = m_position;
-    m_health                  = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
+    m_physicsRadius      = g_gameConfigBlackboard.GetValue("scorpioPhysicsRadius", 0.35f);
+    m_detectRange        = g_gameConfigBlackboard.GetValue("scorpioDetectRange", 10.f);
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("scorpioIsPushedByWalls", true);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("scorpioIsPushedByEntities", false);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("scorpioDoesPushEntities", true);
+    m_canSwim            = g_gameConfigBlackboard.GetValue("scorpioCanSwim", false);
+    m_goalPosition       = m_position;
+    m_health             = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
 
     m_totalHealth = m_health;
-    
+
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
@@ -103,7 +103,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
     if (m_map->HasLineOfSight(m_position, playerTank->m_position, m_detectRange) && !playerTank->m_isDead)
     {
         // Turn toward player
-        float const targetOrientationDegrees = (m_targetLastKnownPosition - m_position).GetOrientationDegrees();
+        float const targetOrientationDegrees = (m_goalPosition - m_position).GetOrientationDegrees();
 
         TurnToward(m_turretOrientationDegrees, targetOrientationDegrees, deltaSeconds, m_turretRotateSpeed);
 
@@ -121,7 +121,7 @@ void Scorpio::UpdateTurret(float const deltaSeconds)
             m_map->SpawnNewEntity(ENTITY_TYPE_EXPLOSION, ENTITY_FACTION_NEUTRAL, m_position, m_orientationDegrees);
         }
 
-        m_targetLastKnownPosition = playerTank->m_position;
+        m_goalPosition = playerTank->m_position;
     }
     else
     {

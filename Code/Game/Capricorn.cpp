@@ -105,21 +105,21 @@ void Capricorn::DebugRender() const
                   Rgba8::GREEN);
 
     DebugDrawLine(m_position,
-                  m_targetLastKnownPosition,
+                  m_goalPosition,
                   0.05f,
                   Rgba8::GREY);
 
-    DebugDrawGlowCircle(m_targetLastKnownPosition,
+    DebugDrawGlowCircle(m_goalPosition,
                         0.1f,
                         Rgba8::GREY,
                         1.f);
 
     DebugDrawLine(m_position,
-                  m_nextWayPosition,
+                  m_pathPoints.back(),
                   0.05f,
                   Rgba8::WHITE);
 
-    DebugDrawGlowCircle(m_nextWayPosition,
+    DebugDrawGlowCircle(m_pathPoints.back(),
                         0.1f,
                         Rgba8::WHITE,
                         1.f);
@@ -142,7 +142,7 @@ void Capricorn::UpdateBody(float const deltaSeconds)
     if (!playerTank)
         return;
 
-    Vec2 const  dispToTarget    = m_nextWayPosition - m_position;
+    Vec2 const  dispToTarget    = m_goalPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 

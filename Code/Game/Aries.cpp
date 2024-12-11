@@ -123,7 +123,7 @@ void Aries::UpdateBody(const float deltaSeconds)
     if (!playerTank)
         return;
 
-    Vec2 const  dispToTarget    = m_nextWayPosition - m_position;
+    Vec2 const  dispToTarget    = m_goalPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 

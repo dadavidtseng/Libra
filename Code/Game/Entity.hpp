@@ -55,7 +55,6 @@ public:
     virtual void TurnToward(float& orientationDegrees, float targetOrientationDegrees, float deltaSeconds, float rotationSpeed);
     void         MoveToward(Vec2& currentPosition, Vec2 const& targetPosition, float moveSpeed, float deltaSeconds);
     void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
-    void         FindNextWayPosition();
     void         UpdateBehavior(float deltaSeconds, bool isChasing);
     void         RenderHealthBar() const;
 
@@ -67,8 +66,8 @@ public:
     EntityFaction     m_faction                 = ENTITY_FACTION_UNKNOWN;
     Vec2              m_position                = Vec2::ZERO;
     Vec2              m_velocity                = Vec2::ZERO;
-    Vec2              m_targetLastKnownPosition = Vec2::ZERO;
-    Vec2              m_nextWayPosition         = Vec2::ZERO;
+    // Vec2              m_targetLastKnownPosition = Vec2::ZERO;
+    // Vec2              m_nextWayPosition         = Vec2::ZERO;
     Vec2              m_goalPosition            = Vec2::ZERO;
     std::vector<Vec2> m_pathPoints;
     TileHeatMap*      m_heatMap = nullptr;

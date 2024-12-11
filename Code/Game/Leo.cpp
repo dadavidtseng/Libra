@@ -35,25 +35,6 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 
-void Leo::DebugRenderTileIndex() const
-{
-
-    IntVec2 dimensions = m_map->GetMapDimension();
-
-    for (int tileY = 0; tileY < dimensions.y; ++tileY)
-    {
-        for (int tileX = 0; tileX < dimensions.x; ++tileX)
-        {
-            float const value = m_heatMap->GetValueAtCoords(tileX, tileY);
-
-            VertexList textVerts;
-            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
-            g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-            g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
-        }
-    }
-}
-
 //----------------------------------------------------------------------------------------------------
 void Leo::Update(float const deltaSeconds)
 {
@@ -82,7 +63,6 @@ void Leo::Render() const
 
     RenderBody();
     RenderHealthBar();
-    // DebugRenderTileIndex();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -146,7 +126,7 @@ void Leo::UpdateBody(float const deltaSeconds)
     if (!playerTank)
         return;
 
-    Vec2 const  dispToTarget    = m_nextWayPosition - m_position;
+    Vec2 const  dispToTarget    = m_goalPosition - m_position;
     Vec2 const  fwdNormal       = Vec2::MakeFromPolarDegrees(m_orientationDegrees);
     float const degreesToTarget = GetAngleDegreesBetweenVectors2D(dispToTarget, fwdNormal);
 

@@ -12,7 +12,6 @@ class Leo : public Entity
 {
 public:
     Leo(Map* map, EntityType type, EntityFaction faction);
-    void DebugRenderTileIndex() const;
 
     void Update(float deltaSeconds) override;
     void Render() const override;
