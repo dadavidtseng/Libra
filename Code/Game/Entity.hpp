@@ -57,6 +57,7 @@ public:
     void         WanderAround(float deltaSeconds, float moveSpeed, float rotateSpeed);
     void         FindNextWayPosition();
     void         UpdateBehavior(float deltaSeconds, bool isChasing);
+    void         RenderHealthBar() const;
 
 // TODO: MAKE THIS
 // virtual  void TurnTowardPosition(Vec2 const& targetPos, float maxTurnDegrees); 
@@ -81,6 +82,7 @@ public:
     float             m_physicsRadius            = 0.f;
     float             m_timeSinceLastRoll        = 0.f;
     int               m_health                   = 0;
+    int               m_totalHealth              = 0;
     bool              m_isDead                   = false;
     bool              m_isGarbage                = false;
     bool              m_isPushedByEntities       = false;

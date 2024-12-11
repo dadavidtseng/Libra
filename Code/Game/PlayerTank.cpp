@@ -41,6 +41,7 @@ PlayerTank::PlayerTank(Map* map, EntityType const type, EntityFaction const fact
     m_bodyBounds   = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
 
+    m_totalHealth   = m_health;
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_BODY_IMG);
     m_turretTexture = g_theRenderer->CreateOrGetTextureFromFile(PLAYER_TANK_TURRET_IMG);
     g_theEventSystem->SubscribeEventCallbackFunction("SHOOT", SHOOT);
@@ -113,6 +114,7 @@ void PlayerTank::Render() const
 
     RenderBody();
     RenderTurret();
+    RenderHealthBar();
 }
 
 //----------------------------------------------------------------------------------------------------

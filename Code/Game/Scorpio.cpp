@@ -26,6 +26,8 @@ Scorpio::Scorpio(Map* map, EntityType const type, EntityFaction const faction)
     m_targetLastKnownPosition = m_position;
     m_health                  = g_gameConfigBlackboard.GetValue("scorpioInitHealth", 5);
 
+    m_totalHealth = m_health;
+    
     m_bodyBounds    = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_turretBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture   = g_theRenderer->CreateOrGetTextureFromFile(SCORPIO_BODY_IMG);
@@ -61,6 +63,7 @@ void Scorpio::Render() const
     RenderBody();
     RenderTurret();
     RenderLaser();
+    RenderHealthBar();
 }
 
 //----------------------------------------------------------------------------------------------------

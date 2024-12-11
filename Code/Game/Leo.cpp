@@ -29,6 +29,8 @@ Leo::Leo(Map* map, EntityType const type, EntityFaction const faction)
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
     m_canSwim            = g_gameConfigBlackboard.GetValue("leoCanSwim", false);
 
+    m_totalHealth = m_health;
+
     m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
@@ -79,6 +81,7 @@ void Leo::Render() const
         return;
 
     RenderBody();
+    RenderHealthBar();
     // DebugRenderTileIndex();
 }
 
@@ -195,7 +198,7 @@ void Leo::RenderBody() const
     VertexList   stateVerts;
     String const stateStr   = m_hasTarget ? "Chase" : "Wander";
     Rgba8 const  stateColor = m_hasTarget ? Rgba8::RED : Rgba8::WHITE;
-    
+
     g_theBitmapFont->AddVertsForTextInBox2D(stateVerts, stateStr, m_bodyBounds, 1.f, stateColor);
     TransformVertexArrayXY3D(static_cast<int>(stateVerts.size()), stateVerts.data(),
                              1.0f, 0, m_position);

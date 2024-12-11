@@ -260,7 +260,7 @@ void Game::Render() const
 
     m_currentMap->Render();
     m_currentMap->DebugRender();
-    // TestSpriteAnim();
+    TestSpriteAnim();
 
 
     g_theRenderer->EndCamera(*m_worldCamera);
@@ -269,8 +269,8 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
-    // TestBitfontMap();
-    // TestTextBox2D();
+    TestBitfontMap();
+    TestTextBox2D();
     TestDevConsole();
     m_currentMap->RenderTileHeatMapText();
 

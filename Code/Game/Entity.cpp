@@ -117,18 +117,18 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 
     // Update or initialize the heat map and target position
     if (!m_heatMap ||
-        (isChasing && m_goalPosition != playerTank->m_position))
+        (m_hasTarget && m_goalPosition != playerTank->m_position))
     {
         // Create a new heat map with high initial values
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
 
         IntVec2 targetCoords;
 
-        if (isChasing)
+        if (m_hasTarget)
         {
             // Chasing mode: Set the target to the player's current position
             m_goalPosition = playerTank->m_position;
-            targetCoords   = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
+            targetCoords = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
 
             // Play discover sound if not already played
             if (!m_hasPlayedDiscoverSound)
@@ -143,8 +143,8 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         {
             // Wandering mode: Set a random traversable tile as the target
             IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
-            targetCoords               = randomCoords;
-            m_goalPosition             = m_map->GetWorldPosFromTileCoords(randomCoords);
+            targetCoords = randomCoords;
+            m_goalPosition = m_map->GetWorldPosFromTileCoords(randomCoords);
 
             // Reset discover sound flag when switching to wandering mode
             m_hasPlayedDiscoverSound = false;
@@ -179,10 +179,10 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
     // If path is empty, choose a new target
     if (m_pathPoints.empty())
     {
-        IntVec2 randomCoords     = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
-        m_goalPosition           = m_map->GetWorldPosFromTileCoords(randomCoords);
-        m_pathPoints             = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
-        m_hasTarget              = false;
+        IntVec2 randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
+        m_goalPosition = m_map->GetWorldPosFromTileCoords(randomCoords);
+        m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
+        m_hasTarget = false;
         m_hasPlayedDiscoverSound = false; // Reset sound flag
     }
 
@@ -194,4 +194,26 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
     m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
     TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
     MoveToward(m_position, nextPosition, m_moveSpeed, deltaSeconds);
+}
+
+void Entity::RenderHealthBar() const
+{
+    VertexList  verts;
+    AABB2 const box = AABB2(Vec2(-0.5f, 0.5f), Vec2(0.5f, 0.6f));
+
+    AddVertsForAABB2D(verts, box, Rgba8::WHITE);
+
+    TransformVertexArrayXY3D(static_cast<int>(verts.size()), verts.data(),
+                             1.0f, 0.f, m_position);
+
+    VertexList  healthBarVerts;
+    AABB2 const healthBarBox = AABB2(Vec2(-0.5f, 0.5f), Vec2(0.5f * ((float) m_health / (float) m_totalHealth), 0.6f));
+    AddVertsForAABB2D(healthBarVerts, healthBarBox, Rgba8::RED);
+
+    TransformVertexArrayXY3D(static_cast<int>(healthBarVerts.size()), healthBarVerts.data(),
+                             1.0f, 0.f, m_position);
+
+    g_theRenderer->BindTexture(nullptr);
+    g_theRenderer->DrawVertexArray(static_cast<int>(verts.size()), verts.data());
+    g_theRenderer->DrawVertexArray(static_cast<int>(healthBarVerts.size()), healthBarVerts.data());
 }
