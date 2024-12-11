@@ -22,9 +22,6 @@ public:
     explicit Map(MapDefinition const& mapDef);
     ~Map();
 
-    // TODO:
-// RaycastResult2D RaycastVsHeatMap(Ray2 const& ray) const;
-
     void Update(float deltaSeconds);
     void Render() const;
     void DebugRender() const;

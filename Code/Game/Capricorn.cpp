@@ -29,7 +29,6 @@ Capricorn::Capricorn(Map* map, EntityType const type, EntityFaction const factio
     m_doesPushEntities   = g_gameConfigBlackboard.GetValue("leoDoesPushEntities", true);
     m_canSwim            = g_gameConfigBlackboard.GetValue("leoCanSwim", false);
 
-    m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(LEO_BODY_IMG);
 }
 

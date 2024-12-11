@@ -82,8 +82,6 @@ Game::~Game()
     g_theAudio->StopSound(m_gameLosePlayback);
 }
 
-;
-
 //-----------------------------------------------------------------------------------------------
 void Game::Update(float deltaSeconds)
 {

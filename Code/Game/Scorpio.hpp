@@ -28,10 +28,10 @@ private:
     void RenderTurret() const;
     void RenderLaser() const;
 
-    AABB2    m_turretBounds;
-    Texture* m_turretTexture               = nullptr;
-    float    m_turretOrientationDegrees    = 0.f;
-    float    m_shootCoolDown               = 0.f;
-    float    m_turretRotateSpeed           = g_gameConfigBlackboard.GetValue("scorpioTurretRotateSpeed", 90.f);
-    float    m_shootDegreesThreshold       = g_gameConfigBlackboard.GetValue("scorpioShootDegreesThreshold", 5.f);
+    AABB2    m_turretBounds             = AABB2::NEG_HALF_TO_HALF;
+    Texture* m_turretTexture            = nullptr;
+    float    m_turretOrientationDegrees = 0.f;
+    float    m_shootCoolDown            = 0.f;
+    float    m_turretRotateSpeed        = g_gameConfigBlackboard.GetValue("scorpioTurretRotateSpeed", 90.f);
+    float    m_shootDegreesThreshold    = g_gameConfigBlackboard.GetValue("scorpioShootDegreesThreshold", 5.f);
 };

@@ -29,7 +29,6 @@ Aries::Aries(Map* map, EntityType const type, EntityFaction const faction)
 
     m_totalHealth = m_health;
     
-    m_bodyBounds  = AABB2(Vec2(-0.5f, -0.5f), Vec2(0.5f, 0.5f));
     m_bodyTexture = g_theRenderer->CreateOrGetTextureFromFile(ARIES_BODY_IMG);
 }
 

@@ -71,7 +71,7 @@ public:
     Vec2              m_goalPosition            = Vec2::ZERO;
     std::vector<Vec2> m_pathPoints;
     TileHeatMap*      m_heatMap = nullptr;
-    AABB2             m_bodyBounds;
+    AABB2             m_bodyBounds = AABB2::NEG_HALF_TO_HALF;
     Texture const*    m_bodyTexture              = nullptr;
     float             m_moveSpeed                = 0.f;
     float             m_rotateSpeed              = 0.f;
