@@ -87,4 +87,5 @@ public:
     bool              m_canSwim                  = false;
     bool              m_hasTarget                = false;
     bool              m_isChasing                = false;
+    bool              m_hasPlayedDiscoverSound   = false;
 };

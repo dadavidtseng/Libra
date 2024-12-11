@@ -4,11 +4,11 @@
             name="Map01"
             index="0"
             worm01TileName="Grass" worm01Num="15" worm01Length="50"
-            worm02TileName="Sparkle_01" worm02Num="5" worm02Length="30"
+            worm02TileName="Sparkle_01" worm02Num="5" worm02Length="300"
             worm03TileName="Water" worm03Num="5" worm03Length="30"
-            scorpioSpawnPercentage="0.6"
-            leoSpawnPercentage="0.2"
-            ariesSpawnPercentage="0.2"
+            scorpioSpawnPercentage="0"
+            leoSpawnPercentage="0.005"
+            ariesSpawnPercentage="0"
             dimensions="24,30"
     />
 

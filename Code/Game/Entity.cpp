@@ -114,12 +114,11 @@ void Entity::FindNextWayPosition()
 void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 {
     PlayerTank const* playerTank = g_theGame->GetPlayerTank();
+
     // Update or initialize the heat map and target position
     if (!m_heatMap ||
         (isChasing && m_goalPosition != playerTank->m_position))
     {
-        // m_nextWayPosition = m_position;
-
         // Create a new heat map with high initial values
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
 
@@ -129,70 +128,69 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         {
             // Chasing mode: Set the target to the player's current position
             m_goalPosition = playerTank->m_position;
-            targetCoords              = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
+            targetCoords   = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
+
+            // Play discover sound if not already played
+            if (!m_hasPlayedDiscoverSound)
+            {
+                g_theAudio->StartSound(g_theGame->GetEnemyDiscoverSoundID());
+                m_hasPlayedDiscoverSound = true;
+                printf("PLAYDISCOVERSOUN\n");
+                printf("(%f, %f) (%f, %f)\n", m_goalPosition.x, m_goalPosition.y, playerTank->m_position.x, playerTank->m_position.y);
+            }
         }
         else
         {
             // Wandering mode: Set a random traversable tile as the target
             IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
             targetCoords               = randomCoords;
-            m_goalPosition  = m_map->GetWorldPosFromTileCoords(randomCoords);
+            m_goalPosition             = m_map->GetWorldPosFromTileCoords(randomCoords);
+
+            // Reset discover sound flag when switching to wandering mode
+            m_hasPlayedDiscoverSound = false;
         }
 
         // Generate heat maps and distance fields for pathfinding
-        // m_map->GenerateHeatMaps(*m_heatMap);
         m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
-        // m_map->PopulateDistanceFieldToPosition(*m_heatMap, targetCoords);
-        for (Vec2 const& pathPoint : m_pathPoints)
-        {
-            printf("AAA (%f, %f)\n", pathPoint.x, pathPoint.y);
-        }
     }
 
-    // 如果路徑為空，重新生成路徑
-    // if (m_pathPoints.empty())
-    // {
-    //     m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
-    // }
+    // If path is empty, regenerate path
+    if (m_pathPoints.empty())
+    {
+        m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
+    }
 
-    // // 路徑導航邏輯
+    // Path navigation logic
     if (m_pathPoints.size() >= 2)
     {
-        // 對下一個次目標進行 raycast，檢查是否可以跳過
         Vec2 nextNextPosition = m_pathPoints[m_pathPoints.size() - 2];
         if (!m_map->RaycastHitsImpassable(m_position, nextNextPosition))
         {
-            m_pathPoints.pop_back(); // 清除當前目標，直奔次目標
+            m_pathPoints.pop_back();
         }
     }
 
-    // 如果達到當前目標，移除目標點
+    // Remove current target if reached
     if (IsPointInsideDisc2D(m_pathPoints.back(), m_position, m_physicsRadius))
     {
         m_pathPoints.pop_back();
-        for (Vec2 const& pathPoint : m_pathPoints)
-        {
-            printf("BBB (%f, %f)\n", pathPoint.x, pathPoint.y);
-        }
     }
 
-    // 如果路徑已空，選擇新目標
+    // If path is empty, choose a new target
     if (m_pathPoints.empty())
     {
-        IntVec2 randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
-        m_goalPosition = m_map->GetWorldPosFromTileCoords(randomCoords);
-        m_pathPoints = m_map->GenerateEntityPathToGoal(*m_heatMap,m_position, m_goalPosition);
-        // m_hasTarget = false;
-        // delete m_heatMap;
-        // m_heatMap = nullptr;
-        // return;
+        IntVec2 randomCoords     = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
+        m_goalPosition           = m_map->GetWorldPosFromTileCoords(randomCoords);
+        m_pathPoints             = m_map->GenerateEntityPathToGoal(*m_heatMap, m_position, m_goalPosition);
+        m_hasTarget              = false;
+        m_hasPlayedDiscoverSound = false; // Reset sound flag
     }
 
-    // 將目標設置為當前路徑中的最後一個點
+    // Set target to the last point in the path
     Vec2 nextPosition = m_pathPoints.back();
     Vec2 dispToTarget = nextPosition - m_position;
 
-    // 旋轉與移動
+    // Rotate and move
     m_targetOrientationDegrees = Atan2Degrees(dispToTarget.y, dispToTarget.x);
     TurnToward(m_orientationDegrees, m_targetOrientationDegrees, deltaSeconds, m_rotateSpeed);
     MoveToward(m_position, nextPosition, m_moveSpeed, deltaSeconds);

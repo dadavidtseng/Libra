@@ -332,6 +332,7 @@ void Game::InitializeAudio()
     m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND);
     m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND);
     m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND);
+    m_enemyDiscoverSound = g_theAudio->CreateOrGetSound(ENEMY_DISCOVER_SOUND);
 
     printf("( Game ) Finish | InitializeAudio\n");
 }

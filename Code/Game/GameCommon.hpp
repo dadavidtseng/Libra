@@ -50,6 +50,7 @@ extern const char* ENEMY_HIT_SOUND;
 extern const char* ENEMY_SHOOT_SOUND;
 extern const char* EXIT_MAP_SOUND;
 extern const char* BULLET_BOUNCE_SOUND;
+extern const char* ENEMY_DISCOVER_SOUND;
 
 //-----------------------------------------------------------------------------------------------
 // Texture-related

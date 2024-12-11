@@ -37,6 +37,7 @@ public:
     SoundID            GetEnemyShootSoundID() const { return m_enemyShootSound; }
     SoundID            GetExitMapSoundID() const { return m_exitMapSound; }
     SoundID            GetBulletBounceSoundID() const { return m_bulletBounceSound; }
+    SoundID            GetEnemyDiscoverSoundID() const { return m_enemyDiscoverSound; }
 
     bool IsAttractMode() const { return m_isAttractMode; }
     bool IsNoClip() const { return m_isNoClip; }
@@ -82,7 +83,7 @@ private:
     Map*              m_currentMap      = nullptr;
     SpriteSheet*      m_tileSpriteSheet = nullptr;
     SpriteSheet*      m_testSpriteSheet = nullptr;
-    float m_testSecond = 0.f;
+    float             m_testSecond      = 0.f;
     PlayerTank*       m_playerTank      = nullptr;
 
     SoundID         m_attractModeBgm       = 0;
@@ -103,6 +104,7 @@ private:
     SoundID         m_enemyShootSound      = 0;
     SoundID         m_exitMapSound         = 0;
     SoundID         m_bulletBounceSound    = 0;
+    SoundID         m_enemyDiscoverSound   = 0;
     float           m_InGameBgmSpeed       = 1.f;
 
     // float numTilesInViewHorizontally

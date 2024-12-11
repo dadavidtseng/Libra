@@ -28,6 +28,7 @@ const char* ENEMY_HIT_SOUND         = "Data/Audios/EnemyHit.mp3";
 const char* ENEMY_SHOOT_SOUND       = "Data/Audios/EnemyShoot.mp3";
 const char* EXIT_MAP_SOUND          = "Data/Audios/ExitMap.mp3";
 const char* BULLET_BOUNCE_SOUND     = "Data/Audios/BulletBounce.mp3";
+const char* ENEMY_DISCOVER_SOUND = "Data/Audios/EnemyDiscoverSound.mp3";
 
 //----------------------------------------------------------------------------------------------------
 //// Texture-related
