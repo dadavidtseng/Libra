@@ -18,9 +18,9 @@
 Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
     : Entity(map, type, faction)
 {
-    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("bulletIsPushedByWalls", true);
-    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("bulletIsPushedByEntities", true);
-    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("bulletDoesPushEntities", true);
+    m_isPushedByWalls    = g_gameConfigBlackboard.GetValue("bulletIsPushedByWalls", -1);
+    m_isPushedByEntities = g_gameConfigBlackboard.GetValue("bulletIsPushedByEntities", -1);
+    m_doesPushEntities   = g_gameConfigBlackboard.GetValue("bulletDoesPushEntities", -1);
 
     if (faction == ENTITY_FACTION_GOOD)
     {
@@ -34,7 +34,7 @@ Bullet::Bullet(Map* map, EntityType const type, EntityFaction const faction)
         m_health      = g_gameConfigBlackboard.GetValue("bulletEvilInitHealth", 1);
         m_moveSpeed   = g_gameConfigBlackboard.GetValue("bulletEvilMoveSpeed", 3.f);
     }
-
+    m_canSwim = g_gameConfigBlackboard.GetValue("bulletCanSwim", false);
     m_bodyBounds    = AABB2(Vec2(-0.1f, -0.05f), Vec2(0.1f, 0.05f));
     m_physicsRadius = GetDistance2D(m_bodyBounds.m_mins, m_bodyBounds.m_maxs) * 0.5f;
 }

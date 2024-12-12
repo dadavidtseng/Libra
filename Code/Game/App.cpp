@@ -64,7 +64,7 @@ void App::Startup()
     windowConfig.m_consoleTitle[9]  = "| '-------------' | | '--------------' | | '--------------' | | '--------------' | | '--------------' |\n";
     windowConfig.m_consoleTitle[10] = " '---------------'   '----------------'   '----------------'   '----------------'   '----------------'\n";
 
-    windowConfig.m_windowTitle = "SD1-A7: Libra Playable";
+    windowConfig.m_windowTitle = "SD1-A8: Epilogue";
     g_theWindow                = new Window(windowConfig);
 
     RenderConfig renderConfig;

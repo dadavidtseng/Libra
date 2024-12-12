@@ -1391,7 +1391,7 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
 
         // Check tile blocking
 
-        if (IsTileSolid(tileCoords))
+        if (IsTileSolid(tileCoords) && !IsTileWater(tileCoords))
         {
             raycastResult.m_didImpact     = true;
             raycastResult.m_impactDist    = t;
