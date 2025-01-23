@@ -30,10 +30,6 @@ Game::Game()
     InitializeMaps();
     InitializeAudio();
 
-    Texture const* const tileTexture  = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/TestSpriteSheet_8x2.png");
-    IntVec2 const        spriteCoords = IntVec2(8, 2);
-    m_testSpriteSheet                 = new SpriteSheet(*tileTexture, spriteCoords);
-
     m_worldCamera  = new Camera();
     m_screenCamera = new Camera();
 
@@ -92,8 +88,6 @@ void Game::Update(float deltaSeconds)
     UpdateCamera(deltaSeconds);
     UpdateAttractMode(deltaSeconds);
     AdjustForPauseAndTimeDistortion(deltaSeconds);
-
-    m_testSecond += deltaSeconds;
 
     if (m_playerTank->m_isDead)
     {
@@ -162,96 +156,6 @@ void Game::Update(float deltaSeconds)
     }
 }
 
-void Game::TestBitfontMap() const
-{
-    if (!m_isAttractMode)
-        return;
-
-    std::vector<Vertex_PCU> textVerts;
-    g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(100.f, 200.f), 30.f, "Hello, world");
-    g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(20.f, 300.f), 30.f, std::to_string(m_testSecond));
-    g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(250.f, 400.f), 15.f, "It's nice to have options!", Rgba8::RED, 0.6f);
-    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
-}
-
-void Game::TestTextBox2D() const
-{
-    if (!m_isAttractMode)
-        return;
-
-    AABB2 box(Vec2(400.f, 400.f), Vec2(700.f, 700.f)); // 200x100 的邊界框
-
-    VertexList boxVerts;
-    AddVertsForAABB2D(boxVerts, box, Rgba8::BLUE);
-    g_theRenderer->BindTexture(nullptr);
-    g_theRenderer->DrawVertexArray(static_cast<int>(boxVerts.size()), boxVerts.data());
-
-    VertexList vertexArray;
-
-    // 設置文字與邊界框
-    String text = "Hello, World!\nThis is multi-line text.\nThis is the third line TEST\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX\nX";
-
-    float cellHeight = 20.f; // 每個字元高度
-    Vec2  alignment(0.f, 0.f); // 中心對齊
-    UNUSED(cellHeight)
-    // 呼叫 AddVertsForTextInBox2D
-    g_theBitmapFont->AddVertsForTextInBox2D(
-        vertexArray,    // 頂點數據
-        text,           // 文字內容
-        box,            // 邊界框
-        m_glowIntensity * 30,     // 字元高度
-        Rgba8::WHITE,   // 字體顏色
-        m_glowIntensity * 2,            // 寬高比例
-        alignment,      // 對齊方式
-        SHRINK_TO_FIT // 繪製模式
-
-
-    );
-
-    g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
-    g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
-}
-void Game::TestSpriteAnim() const
-{
-    if (!m_isAttractMode)
-        return;
-
-    VertexList vertexArray;
-
-    // 創建動畫定義，從第0到第5幀，每秒10幀，循環播放
-    SpriteAnimDefinition myAnim(*m_testSpriteSheet, 0, 5, 10.f, SpriteAnimPlaybackType::PINGPONG);
-
-    // 假設每次調用此函數的時候我們傳入的時間為 elapsedTime
-
-    // 根據動畫時間取得對應的 SpriteDefinition
-    const SpriteDefinition& spriteDef = myAnim.GetSpriteDefAtTime(m_testSecond / 10);
-
-    // 創建一個矩形範圍來渲染當前幀
-    Vec2 mins(0.f, 0.f);  // 在這裡可以調整你的位置或大小
-    Vec2 maxs(1.f, 1.f);   // 同樣也可以改變這些值來縮放精靈
-
-    Vec2 uvMins = spriteDef.GetUVsMins();
-    Vec2 uvMaxs = spriteDef.GetUVsMaxs();
-    // printf("( %f, %f ) ( %f, %f )\n", uvMins.x, uvMins.y, uvMaxs.x, uvMaxs.y);
-    // 添加頂點
-    AddVertsForAABB2D(vertexArray, AABB2(mins, maxs), Rgba8::WHITE, uvMins, uvMaxs);
-
-
-    // 綁定精靈紋理
-    g_theRenderer->BindTexture(&spriteDef.GetTexture());
-
-    // 繪製動畫幀
-    g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
-
-}
-void Game::TestDevConsole() const
-{
-    AABB2 box = AABB2(Vec2(0.f, 0.f), Vec2(1600.f, 100.f));
-
-    g_theDevConsole->Render(box);
-}
-
 //-----------------------------------------------------------------------------------------------
 void Game::Render() const
 {
@@ -259,8 +163,6 @@ void Game::Render() const
 
     m_currentMap->Render();
     m_currentMap->DebugRender();
-    TestSpriteAnim();
-
 
     g_theRenderer->EndCamera(*m_worldCamera);
     //-----------------------------------------------------------------------------------------------
@@ -268,12 +170,8 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
-    TestBitfontMap();
-    TestTextBox2D();
-    TestDevConsole();
+
     m_currentMap->RenderTileHeatMapText();
-
-
 
     g_theRenderer->EndCamera(*m_screenCamera);
 }

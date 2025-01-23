@@ -22,10 +22,6 @@ public:
     Game();
     ~Game();
     void Update(float deltaSeconds);
-    void TestBitfontMap() const;
-    void TestTextBox2D() const;
-    void TestSpriteAnim() const;
-    void TestDevConsole() const;
     void Render() const;
 
     PlayerTank const*  GetPlayerTank() const { return m_playerTank; }
@@ -82,8 +78,6 @@ private:
     std::vector<Map*> m_maps;
     Map*              m_currentMap      = nullptr;
     SpriteSheet*      m_tileSpriteSheet = nullptr;
-    SpriteSheet*      m_testSpriteSheet = nullptr;
-    float             m_testSecond      = 0.f;
     PlayerTank*       m_playerTank      = nullptr;
 
     SoundID         m_attractModeBgm       = 0;
