@@ -1016,6 +1016,7 @@ std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap, Vec2
     // 設置當前位置
     IntVec2           currentCoords = GetTileCoordsFromWorldPos(start);
     std::vector<Vec2> path;
+    path.reserve((int)(m_dimensions.x * m_dimensions.y));
 
     while (currentCoords != goalCoords)
     {

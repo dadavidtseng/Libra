@@ -20,6 +20,9 @@ Entity::Entity(Map* map, EntityType const type, EntityFaction const faction)
       m_type(type),
       m_faction(faction)
 {
+
+    IntVec2 mapDimension = m_map->GetMapDimension();
+    m_pathPoints.reserve(mapDimension.x*mapDimension.y);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -96,28 +99,22 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
         // Create a new heat map with high initial values
         m_heatMap = new TileHeatMap(m_map->GetMapDimension(), 999.f);
 
-        IntVec2 targetCoords;
-
         if (isChasing)
         {
             // Chasing mode: Set the target to the player's current position
             m_goalPosition = playerTank->m_position;
-            targetCoords   = m_map->GetTileCoordsFromWorldPos(m_goalPosition);
 
             // Play discover sound if not already played
             if (!m_hasPlayedDiscoverSound)
             {
                 g_theAudio->StartSound(g_theGame->GetEnemyDiscoverSoundID());
                 m_hasPlayedDiscoverSound = true;
-                printf("PLAYDISCOVERSOUN\n");
-                printf("(%f, %f) (%f, %f)\n", m_goalPosition.x, m_goalPosition.y, playerTank->m_position.x, playerTank->m_position.y);
             }
         }
         else
         {
             // Wandering mode: Set a random traversable tile as the target
             IntVec2 const randomCoords = m_map->RollRandomTraversableTileCoords(*m_heatMap, IntVec2(m_position));
-            targetCoords               = randomCoords;
             m_goalPosition             = m_map->GetWorldPosFromTileCoords(randomCoords);
 
             // Reset discover sound flag when switching to wandering mode

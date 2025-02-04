@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
 // EngineBuildPreferences.hpp
 //
 // Defines build preferences that the Engine should use when building for this particular game.
@@ -9,4 +9,4 @@
 //
 
 // #define ENGINE_DISABLE_AUDIO	// (If uncommented) Disables AudioSystem code and fmod linkage.
-
+#define ENGINE_DEBUG_RENDER

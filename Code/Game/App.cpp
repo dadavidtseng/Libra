@@ -145,8 +145,6 @@ void App::RunFrame()
     Update(deltaSeconds); // Game updates / moves / spawns / hurts / kills stuff
     Render();             // Game draws current state of things
     EndFrame();           // Engine post-frame stuff
-
-    
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -179,6 +177,7 @@ void App::Update(const float deltaSeconds)
 {
     if (g_theGame->IsMarkedForDelete())
         DeleteAndCreateNewGame();
+
     UpdateFromController();
     UpdateFromKeyBoard();
     g_theGame->Update(deltaSeconds);

@@ -90,7 +90,7 @@ RaycastResult2D raycastResult2D = m_map->RaycastVsTiles(ray);
 
         // IntVec2 const normalOfSurfaceToReflectOffOf = m_map->GetTileCoordsFromWorldPos(m_position) - m_map->GetTileCoordsFromWorldPos(nextPosition);
         IntVec2 const normalOfSurfaceToReflectOffOf = IntVec2(raycastResult2D.m_impactNormal);
-        printf("(%f, %f)\n", raycastResult2D.m_impactNormal.x, raycastResult2D.m_impactNormal.y);
+        // printf("(%f, %f)\n", raycastResult2D.m_impactNormal.x, raycastResult2D.m_impactNormal.y);
         Vec2 const    ofSurfaceToReflectOffOf(static_cast<float>(normalOfSurfaceToReflectOffOf.x), static_cast<float>(normalOfSurfaceToReflectOffOf.y));
         Vec2 const    reflectedVelocity = m_velocity.GetReflected(ofSurfaceToReflectOffOf.GetNormalized());
         m_orientationDegrees            = Atan2Degrees(reflectedVelocity.y, reflectedVelocity.x);
