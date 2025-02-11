@@ -72,7 +72,9 @@ void App::Startup()
     g_theRenderer         = new Renderer(renderConfig); // Create render
 
     DevConsoleConfig devConsoleConfig;
-    g_theDevConsole = new DevConsole(devConsoleConfig);
+    devConsoleConfig.m_defaultRenderer = g_theRenderer;
+    devConsoleConfig.m_defaultFontName = "SquirrelFixedFont";
+    g_theDevConsole                    = new DevConsole(devConsoleConfig);
 
     AudioSystemConfig audioConfig;
     g_theAudio = new AudioSystem(audioConfig);
@@ -281,7 +283,7 @@ void App::LoadGameConfig(char const* gameConfigXmlFilePath)
 bool OnWindowClose(EventArgs& arg)
 {
     UNUSED(arg)
-    
+
     RequestQuit();
     return true;
 }

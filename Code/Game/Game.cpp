@@ -22,7 +22,6 @@
 #include "Game/PlayerTank.hpp"
 
 
-
 //----------------------------------------------------------------------------------------------------
 Game::Game()
 {
@@ -35,7 +34,6 @@ Game::Game()
 
     Vec2 const  playerTankInitPosition           = g_gameConfigBlackboard.GetValue("playerTankInitPosition", Vec2(2.f, 2.f));
     float const playerTankInitOrientationDegrees = g_gameConfigBlackboard.GetValue("playerTankInitOrientationDegrees", 30.f);
-
 
 
     m_playerTank = dynamic_cast<PlayerTank*>(m_currentMap->SpawnNewEntity(ENTITY_TYPE_PLAYER_TANK,
@@ -141,7 +139,7 @@ void Game::Update(float deltaSeconds)
     if (m_currentMap)
         m_currentMap->Update(deltaSeconds);
 
-    if (g_theInput->WasKeyJustPressed(KEYCODE_OEM_3))
+    if (g_theInput->WasKeyJustPressed(KEYCODE_TILDE))
     {
         g_theDevConsole->ToggleMode(OPEN_FULL);
     }
@@ -170,6 +168,7 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
+    RenderDevConsole();
 
     m_currentMap->RenderTileHeatMapText();
 
@@ -229,7 +228,7 @@ void Game::InitializeAudio()
     m_enemyShootSound      = g_theAudio->CreateOrGetSound(ENEMY_SHOOT_SOUND);
     m_exitMapSound         = g_theAudio->CreateOrGetSound(EXIT_MAP_SOUND);
     m_bulletBounceSound    = g_theAudio->CreateOrGetSound(BULLET_BOUNCE_SOUND);
-    m_enemyDiscoverSound = g_theAudio->CreateOrGetSound(ENEMY_DISCOVER_SOUND);
+    m_enemyDiscoverSound   = g_theAudio->CreateOrGetSound(ENEMY_DISCOVER_SOUND);
 
     printf("( Game ) Finish | InitializeAudio\n");
 }
@@ -624,7 +623,7 @@ void Game::UpdateCamera(float const deltaSeconds) const
         float const mapHeight = static_cast<float>(m_currentMap->GetMapDimension().y);
 
         float aspectRatio = worldSizeX / worldSizeY;
-        float newScreenX,newScreenY;
+        float newScreenX, newScreenY;
 
         if (mapWidth / mapHeight > aspectRatio)
         {
@@ -783,4 +782,12 @@ void Game::RenderUI() const
 
         g_theRenderer->DrawVertexArray(static_cast<int>(titleVerts.size()), titleVerts.data());
     }
+}
+
+//----------------------------------------------------------------------------------------------------
+void Game::RenderDevConsole() const
+{
+    AABB2 const box = AABB2(Vec2::ZERO, Vec2(1600,100));
+
+    g_theDevConsole->Render(box);
 }

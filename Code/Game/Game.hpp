@@ -55,6 +55,7 @@ private:
 
     void RenderAttractMode() const;
     void RenderUI() const;
+    void RenderDevConsole() const;
 
     Camera* m_worldCamera             = nullptr;
     Camera* m_screenCamera            = nullptr;
