@@ -6,17 +6,24 @@
 #pragma once
 #include "Engine/Core/EventSystem.hpp"
 
+//-Forward-Declaration--------------------------------------------------------------------------------
+class Camera;
+
 //----------------------------------------------------------------------------------------------------
 class App
 {
 public:
-    App();
-    ~App();
+    App()  = default;
+    ~App() = default;
     void Startup();
     void Shutdown();
     void RunFrame();
 
     void RunMainLoop();
+
+    static bool OnCloseButtonClicked(EventArgs& args);
+    static void RequestQuit();
+    static bool m_isQuitting;
 
 private:
     void BeginFrame() const;
@@ -30,10 +37,7 @@ private:
     void DeleteAndCreateNewGame();
     void LoadGameConfig(char const* gameConfigXmlFilePath);
 
-
     float m_timeLastFrameStart = 0.f;
-};
 
-static bool OnWindowClose(EventArgs& arg);
-static void RequestQuit();
-static bool m_isQuitting;
+    Camera* m_devConsoleCamera = nullptr;
+};

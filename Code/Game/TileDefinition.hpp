@@ -19,7 +19,7 @@ struct TileDefinition
 
     static void                         InitializeTileDefs(SpriteSheet const& spriteSheet);
     static TileDefinition const*        GetTileDefByName(String const& name);
-    static Strings                      GetTileNames();
+    static StringList                   GetTileNames();
     static std::vector<TileDefinition*> s_tileDefinitions;
 
     String           GetName() const { return m_name; }

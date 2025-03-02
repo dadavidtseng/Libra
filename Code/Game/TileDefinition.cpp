@@ -74,9 +74,9 @@ STATIC TileDefinition const* TileDefinition::GetTileDefByName(String const& name
 }
 
 //----------------------------------------------------------------------------------------------------
-STATIC Strings TileDefinition::GetTileNames()
+STATIC StringList TileDefinition::GetTileNames()
 {
-    Strings tileNames;
+    StringList tileNames;
 
     for (TileDefinition const* tileDef : s_tileDefinitions)
     {

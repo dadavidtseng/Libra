@@ -47,8 +47,8 @@ Game::Game()
     float const screenSizeX = g_gameConfigBlackboard.GetValue("screenSizeX", 1600.f);
     float const screenSizeY = g_gameConfigBlackboard.GetValue("screenSizeY", 800.f);
 
-    m_worldCamera->SetOrthoView(bottomLeft, Vec2(worldSizeX, worldSizeY));
-    m_screenCamera->SetOrthoView(bottomLeft, Vec2(screenSizeX, screenSizeY));
+    m_worldCamera->SetOrthoGraphicView(bottomLeft, Vec2(worldSizeX, worldSizeY));
+    m_screenCamera->SetOrthoGraphicView(bottomLeft, Vec2(screenSizeX, screenSizeY));
 
     m_attractModePlayback = g_theAudio->StartSound(m_attractModeBgm, true, 3, 0, 1, false);
 }
@@ -168,7 +168,6 @@ void Game::Render() const
 
     RenderAttractMode();
     RenderUI();
-    RenderDevConsole();
 
     m_currentMap->RenderTileHeatMapText();
 
@@ -613,7 +612,7 @@ void Game::UpdateCamera(float const deltaSeconds) const
     cameraMin.y = RangeMapClamped(cameraMin.y, mapMinY, mapMaxY - worldSizeY, mapMinY, mapMaxY - worldSizeY);
     cameraMax.y = RangeMapClamped(cameraMax.y, mapMinY + worldSizeY, mapMaxY, mapMinY + worldSizeY, mapMaxY);
 
-    m_worldCamera->SetOrthoView(cameraMin, cameraMax);
+    m_worldCamera->SetOrthoGraphicView(cameraMin, cameraMax);
 
     if (m_isDebugCamera)
     {
@@ -636,7 +635,7 @@ void Game::UpdateCamera(float const deltaSeconds) const
             newScreenY = mapHeight;
         }
 
-        m_worldCamera->SetOrthoView(bottomLeft, Vec2(newScreenX, newScreenY));
+        m_worldCamera->SetOrthoGraphicView(bottomLeft, Vec2(newScreenX, newScreenY));
     }
 }
 
@@ -782,12 +781,4 @@ void Game::RenderUI() const
 
         g_theRenderer->DrawVertexArray(static_cast<int>(titleVerts.size()), titleVerts.data());
     }
-}
-
-//----------------------------------------------------------------------------------------------------
-void Game::RenderDevConsole() const
-{
-    AABB2 const box = AABB2(Vec2::ZERO, Vec2(1600,100));
-
-    g_theDevConsole->Render(box);
 }

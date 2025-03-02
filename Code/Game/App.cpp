@@ -6,34 +6,31 @@
 #include "Game/App.hpp"
 
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Core/DevConsole.hpp"
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/EventSystem.hpp"
+#include "Engine/Core/NamedStrings.hpp"
 #include "Engine/Core/Time.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Math/RandomNumberGenerator.hpp"
+#include "Engine/Renderer/BitmapFont.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/Window.hpp"
 #include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
-#include "Engine/Core/NamedStrings.hpp"
-#include "Engine/Renderer/BitmapFont.hpp"
 
 //-----------------------------------------------------------------------------------------------
 App*                   g_theApp        = nullptr; // Created and owned by Main_Windows.cpp
 AudioSystem*           g_theAudio      = nullptr; // Created and owned by the App
 BitmapFont*            g_theBitmapFont = nullptr; // Created and owned by the App
-InputSystem*           g_theInput      = nullptr; // Created and owned by the App
 Game*                  g_theGame       = nullptr; // Created and owned by the App
 Renderer*              g_theRenderer   = nullptr; // Created and owned by the App
 RandomNumberGenerator* g_theRNG        = nullptr; // Created and owned by the App
 Window*                g_theWindow     = nullptr; // Created and owned by the App
 
-//-----------------------------------------------------------------------------------------------
-App::App() = default;
-
-//-----------------------------------------------------------------------------------------------
-App::~App() = default;
+//----------------------------------------------------------------------------------------------------
+STATIC bool App::m_isQuitting = false;
 
 //-----------------------------------------------------------------------------------------------
 void App::Startup()
@@ -43,7 +40,8 @@ void App::Startup()
     // Create All Engine Subsystems
     EventSystemConfig eventSystemConfig;
     g_theEventSystem = new EventSystem(eventSystemConfig);
-    g_theEventSystem->SubscribeEventCallbackFunction("WindowClose", OnWindowClose);
+    g_theEventSystem->SubscribeEventCallbackFunction("OnCloseButtonClicked", OnCloseButtonClicked);
+    g_theEventSystem->SubscribeEventCallbackFunction("quit", OnCloseButtonClicked);
 
     InputSystemConfig inputConfig;
     g_theInput = new InputSystem(inputConfig);
@@ -71,9 +69,18 @@ void App::Startup()
     renderConfig.m_window = g_theWindow;
     g_theRenderer         = new Renderer(renderConfig); // Create render
 
+    // Initialize devConsoleCamera
+    m_devConsoleCamera = new Camera();
+
+    Vec2 const bottomLeft     = Vec2::ZERO;
+    Vec2 const screenTopRight = Vec2(1600.f, 800.f);
+
+    m_devConsoleCamera->SetOrthoGraphicView(bottomLeft, screenTopRight);
+
     DevConsoleConfig devConsoleConfig;
     devConsoleConfig.m_defaultRenderer = g_theRenderer;
     devConsoleConfig.m_defaultFontName = "SquirrelFixedFont";
+    devConsoleConfig.m_defaultCamera   = m_devConsoleCamera;
     g_theDevConsole                    = new DevConsole(devConsoleConfig);
 
     AudioSystemConfig audioConfig;
@@ -160,6 +167,22 @@ void App::RunMainLoop()
     }
 }
 
+//----------------------------------------------------------------------------------------------------
+STATIC bool App::OnCloseButtonClicked(EventArgs& args)
+{
+    UNUSED(args)
+
+    RequestQuit();
+
+    return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+STATIC void App::RequestQuit()
+{
+    m_isQuitting = true;
+}
+
 //-----------------------------------------------------------------------------------------------
 void App::BeginFrame() const
 {
@@ -177,8 +200,9 @@ void App::BeginFrame() const
 //-----------------------------------------------------------------------------------------------
 void App::Update(const float deltaSeconds)
 {
-    if (g_theGame->IsMarkedForDelete())
-        DeleteAndCreateNewGame();
+    Clock::TickSystemClock();
+
+    if (g_theGame->IsMarkedForDelete()) DeleteAndCreateNewGame();
 
     UpdateFromController();
     UpdateFromKeyBoard();
@@ -196,6 +220,10 @@ void App::Render() const
 {
     g_theRenderer->ClearScreen(Rgba8::BLACK);
     g_theGame->Render();
+
+    AABB2 const box = AABB2(Vec2::ZERO, Vec2(1600.f, 30.f));
+
+    g_theDevConsole->Render(box);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -214,8 +242,7 @@ void App::UpdateFromKeyBoard()
 {
     if (g_theInput->WasKeyJustPressed(KEYCODE_ESC))
     {
-        if (g_theGame->IsAttractMode())
-            RequestQuit();
+        if (g_theGame->IsAttractMode()) RequestQuit();
     }
 
     if (g_theInput->WasKeyJustPressed(KEYCODE_F8))
@@ -234,8 +261,7 @@ void App::UpdateFromController()
 
     if (controller.WasButtonJustPressed(XBOX_BUTTON_BACK))
     {
-        if (g_theGame->IsAttractMode())
-            RequestQuit();
+        if (g_theGame->IsAttractMode()) RequestQuit();
     }
 
     if (controller.WasButtonJustPressed(XBOX_BUTTON_DPAD_RIGHT))
@@ -277,19 +303,4 @@ void App::LoadGameConfig(char const* gameConfigXmlFilePath)
     {
         printf("WARNING: failed to load game config from file \"%s\"\n", gameConfigXmlFilePath);
     }
-}
-
-//-----------------------------------------------------------------------------------------------
-bool OnWindowClose(EventArgs& arg)
-{
-    UNUSED(arg)
-
-    RequestQuit();
-    return true;
-}
-
-//----------------------------------------------------------------------------------------------------
-void RequestQuit()
-{
-    m_isQuitting = true;
 }
