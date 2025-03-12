@@ -71,8 +71,7 @@ Map::~Map()
 //----------------------------------------------------------------------------------------------------
 void Map::Update(float const deltaSeconds)
 {
-    if (g_theGame->IsAttractMode())
-        return;
+    if (g_theGame->IsAttractMode()) return;
 
     if (g_theInput->WasKeyJustPressed(KEYCODE_F6))
     {
@@ -108,7 +107,6 @@ void Map::Update(float const deltaSeconds)
     }
 
 
-
     UpdateEntities(deltaSeconds);
     PushEntitiesOutOfEachOther(m_allEntities, m_allEntities);
     CheckEntityVsEntityCollision(m_entitiesByType[ENTITY_TYPE_BULLET], m_allEntities);
@@ -119,8 +117,7 @@ void Map::Update(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Map::Render() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
+    if (g_theGame->IsAttractMode()) return;
 
     RenderTiles();
     RenderTileHeatMap();
@@ -132,16 +129,13 @@ void Map::Render() const
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRender() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
+    if (g_theGame->IsAttractMode()) return;
 
-    if (!g_theGame->IsDebugRendering())
-        return;
+    if (!g_theGame->IsDebugRendering()) return;
 
     DebugRenderEntities();
 
-    if (m_currentSelectedEntity)
-        DebugDrawRing(m_currentSelectedEntity->m_position, 1.f, 0.05f, Rgba8::BLUE);
+    if (m_currentSelectedEntity) DebugDrawRing(m_currentSelectedEntity->m_position, 1.f, 0.05f, Rgba8::BLUE);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -184,8 +178,7 @@ bool Map::HasLineOfSight(Vec2 const& startPos,
     float const distSquared      = GetDistanceSquared2D(startPos, endPos);
     float const sighRangeSquared = sightRange * sightRange;
 
-    if (distSquared >= sighRangeSquared)
-        return false;
+    if (distSquared >= sighRangeSquared) return false;
 
     Vec2 const  fwdNormal = (endPos - startPos).GetNormalized();
     float const maxDist   = GetDistance2D(startPos, endPos);
@@ -197,8 +190,7 @@ bool Map::HasLineOfSight(Vec2 const& startPos,
 //----------------------------------------------------------------------------------------------------
 bool Map::IsTileSolid(IntVec2 const& tileCoords) const
 {
-    if (IsTileCoordsOutOfBounds(tileCoords))
-        return true;
+    if (IsTileCoordsOutOfBounds(tileCoords)) return true;
 
     int const tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
 
@@ -212,10 +204,10 @@ bool Map::IsTileSolid(IntVec2 const& tileCoords) const
 
     return false;
 }
+
 bool Map::IsTileWater(IntVec2 const& tileCoords) const
 {
-    if (IsTileCoordsOutOfBounds(tileCoords))
-        return true;
+    if (IsTileCoordsOutOfBounds(tileCoords)) return true;
 
     int const tileIndex = tileCoords.y * m_dimensions.x + tileCoords.x;
 
@@ -243,11 +235,9 @@ void Map::UpdateEntities(float const deltaSeconds) const
 {
     for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
     {
-
         Entity* entity = m_allEntities[entityIndex];
 
-        if (!entity)
-            continue;
+        if (!entity) continue;
 
         entity->Update(deltaSeconds);
     }
@@ -299,8 +289,7 @@ void Map::RenderEntities() const
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTileHeatMap() const
 {
-    if (m_currentTileHeatMapIndex == -1)
-        return;
+    if (m_currentTileHeatMapIndex == -1) return;
 
     AABB2 const totalBounds = GetMapBound();
 
@@ -308,15 +297,13 @@ void Map::RenderTileHeatMap() const
 
     if (m_currentTileHeatMapIndex == 3)
     {
-        if (!m_currentSelectedEntity->m_heatMap)
-            return;
+        if (!m_currentSelectedEntity->m_heatMap) return;
 
         m_currentSelectedEntity->m_heatMap->AddVertsForDebugDraw(verts, totalBounds);
     }
     else
     {
-        if (!m_tileHeatMaps[m_currentTileHeatMapIndex])
-            return;
+        if (!m_tileHeatMaps[m_currentTileHeatMapIndex]) return;
 
         m_tileHeatMaps[m_currentTileHeatMapIndex]->AddVertsForDebugDraw(verts, totalBounds);
     }
@@ -328,11 +315,9 @@ void Map::RenderTileHeatMap() const
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTileHeatMapText() const
 {
-    if (g_theGame->IsAttractMode())
-        return;
+    if (g_theGame->IsAttractMode()) return;
 
-    if (m_currentTileHeatMapIndex == -1)
-        return;
+    if (m_currentTileHeatMapIndex == -1) return;
 
     VertexList textVerts;
     AABB2      box = AABB2(Vec2(0.f, 780.f), Vec2(1600.f, 800.f));
@@ -345,28 +330,25 @@ void Map::RenderTileHeatMapText() const
 
     switch (m_currentTileHeatMapIndex)
     {
-        case 0:
-            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map from start (F6 for next mode)", box, 1.f, Rgba8::WHITE, 1.f, Vec2(0, 1));
-            break;
+    case 0:
+        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map from start (F6 for next mode)", box, 1.f, Rgba8::WHITE, 1.f, Vec2(0, 1));
+        break;
 
-        case 1:
-            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for amphibians (F6 for next mode)", box, 0.5f);
-            break;
+    case 1:
+        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for amphibians (F6 for next mode)", box, 0.5f);
+        break;
 
-        case 2:
-            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for land-based (F6 for next mode)", box, 0.5f);
-            break;
+    case 2:
+        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Solid Map for land-based (F6 for next mode)", box, 0.5f);
+        break;
 
-        case 3:
-            g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map to selected Entity's goal (F6 for next mode)", box, 0.5f);
-            break;
+    case 3:
+        g_theBitmapFont->AddVertsForTextInBox2D(textVerts, "Debug Heat Map: Distance Map to selected Entity's goal (F6 for next mode)", box, 0.5f);
+        break;
     }
 
     g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
     g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
-
-
-
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -374,17 +356,14 @@ void Map::DebugRenderEntities() const
 {
     for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
     {
-        if (Entity const* entity = m_allEntities[entityIndex])
-
-            entity->DebugRender();
+        if (Entity const* entity = m_allEntities[entityIndex]) entity->DebugRender();
     }
 }
 
 //----------------------------------------------------------------------------------------------------
 void Map::DebugRenderTileIndex() const
 {
-    if (m_currentTileHeatMapIndex == -1)
-        return;
+    if (m_currentTileHeatMapIndex == -1) return;
 
     for (int tileY = 0; tileY < m_dimensions.y; ++tileY)
     {
@@ -394,15 +373,13 @@ void Map::DebugRenderTileIndex() const
 
             if (m_currentTileHeatMapIndex == 3)
             {
-                if (!m_currentSelectedEntity->m_heatMap)
-                    return;
+                if (!m_currentSelectedEntity->m_heatMap) return;
 
                 heatMap = m_currentSelectedEntity->m_heatMap;
             }
             else
             {
-                if (!m_tileHeatMaps[m_currentTileHeatMapIndex])
-                    return;
+                if (!m_tileHeatMaps[m_currentTileHeatMapIndex]) return;
 
                 heatMap = m_tileHeatMaps[m_currentTileHeatMapIndex];
             }
@@ -410,7 +387,7 @@ void Map::DebugRenderTileIndex() const
             float const value = heatMap->GetValueAtCoords(tileX, tileY);
             VertexList  textVerts;
 
-            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2(tileX, tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::WHITE);
+            g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)), Vec2(tileX, tileY), 0.2f, Rgba8::WHITE);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
@@ -669,7 +646,6 @@ bool Map::IsValidMap(IntVec2 const& startCoords, IntVec2 const& exitCoords, int 
 }
 
 
-
 //----------------------------------------------------------------------------------------------------
 AABB2 const Map::GetTileBounds(IntVec2 const& tileCoords) const
 {
@@ -748,14 +724,14 @@ IntVec2 Map::RollRandomCardinalDirection() const
 {
     switch (g_theRNG->RollRandomIntInRange(0, 3))
     {
-        case 0:
-            return IntVec2(0, 1);
-        case 1:
-            return IntVec2(1, 0);
-        case 2:
-            return IntVec2(0, -1);
-        case 3:
-            return IntVec2(-1, 0);
+    case 0:
+        return IntVec2(0, 1);
+    case 1:
+        return IntVec2(1, 0);
+    case 2:
+        return IntVec2(0, -1);
+    case 3:
+        return IntVec2(-1, 0);
     }
     return IntVec2::ZERO;
 }
@@ -843,6 +819,7 @@ void Map::PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
 
     // printf("( Map%d ) Finish | GenerateDistanceField\n", m_mapDef->GetIndex());
 }
+
 void Map::PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 const& startCoords, float specialValue) const
 {
     // printf("( Map%d ) Start  | GenerateDistanceField\n", m_mapDef->GetIndex());
@@ -1026,7 +1003,7 @@ std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap, Vec2
         IntVec2 bestNeighbor = currentCoords;
         float   lowestHeat   = heatMap.GetValueAtCoords(currentCoords);
 
-        for (IntVec2 const& offset : { IntVec2(-1, 0), IntVec2(1, 0), IntVec2(0, -1), IntVec2(0, 1) })
+        for (IntVec2 const& offset : {IntVec2(-1, 0), IntVec2(1, 0), IntVec2(0, -1), IntVec2(0, 1)})
         {
             IntVec2 neighbor = currentCoords + offset;
             float   heat     = heatMap.GetValueAtCoords(neighbor);
@@ -1047,14 +1024,14 @@ std::vector<Vec2> Map::GenerateEntityPathToGoal(TileHeatMap const& heatMap, Vec2
     std::reverse(path.begin(), path.end());
     return path;
 }
+
 bool Map::RaycastHitsImpassable(Vec2 const& currentPos, Vec2 const& nextNextPos)
 {
     Vec2            direction       = nextNextPos - currentPos;
     Ray2            ray             = Ray2(currentPos, direction.GetNormalized(), GetDistance2D(currentPos, nextNextPos));
     RaycastResult2D raycastResult2D = RaycastVsTiles(ray);
 
-    if (raycastResult2D.m_didImpact)
-        return true;
+    if (raycastResult2D.m_didImpact) return true;
 
     return false;
 }
@@ -1064,24 +1041,24 @@ Entity* Map::CreateNewEntity(EntityType const type, EntityFaction const faction)
 {
     switch (type)
     {
-        case ENTITY_TYPE_PLAYER_TANK:
-            return new PlayerTank(this, type, faction);
-        case ENTITY_TYPE_SCORPIO:
-            return new Scorpio(this, type, faction);
-        case ENTITY_TYPE_LEO:
-            return new Leo(this, type, faction);
-        case ENTITY_TYPE_ARIES:
-            return new Aries(this, type, faction);
-        case ENTITY_TYPE_BULLET:
-            return new Bullet(this, type, faction);
-        case ENTITY_TYPE_EXPLOSION:
-            return new Explosion(this, type, faction);
-        case ENTITY_TYPE_DEBRIS:
-            return new Debris(this, type, faction);
-        case ENTITY_TYPE_UNKNOWN:
-            ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
-        case NUM_ENTITY_TYPES:
-            ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
+    case ENTITY_TYPE_PLAYER_TANK:
+        return new PlayerTank(this, type, faction);
+    case ENTITY_TYPE_SCORPIO:
+        return new Scorpio(this, type, faction);
+    case ENTITY_TYPE_LEO:
+        return new Leo(this, type, faction);
+    case ENTITY_TYPE_ARIES:
+        return new Aries(this, type, faction);
+    case ENTITY_TYPE_BULLET:
+        return new Bullet(this, type, faction);
+    case ENTITY_TYPE_EXPLOSION:
+        return new Explosion(this, type, faction);
+    case ENTITY_TYPE_DEBRIS:
+        return new Debris(this, type, faction);
+    case ENTITY_TYPE_UNKNOWN:
+        ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
+    case NUM_ENTITY_TYPES:
+        ERROR_AND_DIE(Stringf("Unknown entity type #%i\n", type))
     }
 
     return nullptr;
@@ -1097,11 +1074,9 @@ void Map::AddEntityToMap(Entity* entity, Vec2 const& position, float const orien
     AddEntityToList(entity, m_allEntities);
     AddEntityToList(entity, m_entitiesByType[entity->m_type]);
 
-    if (IsBullet(entity))
-        AddEntityToList(entity, m_bulletsByFaction[entity->m_faction]);
+    if (IsBullet(entity)) AddEntityToList(entity, m_bulletsByFaction[entity->m_faction]);
 
-    if (IsAgent(entity))
-        AddEntityToList(entity, m_agentsByFaction[entity->m_faction]);
+    if (IsAgent(entity)) AddEntityToList(entity, m_agentsByFaction[entity->m_faction]);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1116,11 +1091,9 @@ void Map::RemoveEntityFromMap(Entity* entity)
     RemoveEntityFromList(entity, m_allEntities);
     RemoveEntityFromList(entity, m_entitiesByType[entity->m_type]);
 
-    if (IsAgent(entity))
-        RemoveEntityFromList(entity, m_agentsByFaction[entity->m_faction]);
+    if (IsAgent(entity)) RemoveEntityFromList(entity, m_agentsByFaction[entity->m_faction]);
 
-    if (IsBullet(entity))
-        RemoveEntityFromList(entity, m_bulletsByFaction[entity->m_faction]);
+    if (IsBullet(entity)) RemoveEntityFromList(entity, m_bulletsByFaction[entity->m_faction]);
 
     entity->m_map = nullptr;
 }
@@ -1166,28 +1139,24 @@ void Map::SpawnNewNPCs()
 
         Vec2 const worldPosition(static_cast<float>(randomTileCoords.x) + 0.5f, static_cast<float>(randomTileCoords.y) + 0.5f);
 
-        if (IsWorldPosOccupied(worldPosition))
-            continue;
+        if (IsWorldPosOccupied(worldPosition)) continue;
 
         switch (g_theRNG->RollRandomIntInRange(0, 3))
         {
-            case 0:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetScorpioSpawnPercentage())
-                    SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+        case 0:
+            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetScorpioSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_SCORPIO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
-                break;
+            break;
 
-            case 1:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetLeoSpawnPercentage())
-                    SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+        case 1:
+            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetLeoSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_LEO, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
-                break;
+            break;
 
-            case 2:
-                if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetAriesSpawnPercentage())
-                    SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, worldPosition, 0.f);
+        case 2:
+            if (g_theRNG->RollRandomFloatZeroToOne() < m_mapDef->GetAriesSpawnPercentage()) SpawnNewEntity(ENTITY_TYPE_ARIES, ENTITY_FACTION_EVIL, worldPosition, 0.f);
 
-                break;
+            break;
         }
     }
 
@@ -1214,11 +1183,9 @@ void Map::PushEntitiesOutOfWalls() const
 {
     for (int entityIndex = 0; entityIndex < static_cast<int>(m_allEntities.size()); ++entityIndex)
     {
-        if (IsBullet(m_allEntities[entityIndex]))
-            continue;
+        if (IsBullet(m_allEntities[entityIndex])) continue;
 
-        if (g_theGame->IsNoClip() && m_allEntities[entityIndex]->m_type == ENTITY_TYPE_PLAYER_TANK)
-            continue;
+        if (g_theGame->IsNoClip() && m_allEntities[entityIndex]->m_type == ENTITY_TYPE_PLAYER_TANK) continue;
 
         PushEntityOutOfSolidTiles(m_allEntities[entityIndex]);
     }
@@ -1229,7 +1196,7 @@ void Map::PushEntityOutOfSolidTiles(Entity* entity) const
 {
     IntVec2 const myTileCoords = GetTileCoordsFromWorldPos(entity->m_position);
 
-    // Push out of cardinal neighbors (NSEW) first 
+    // Push out of cardinal neighbors (NSEW) first
     PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(1, 0));
     PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(0, 1));
     PushEntityOutOfTileIfSolid(entity, myTileCoords + IntVec2(-1, 0));
@@ -1245,11 +1212,9 @@ void Map::PushEntityOutOfSolidTiles(Entity* entity) const
 //----------------------------------------------------------------------------------------------------
 void Map::PushEntityOutOfTileIfSolid(Entity* entity, IntVec2 const& tileCoords) const
 {
-    if (!IsTileSolid(tileCoords))
-        return;
+    if (!IsTileSolid(tileCoords)) return;
 
-    if (IsTileCoordsOutOfBounds(tileCoords))
-        return;
+    if (IsTileCoordsOutOfBounds(tileCoords)) return;
 
     AABB2 const aabb2Box = GetTileBounds(tileCoords);
 
@@ -1261,16 +1226,13 @@ void Map::PushEntitiesOutOfEachOther(EntityList const& entityListA, EntityList c
 {
     for (Entity* entityA : entityListA)
     {
-        if (!entityA)
-            continue;
+        if (!entityA) continue;
 
         for (Entity* entityB : entityListB)
         {
-            if (!entityB)
-                continue;
+            if (!entityB) continue;
 
-            if (entityA == entityB)
-                continue;
+            if (entityA == entityB) continue;
 
             bool const canAPushB = entityA->m_doesPushEntities && entityB->m_isPushedByEntities;
             bool const canBPushA = entityB->m_doesPushEntities && entityA->m_isPushedByEntities;
@@ -1301,30 +1263,23 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 {
     for (Entity* entityA : entityListA)
     {
-        if (!entityA)
-            continue;
+        if (!entityA) continue;
 
-        if (entityA->m_isDead)
-            continue;
+        if (entityA->m_isDead) continue;
 
         for (Entity* entityB : entityListB)
         {
-            if (!entityB)
-                continue;
+            if (!entityB) continue;
 
-            if (entityB->m_isDead)
-                continue;
+            if (entityB->m_isDead) continue;
 
-            if (IsBullet(entityB))
-                continue;
+            if (IsBullet(entityB)) continue;
 
-            if (entityA == entityB)
-                continue;
+            if (entityA == entityB) continue;
 
             if (DoDiscsOverlap(entityA->m_position, entityA->m_physicsRadius, entityB->m_position, entityB->m_physicsRadius))
             {
-                if (entityA->m_faction == entityB->m_faction)
-                    continue;
+                if (entityA->m_faction == entityB->m_faction) continue;
 
                 if (entityB->m_type == ENTITY_TYPE_ARIES)
                 {
@@ -1352,7 +1307,6 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
                     g_theAudio->StartSound(g_theGame->GetEnemyHitSoundID());
                 }
             }
-
         }
     }
 }
@@ -1361,17 +1315,17 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
 {
     RaycastResult2D raycastResult;
-    raycastResult.m_rayFwdNormal = ray.m_direction;
-    raycastResult.m_rayStartPos  = ray.m_origin;
-    raycastResult.m_rayMaxLength = ray.m_maxDist;
-    raycastResult.m_didImpact    = false;
+    raycastResult.m_rayForwardNormal = ray.m_direction;
+    raycastResult.m_rayStartPos      = ray.m_origin;
+    raycastResult.m_rayMaxLength     = ray.m_maxLength;
+    raycastResult.m_didImpact        = false;
 
     constexpr float stepSize   = 0.01f;
     Vec2            currentPos = ray.m_origin;
 
 
     // Calculate the number of steps needed
-    const int numSteps = static_cast<int>(ray.m_maxDist / stepSize);
+    const int numSteps = static_cast<int>(ray.m_maxLength / stepSize);
 
     for (int i = 0; i < numSteps; ++i)
     {
@@ -1402,7 +1356,6 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
 
             return raycastResult;
         }
-
     }
 
     return raycastResult;

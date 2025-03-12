@@ -44,7 +44,7 @@ void Capricorn::DebugRenderTileIndex() const
             float const value = m_heatMap->GetValueAtCoords(tileX, tileY);
 
             VertexList textVerts;
-            g_theBitmapFont->AddVertsForText2D(textVerts, Vec2((float) tileX, (float) tileY), 0.2f, std::to_string(static_cast<int>(value)), Rgba8::BLACK);
+            g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)),Vec2((float) tileX, (float) tileY), 0.2f,  Rgba8::BLACK);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
         }
