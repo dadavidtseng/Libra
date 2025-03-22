@@ -165,7 +165,7 @@ void Leo::UpdateBody(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Leo::RenderBody() const
 {
-    VertexList bodyVerts;
+    VertexList_PCU bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
@@ -174,7 +174,7 @@ void Leo::RenderBody() const
     g_theRenderer->BindTexture(m_bodyTexture);
     g_theRenderer->DrawVertexArray(static_cast<int>(bodyVerts.size()), bodyVerts.data());
 
-    VertexList   stateVerts;
+    VertexList_PCU   stateVerts;
     String const stateStr   = m_hasTarget ? "Chase" : "Wander";
     Rgba8 const  stateColor = m_hasTarget ? Rgba8::RED : Rgba8::WHITE;
 

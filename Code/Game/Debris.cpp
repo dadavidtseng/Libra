@@ -104,7 +104,7 @@ RaycastResult2D raycastResult2D = m_map->RaycastVsTiles(ray);
 //----------------------------------------------------------------------------------------------------
 void Debris::RenderBody() const
 {
-    VertexList bodyVerts;
+    VertexList_PCU bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),

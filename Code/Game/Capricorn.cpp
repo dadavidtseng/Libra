@@ -43,7 +43,7 @@ void Capricorn::DebugRenderTileIndex() const
         {
             float const value = m_heatMap->GetValueAtCoords(tileX, tileY);
 
-            VertexList textVerts;
+            VertexList_PCU textVerts;
             g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)),Vec2((float) tileX, (float) tileY), 0.2f,  Rgba8::BLACK);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
             g_theRenderer->DrawVertexArray(static_cast<int>(textVerts.size()), textVerts.data());
@@ -181,7 +181,7 @@ void Capricorn::UpdateBody(float const deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void Capricorn::RenderBody() const
 {
-    VertexList bodyVerts;
+    VertexList_PCU bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),

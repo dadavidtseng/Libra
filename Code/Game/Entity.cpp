@@ -170,7 +170,7 @@ void Entity::UpdateBehavior(float const deltaSeconds, bool const isChasing)
 
 void Entity::RenderHealthBar() const
 {
-    VertexList  verts;
+    VertexList_PCU  verts;
     AABB2 const box = AABB2(Vec2(-0.5f, 0.5f), Vec2(0.5f, 0.6f));
 
     AddVertsForAABB2D(verts, box, Rgba8::WHITE);
@@ -178,7 +178,7 @@ void Entity::RenderHealthBar() const
     TransformVertexArrayXY3D(static_cast<int>(verts.size()), verts.data(),
                              1.0f, 0.f, m_position);
 
-    VertexList  healthBarVerts;
+    VertexList_PCU  healthBarVerts;
     AABB2 const healthBarBox = AABB2(Vec2(-0.5f, 0.5f), Vec2(0.5f * ((float) m_health / (float) m_totalHealth), 0.6f));
     AddVertsForAABB2D(healthBarVerts, healthBarBox, Rgba8::RED);
 

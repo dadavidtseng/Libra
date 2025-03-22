@@ -246,7 +246,7 @@ void Map::UpdateEntities(float const deltaSeconds) const
 //----------------------------------------------------------------------------------------------------
 void Map::RenderTiles() const
 {
-    VertexList tileVertices;
+    VertexList_PCU tileVertices;
 
     tileVertices.reserve(static_cast<size_t>(3) * 2 * m_dimensions.x * m_dimensions.y);
 
@@ -293,7 +293,7 @@ void Map::RenderTileHeatMap() const
 
     AABB2 const totalBounds = GetMapBound();
 
-    VertexList verts;
+    VertexList_PCU verts;
 
     if (m_currentTileHeatMapIndex == 3)
     {
@@ -319,10 +319,10 @@ void Map::RenderTileHeatMapText() const
 
     if (m_currentTileHeatMapIndex == -1) return;
 
-    VertexList textVerts;
+    VertexList_PCU textVerts;
     AABB2      box = AABB2(Vec2(0.f, 780.f), Vec2(1600.f, 800.f));
 
-    VertexList boxVerts;
+    VertexList_PCU boxVerts;
 
     AddVertsForAABB2D(boxVerts, box, Rgba8::BLACK);
     g_theRenderer->BindTexture(nullptr);
@@ -385,7 +385,7 @@ void Map::DebugRenderTileIndex() const
             }
 
             float const value = heatMap->GetValueAtCoords(tileX, tileY);
-            VertexList  textVerts;
+            VertexList_PCU  textVerts;
 
             g_theBitmapFont->AddVertsForText2D(textVerts, std::to_string(static_cast<int>(value)), Vec2(tileX, tileY), 0.2f, Rgba8::WHITE);
             g_theRenderer->BindTexture(&g_theBitmapFont->GetTexture());
@@ -779,7 +779,7 @@ void Map::PopulateDistanceField(TileHeatMap const& heatMap, IntVec2 const& start
                 IntVec2     tileCoords(tileX, tileY);
                 float const value = heatMap.GetValueAtCoords(tileX, tileY);
 
-                if (std::fabs(value - currentSearchValue) < EPSILON)
+                if (std::fabs(value - currentSearchValue) < FLOAT_MIN)
                 {
                     // Found a search value ! Spread to cardinal neighbors...
                     IntVec2     n               = tileCoords + IntVec2(0, 1);
@@ -841,7 +841,7 @@ void Map::PopulateDistanceFieldForEntity(TileHeatMap const& heatMap, IntVec2 con
                 IntVec2     tileCoords(tileX, tileY);
                 float const value = heatMap.GetValueAtCoords(tileX, tileY);
 
-                if (std::fabs(value - currentSearchValue) < EPSILON)
+                if (std::fabs(value - currentSearchValue) < FLOAT_MIN)
                 {
                     // Found a search value ! Spread to cardinal neighbors...
                     IntVec2     n               = tileCoords + IntVec2(0, 1);
@@ -1277,7 +1277,7 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 
             if (entityA == entityB) continue;
 
-            if (DoDiscsOverlap(entityA->m_position, entityA->m_physicsRadius, entityB->m_position, entityB->m_physicsRadius))
+            if (DoDiscsOverlap2D(entityA->m_position, entityA->m_physicsRadius, entityB->m_position, entityB->m_physicsRadius))
             {
                 if (entityA->m_faction == entityB->m_faction) continue;
 
@@ -1315,13 +1315,13 @@ void Map::CheckEntityVsEntityCollision(EntityList const& entityListA, EntityList
 RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
 {
     RaycastResult2D raycastResult;
-    raycastResult.m_rayForwardNormal = ray.m_direction;
-    raycastResult.m_rayStartPos      = ray.m_origin;
+    raycastResult.m_rayForwardNormal = ray.m_forwardNormal;
+    raycastResult.m_rayStartPosition = ray.m_startPosition;
     raycastResult.m_rayMaxLength     = ray.m_maxLength;
     raycastResult.m_didImpact        = false;
 
     constexpr float stepSize   = 0.01f;
-    Vec2            currentPos = ray.m_origin;
+    Vec2            currentPos = ray.m_startPosition;
 
 
     // Calculate the number of steps needed
@@ -1330,16 +1330,16 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
     for (int i = 0; i < numSteps; ++i)
     {
         const float t            = static_cast<float>(i) * stepSize;
-        currentPos               = ray.m_origin + ray.m_direction * t;
-        Vec2          prePos     = currentPos - ray.m_direction * stepSize;
+        currentPos               = ray.m_startPosition + ray.m_forwardNormal * t;
+        Vec2          prePos     = currentPos - ray.m_forwardNormal * stepSize;
         IntVec2 const tileCoords = GetTileCoordsFromWorldPos(currentPos);
 
         // Check bounds
         if (IsTileCoordsOutOfBounds(tileCoords))
         {
             raycastResult.m_didImpact  = true;
-            raycastResult.m_impactDist = t;
-            raycastResult.m_impactPos  = currentPos;
+            raycastResult.m_impactLength = t;
+            raycastResult.m_impactPosition  = currentPos;
 
             return raycastResult; // Out of bounds is considered blocking
         }
@@ -1349,8 +1349,8 @@ RaycastResult2D Map::RaycastVsTiles(Ray2 const& ray) const
         if (IsTileSolid(tileCoords) && !IsTileWater(tileCoords))
         {
             raycastResult.m_didImpact     = true;
-            raycastResult.m_impactDist    = t;
-            raycastResult.m_impactPos     = currentPos;
+            raycastResult.m_impactLength    = t;
+            raycastResult.m_impactPosition     = currentPos;
             IntVec2 const impactFwdNormal = GetTileCoordsFromWorldPos(currentPos) - GetTileCoordsFromWorldPos(prePos);
             raycastResult.m_impactNormal  = Vec2(impactFwdNormal);
 

@@ -229,7 +229,7 @@ void PlayerTank::UpdateTurret(const float deltaSeconds)
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::RenderBody() const
 {
-    VertexList bodyVerts;
+    VertexList_PCU bodyVerts;
     AddVertsForAABB2D(bodyVerts, m_bodyBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(bodyVerts.size()), bodyVerts.data(),
@@ -242,7 +242,7 @@ void PlayerTank::RenderBody() const
 //----------------------------------------------------------------------------------------------------
 void PlayerTank::RenderTurret() const
 {
-    VertexList turretVerts;
+    VertexList_PCU turretVerts;
     AddVertsForAABB2D(turretVerts, m_turretBounds, Rgba8::WHITE);
 
     TransformVertexArrayXY3D(static_cast<int>(turretVerts.size()), turretVerts.data(),

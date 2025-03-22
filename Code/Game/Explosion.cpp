@@ -71,7 +71,7 @@ void Explosion::DebugRender() const
 //----------------------------------------------------------------------------------------------------
 void Explosion::RenderBody() const
 {
-    VertexList vertexArray;
+    VertexList_PCU vertexArray;
 
     SpriteAnimDefinition const myAnim(*m_spriteSheet, 0, 24, 10.f, SpriteAnimPlaybackType::ONCE);
 
@@ -86,7 +86,7 @@ void Explosion::RenderBody() const
                              1.f, 0.f, m_position);
 
     g_theRenderer->BindTexture(&spriteDef.GetTexture());
-    g_theRenderer->SetBlendMode(BlendMode::ADDITIVE);
+    g_theRenderer->SetBlendMode(eBlendMode::ADDITIVE);
     g_theRenderer->DrawVertexArray(static_cast<int>(vertexArray.size()), vertexArray.data());
-    g_theRenderer->SetBlendMode(BlendMode::ALPHA);
+    g_theRenderer->SetBlendMode(eBlendMode::ALPHA);
 }
